@@ -21,7 +21,6 @@ Lambda.indexOf = function(it,v) {
 	return -1;
 }
 var Main = function() {
-	this.timerId = -1;
 	this.monoSynthTest();
 };
 Main.__name__ = true;
@@ -39,47 +38,7 @@ Main.createContext = function() {
 	}
 }
 Main.prototype = {
-	bufferSourceTest: function() {
-		var url = "test.ogg";
-		var req = new XMLHttpRequest();
-		req.open("GET",url,true);
-		req.responseType = "arraybuffer";
-		req.onload = function(e) {
-			haxe.Log.trace("loaded: " + req.status,{ fileName : "Main.hx", lineNumber : 117, className : "Main", methodName : "bufferSourceTest"});
-			Main.context.decodeAudioData(req.response,function(buffer) {
-				haxe.Log.trace("decoded to buffer...",{ fileName : "Main.hx", lineNumber : 123, className : "Main", methodName : "bufferSourceTest"});
-				haxe.Log.trace("duration:" + buffer.duration + ", gain:" + buffer.gain + ", numberOfChannels:" + buffer.numberOfChannels + ", sampleRate:" + buffer.sampleRate + ", length:" + buffer.length,{ fileName : "Main.hx", lineNumber : 124, className : "Main", methodName : "bufferSourceTest"});
-				var bufferSource = Main.context.createBufferSource();
-				bufferSource.buffer = buffer;
-				bufferSource.connect(Main.context.destination);
-				bufferSource.start(Main.context.currentTime + .5);
-				return true;
-			},function(buffer) {
-				haxe.Log.trace("error decoding to buffer",{ fileName : "Main.hx", lineNumber : 135, className : "Main", methodName : "bufferSourceTest"});
-				return false;
-			});
-		};
-		req.send();
-	}
-	,scriptProcessorTest: function() {
-		var node;
-		try {
-			node = Main.context.createScriptProcessor();
-		} catch( err ) {
-			node = Main.context.createScriptProcessor(2048);
-		}
-		node.onaudioprocess = function(e) {
-			var output = e.outputBuffer.getChannelData(0);
-			var n = output.length;
-			var _g = 0;
-			while(_g < n) {
-				var i = _g++;
-				output[i] = Math.random() - .5;
-			}
-		};
-		node.connect(Main.context.destination);
-	}
-	,monoSynthTest: function() {
+	monoSynthTest: function() {
 		var keys = new utils.KeyboardNotes();
 		var noteFreq = keys.keycodeToNoteFreq;
 		var heldKeys = [];
@@ -259,40 +218,6 @@ js.Boot.__instanceof = function(o,cl) {
 js.Browser = function() { }
 js.Browser.__name__ = true;
 var synth = {}
-synth._ADSR = {}
-synth._ADSR.ADSR_Impl_ = function() { }
-synth._ADSR.ADSR_Impl_.__name__ = true;
-synth._ADSR.ADSR_Impl_._new = function(context,input,destination) {
-	var this1;
-	this1 = context.createGain();
-	this1.gain.value = 0;
-	if(input != null) input.connect(this1);
-	if(destination != null) this1.connect(destination);
-	return this1;
-}
-synth._ADSR.ADSR_Impl_.trigger = function(this1,when,level,attackTime,decayTime,sustainLevel,retrigger) {
-	if(retrigger == null) retrigger = false;
-	if(sustainLevel == null) sustainLevel = 1.0;
-	if(decayTime == null) decayTime = 0.001;
-	if(attackTime == null) attackTime = 0.2;
-	if(level == null) level = 1.0;
-	if(when == null) when = .0;
-	this1.gain.cancelScheduledValues(when);
-	this1.gain.setValueAtTime(retrigger?0:this1.gain.value,when);
-	this1.gain.setTargetAtTime(level,when,1 - 1 / Math.exp(attackTime));
-	if(sustainLevel != 1.0) this1.gain.setTargetAtTime(level * sustainLevel,when + attackTime,1 - 1 / Math.exp(decayTime));
-}
-synth._ADSR.ADSR_Impl_.release = function(this1,when,releaseDuration) {
-	if(releaseDuration == null) releaseDuration = .5;
-	if(when == null) when = .0;
-	var er = Math.exp(releaseDuration);
-	this1.gain.cancelScheduledValues(when);
-	this1.gain.setTargetAtTime(0,when,1 - 1 / er);
-	return when + er;
-}
-synth._ADSR.ADSR_Impl_.rExp = function(this1,v) {
-	return 1 - 1 / Math.exp(v);
-}
 synth.MonoSynth = function(destination) {
 	this.oscType = 0;
 	this.noteIsOn = false;
@@ -398,45 +323,9 @@ synth.MonoSynth.prototype = {
 		}
 		return this.oscType;
 	}
-	,get_oscillatorType: function() {
-		return this.oscType;
-	}
-	,get_currentOscillatorNode: function() {
-		return this.osc[this.oscType];
-	}
-	,get_currentOscillator: function() {
-		return this.osc[this.oscType];
-	}
 	,__class__: synth.MonoSynth
 }
-synth._Oscillator = {}
-synth._Oscillator.Oscillator_Impl_ = function() { }
-synth._Oscillator.Oscillator_Impl_.__name__ = true;
-synth._Oscillator.Oscillator_Impl_._new = function(context,destination,type) {
-	if(type == null) type = 0;
-	var this1;
-	this1 = context.createOscillator();
-	this1.frequency.value = 440;
-	this1.type = type;
-	this1.start(0);
-	if(destination != null) this1.connect(destination);
-	return this1;
-}
-synth._Oscillator.Oscillator_Impl_.trigger = function(this1,when,freq,portamentoTime) {
-	if(portamentoTime == null) portamentoTime = 0;
-	if(freq == null) freq = 440;
-	this1.frequency.cancelScheduledValues(when);
-	if(portamentoTime > 0 && freq != this1.frequency.value) {
-		this1.frequency.setValueAtTime(this1.frequency.value,when);
-		this1.frequency.exponentialRampToValueAtTime(freq,when + portamentoTime);
-	} else this1.frequency.setValueAtTime(freq,when);
-}
-synth._Oscillator.Oscillator_Impl_.release = function(this1,when) {
-	this1.frequency.cancelScheduledValues(when);
-}
 var utils = {}
-utils.Keyboard = function() { }
-utils.Keyboard.__name__ = true;
 utils.KeyboardNotes = function() {
 	this.noteFreq = new utils.NoteFrequency();
 	this.keycodeToNoteFreq = new haxe.ds.IntMap();
@@ -485,22 +374,8 @@ utils.NoteFrequency = function() {
 	this.set_tuningBase(440.0);
 };
 utils.NoteFrequency.__name__ = true;
-utils.NoteFrequency.rateFromNote = function(note,cents,root) {
-	return (12 + note + cents * 0.01 - root) * (1 / 12);
-}
-utils.NoteFrequency.noteFromRate = function(rate,root) {
-	return root + rate * 12 | 0;
-}
-utils.NoteFrequency.rateFromFrequency = function(frequency,rootFrequency) {
-	return frequency / rootFrequency;
-}
 utils.NoteFrequency.prototype = {
-	set_octaveMiddleC: function(value) {
-		this._octaveMiddleC = value;
-		this.reset();
-		return value;
-	}
-	,get_octaveMiddleC: function() {
+	get_octaveMiddleC: function() {
 		return this._octaveMiddleC;
 	}
 	,set_tuningBase: function(value) {
@@ -519,12 +394,6 @@ utils.NoteFrequency.prototype = {
 		if(utils.NoteFrequency.altPitchNames[pitch] != null) noteName += "/" + utils.NoteFrequency.altPitchNames[pitch] + octave;
 		return noteName;
 	}
-	,frequencyToNote: function(frequency) {
-		return 12 * (Math.log(frequency * this.invTuningBase) * 1.4426950408889634) + 57;
-	}
-	,indexToFrequency: function(index) {
-		return this.get_tuningBase() * Math.pow(2,(index - 69.0) * (1 / 12));
-	}
 	,noteNameToIndex: function(name) {
 		var hasAlternate = name.indexOf("/");
 		if(hasAlternate != -1) name = name.substring(0,hasAlternate);
@@ -535,13 +404,6 @@ utils.NoteFrequency.prototype = {
 			if(s.indexOf(name) > -1) return i;
 		}
 		return -1;
-	}
-	,noteIndexToName: function(index) {
-		if(index >= 0 && index < 128) return this.noteNames[index];
-		return null;
-	}
-	,frequencyToNoteIndex: function(frequency) {
-		return 12 * (Math.log(frequency * this.invTuningBase) * 1.4426950408889634) + 57 | 0;
 	}
 	,noteIndexToFrequency: function(index,cents) {
 		if(cents == null) cents = 0;
@@ -587,112 +449,5 @@ var Class = { __name__ : ["Class"]};
 var Enum = { };
 js.Browser.window = typeof window != "undefined" ? window : null;
 js.Browser.document = typeof window != "undefined" ? window.document : null;
-synth._Oscillator.Oscillator_Impl_.SINE = 0;
-synth._Oscillator.Oscillator_Impl_.SQUARE = 1;
-synth._Oscillator.Oscillator_Impl_.SAWTOOTH = 2;
-synth._Oscillator.Oscillator_Impl_.TRIANGLE = 3;
-utils.Keyboard.A = 65;
-utils.Keyboard.B = 66;
-utils.Keyboard.C = 67;
-utils.Keyboard.D = 68;
-utils.Keyboard.E = 69;
-utils.Keyboard.F = 70;
-utils.Keyboard.G = 71;
-utils.Keyboard.H = 72;
-utils.Keyboard.I = 73;
-utils.Keyboard.J = 74;
-utils.Keyboard.K = 75;
-utils.Keyboard.L = 76;
-utils.Keyboard.M = 77;
-utils.Keyboard.N = 78;
-utils.Keyboard.O = 79;
-utils.Keyboard.P = 80;
-utils.Keyboard.Q = 81;
-utils.Keyboard.R = 82;
-utils.Keyboard.S = 83;
-utils.Keyboard.T = 84;
-utils.Keyboard.U = 85;
-utils.Keyboard.V = 86;
-utils.Keyboard.W = 87;
-utils.Keyboard.X = 88;
-utils.Keyboard.Y = 89;
-utils.Keyboard.Z = 90;
-utils.Keyboard.ALTERNATE = 18;
-utils.Keyboard.BACKQUOTE = 192;
-utils.Keyboard.BACKSLASH = 220;
-utils.Keyboard.BACKSPACE = 8;
-utils.Keyboard.CAPS_LOCK = 20;
-utils.Keyboard.COMMA = 188;
-utils.Keyboard.COMMAND = 15;
-utils.Keyboard.CONTROL = 17;
-utils.Keyboard.DELETE = 46;
-utils.Keyboard.DOWN = 40;
-utils.Keyboard.END = 35;
-utils.Keyboard.ENTER = 13;
-utils.Keyboard.EQUAL = 187;
-utils.Keyboard.ESCAPE = 27;
-utils.Keyboard.F1 = 112;
-utils.Keyboard.F2 = 113;
-utils.Keyboard.F3 = 114;
-utils.Keyboard.F4 = 115;
-utils.Keyboard.F5 = 116;
-utils.Keyboard.F6 = 117;
-utils.Keyboard.F7 = 118;
-utils.Keyboard.F8 = 119;
-utils.Keyboard.F9 = 120;
-utils.Keyboard.F10 = 121;
-utils.Keyboard.F11 = 122;
-utils.Keyboard.F12 = 123;
-utils.Keyboard.F13 = 124;
-utils.Keyboard.F14 = 125;
-utils.Keyboard.F15 = 126;
-utils.Keyboard.HOME = 36;
-utils.Keyboard.INSERT = 45;
-utils.Keyboard.LEFT = 37;
-utils.Keyboard.LEFTBRACKET = 219;
-utils.Keyboard.MINUS = 189;
-utils.Keyboard.NUMBER_0 = 48;
-utils.Keyboard.NUMBER_1 = 49;
-utils.Keyboard.NUMBER_2 = 50;
-utils.Keyboard.NUMBER_3 = 51;
-utils.Keyboard.NUMBER_4 = 52;
-utils.Keyboard.NUMBER_5 = 53;
-utils.Keyboard.NUMBER_6 = 54;
-utils.Keyboard.NUMBER_7 = 55;
-utils.Keyboard.NUMBER_8 = 56;
-utils.Keyboard.NUMBER_9 = 57;
-utils.Keyboard.NUMPAD = 21;
-utils.Keyboard.NUMPAD_0 = 96;
-utils.Keyboard.NUMPAD_1 = 97;
-utils.Keyboard.NUMPAD_2 = 98;
-utils.Keyboard.NUMPAD_3 = 99;
-utils.Keyboard.NUMPAD_4 = 100;
-utils.Keyboard.NUMPAD_5 = 101;
-utils.Keyboard.NUMPAD_6 = 102;
-utils.Keyboard.NUMPAD_7 = 103;
-utils.Keyboard.NUMPAD_8 = 104;
-utils.Keyboard.NUMPAD_9 = 105;
-utils.Keyboard.NUMPAD_ADD = 107;
-utils.Keyboard.NUMPAD_DECIMAL = 110;
-utils.Keyboard.NUMPAD_DIVIDE = 111;
-utils.Keyboard.NUMPAD_ENTER = 108;
-utils.Keyboard.NUMPAD_MULTIPLY = 106;
-utils.Keyboard.NUMPAD_SUBTRACT = 109;
-utils.Keyboard.PAGE_DOWN = 34;
-utils.Keyboard.PAGE_UP = 33;
-utils.Keyboard.PERIOD = 190;
-utils.Keyboard.QUOTE = 222;
-utils.Keyboard.RIGHT = 39;
-utils.Keyboard.RIGHTBRACKET = 221;
-utils.Keyboard.SEMICOLON = 186;
-utils.Keyboard.SHIFT = 16;
-utils.Keyboard.SLASH = 191;
-utils.Keyboard.SPACE = 32;
-utils.Keyboard.TAB = 9;
-utils.Keyboard.UP = 38;
-utils.NoteFrequency.defaultTuning = 440.0;
-utils.NoteFrequency.LOG2E = 1.4426950408889634;
-utils.NoteFrequency.Twelveth = 1 / 12;
-utils.NoteFrequency.centExp = 1 / 1200;
 Main.main();
 })();
