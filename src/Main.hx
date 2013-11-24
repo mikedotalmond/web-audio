@@ -48,14 +48,14 @@ class Main {
 		
 		var mono 		= new MonoSynth(context.destination);
 		//mono.oscillatorType = Oscillator.TRIANGLE;
-		mono.oscillatorType = Oscillator.SAWTOOTH;
-		//mono.oscillatorType = Oscillator.SQUARE;
+		//mono.oscillatorType = Oscillator.SAWTOOTH;
+		mono.oscillatorType = Oscillator.SQUARE;
 		
-		mono.osc_portamentoTime = .1;
-		//mono.adsr_attackTime = .2;
+		//mono.osc_portamentoTime = .1;
+		mono.adsr_attackTime = .01;
 		//mono.adsr_decayTime = 1;
-		//mono.adsr_sustain = .25;
-		//mono.adsr_releaseTime = 2;
+		mono.adsr_sustain = 1;
+		mono.adsr_releaseTime = .2;
 		
 		Browser.document.addEventListener("keydown", function(e:KeyboardEvent) {
 			var i = Lambda.indexOf(heldKeys, e.keyCode);

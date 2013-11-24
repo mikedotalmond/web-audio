@@ -2,7 +2,9 @@ package synth;
 
 import js.html.audio.AudioNode;
 import js.html.audio.AudioParam;
+import js.html.audio.BiquadFilterNode;
 import js.html.audio.OscillatorNode;
+import synth.ADSR.BiquadEnvelope;
 
 /**
  * ...
@@ -14,6 +16,7 @@ class MonoSynth { //
 	
 	var adsr						:ADSR;
 	var osc							:Array<Oscillator>;
+	var biquad						:BiquadEnvelope;
 	
 	public var adsr_attackTime		:Float = .1;
 	public var adsr_decayTime		:Float = 0.2;
@@ -41,7 +44,7 @@ class MonoSynth { //
 				noteOff(0);
 				currentOscillatorNode.disconnect(0);
 				oscType = type;
-				currentOscillatorNode.connect(adsr,0);
+				currentOscillatorNode.connect(biquad,0);
 		}
 		return oscType;
 	}
@@ -61,21 +64,27 @@ class MonoSynth { //
 		osc[Oscillator.TRIANGLE]= new Oscillator(context, null, Oscillator.TRIANGLE);
 		osc[Oscillator.SAWTOOTH]= new Oscillator(context, null, Oscillator.SAWTOOTH);
 		
-		adsr 					= new ADSR(context, null, destination);
+		biquad					= new BiquadEnvelope(BiquadFilterNode.LOWPASS, 200, 10, context);
+		adsr 					= new ADSR(context, biquad, destination);
 		oscillatorType 			= Oscillator.SINE;
 		
-		//todo: use AudioParam
+		//todo: use AudioParam?
 	}
 	
 	public function noteOn(when:Float, freq:Float, velocity:Float=1, retrigger:Bool=false) {
 		currentOscillator.trigger(when, freq, osc_portamentoTime); 
-		if(!noteIsOn || retrigger) adsr.trigger(when, velocity, adsr_attackTime, adsr_decayTime, adsr_sustain, retrigger);
+		if (!noteIsOn || retrigger) {
+			adsr.trigger(when, velocity, adsr_attackTime, adsr_decayTime, adsr_sustain, retrigger);
+			//if FEG active...
+			biquad.trigger(when, 200, .3, 8000, retrigger);
+		}
 		noteIsOn = true;
 	}
 	
 	public function noteOff(when) {
 		if (noteIsOn) {
 			currentOscillator.release(adsr.release(when, adsr_releaseTime));
+			biquad.release(when, 200, .25);
 			noteIsOn = false;
 		}
 	}

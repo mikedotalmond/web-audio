@@ -43,8 +43,10 @@ Main.prototype = {
 		var noteFreq = keys.keycodeToNoteFreq;
 		var heldKeys = [];
 		var mono = new synth.MonoSynth(Main.context.destination);
-		mono.set_oscillatorType(2);
-		mono.osc_portamentoTime = .1;
+		mono.set_oscillatorType(1);
+		mono.adsr_attackTime = .01;
+		mono.adsr_sustain = 1;
+		mono.adsr_releaseTime = .2;
 		js.Browser.document.addEventListener("keydown",function(e) {
 			var i = Lambda.indexOf(heldKeys,e.keyCode);
 			if(i == -1) {
@@ -268,11 +270,24 @@ synth.MonoSynth = function(destination) {
 		$r = this1;
 		return $r;
 	}(this));
+	this.biquad = (function($this) {
+		var $r;
+		var this1;
+		this1 = context.createBiquadFilter();
+		this1.type = 0;
+		this1.frequency.value = 200;
+		this1.Q.value = 10;
+		this1.gain.value = 0;
+		$r = this1;
+		return $r;
+	}(this));
 	this.adsr = (function($this) {
 		var $r;
+		var input = $this.biquad;
 		var this1;
 		this1 = context.createGain();
 		this1.gain.value = 0;
+		if(input != null) input.connect(this1);
 		if(destination != null) this1.connect(destination);
 		$r = this1;
 		return $r;
@@ -287,10 +302,15 @@ synth.MonoSynth.prototype = {
 				var $r;
 				var er = Math.exp($this.adsr_releaseTime);
 				$this.adsr.gain.cancelScheduledValues(when);
+				$this.adsr.gain.setValueAtTime($this.adsr.gain.value,when);
 				$this.adsr.gain.setTargetAtTime(0,when,1 - 1 / er);
 				$r = when + er;
 				return $r;
 			}(this)));
+			this.biquad.frequency.cancelScheduledValues(when);
+			this.biquad.frequency.setValueAtTime(this.biquad.frequency.value,when);
+			this.biquad.frequency.exponentialRampToValueAtTime(200,when + .25);
+			when + .25;
 			this.noteIsOn = false;
 		}
 	}
@@ -306,9 +326,14 @@ synth.MonoSynth.prototype = {
 		if(!this.noteIsOn || retrigger) {
 			var attackTime = this.adsr_attackTime, sustainLevel = this.adsr_sustain;
 			this.adsr.gain.cancelScheduledValues(when);
-			this.adsr.gain.setValueAtTime(retrigger?0:this.adsr.gain.value,when);
+			if(retrigger) this.adsr.gain.setValueAtTime(0,when);
 			this.adsr.gain.setTargetAtTime(velocity,when,1 - 1 / Math.exp(attackTime));
 			if(sustainLevel != 1.0) this.adsr.gain.setTargetAtTime(velocity * sustainLevel,when + attackTime,1 - 1 / Math.exp(this.adsr_decayTime));
+			var startFreq = 200;
+			startFreq = retrigger?startFreq:this.biquad.frequency.value;
+			this.biquad.frequency.cancelScheduledValues(when);
+			this.biquad.frequency.setValueAtTime(startFreq,when);
+			this.biquad.frequency.exponentialRampToValueAtTime(8000,when + .3);
 		}
 		this.noteIsOn = true;
 	}
@@ -318,7 +343,7 @@ synth.MonoSynth.prototype = {
 			this.noteOff(0);
 			this.osc[this.oscType].disconnect(0);
 			this.oscType = type;
-			this.osc[this.oscType].connect(this.adsr,0);
+			this.osc[this.oscType].connect(this.biquad,0);
 			break;
 		}
 		return this.oscType;
