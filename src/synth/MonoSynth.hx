@@ -3,6 +3,7 @@ package synth;
 import js.html.audio.AudioNode;
 import js.html.audio.AudioParam;
 import js.html.audio.BiquadFilterNode;
+import js.html.audio.GainNode;
 import js.html.audio.OscillatorNode;
 import synth.ADSR.BiquadEnvelope;
 
@@ -17,6 +18,7 @@ class MonoSynth { //
 	var adsr						:ADSR;
 	var osc							:Array<Oscillator>;
 	var biquad						:BiquadEnvelope;
+	var outputGain					:GainNode;
 	
 	public var adsr_attackTime		:Float = .1;
 	public var adsr_decayTime		:Float = 0.2;
@@ -57,6 +59,9 @@ class MonoSynth { //
 	public function new(destination:AudioNode) {
 		
 		var context = destination.context;
+		outputGain = context.createGain();
+		outputGain.gain.value = 1;
+		outputGain.connect(destination);
 		
 		osc 					= [];
 		osc[Oscillator.SINE] 	= new Oscillator(context, null, Oscillator.SINE);
@@ -65,10 +70,17 @@ class MonoSynth { //
 		osc[Oscillator.SAWTOOTH]= new Oscillator(context, null, Oscillator.SAWTOOTH);
 		
 		biquad					= new BiquadEnvelope(BiquadFilterNode.LOWPASS, 200, 10, context);
-		adsr 					= new ADSR(context, biquad, destination);
+		adsr 					= new ADSR(context, biquad, outputGain);
 		oscillatorType 			= Oscillator.SINE;
 		
 		//todo: use AudioParam?
+	}
+	
+	
+	public function getOutputGain() return outputGain.gain.value;
+	public function setOutputGain(value:Float, when:Float=0) {
+		outputGain.gain.cancelScheduledValues(when);
+		outputGain.gain.setValueAtTime(value, when);
 	}
 	
 	public function noteOn(when:Float, freq:Float, velocity:Float=1, retrigger:Bool=false) {

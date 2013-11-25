@@ -50,11 +50,12 @@ class Main {
 		//mono.oscillatorType = Oscillator.TRIANGLE;
 		//mono.oscillatorType = Oscillator.SAWTOOTH;
 		mono.oscillatorType = Oscillator.SQUARE;
+		mono.setOutputGain(.4);
 		
 		//mono.osc_portamentoTime = .1;
 		mono.adsr_attackTime = .01;
 		//mono.adsr_decayTime = 1;
-		mono.adsr_sustain = 1;
+		mono.adsr_sustain = 0.5;
 		mono.adsr_releaseTime = .2;
 		
 		Browser.document.addEventListener("keydown", function(e:KeyboardEvent) {

@@ -33,7 +33,7 @@ Main.createContext = function() {
 	try {
 		Main.context = new AudioContext();
 	} catch( err ) {
-		haxe.Log.trace("Error creating an AudioContext",{ fileName : "Main.hx", lineNumber : 169, className : "Main", methodName : "createContext", customParams : [err]});
+		haxe.Log.trace("Error creating an AudioContext",{ fileName : "Main.hx", lineNumber : 170, className : "Main", methodName : "createContext", customParams : [err]});
 		Main.context = null;
 	}
 }
@@ -44,8 +44,9 @@ Main.prototype = {
 		var heldKeys = [];
 		var mono = new synth.MonoSynth(Main.context.destination);
 		mono.set_oscillatorType(1);
+		mono.setOutputGain(.4);
 		mono.adsr_attackTime = .01;
-		mono.adsr_sustain = 1;
+		mono.adsr_sustain = 0.5;
 		mono.adsr_releaseTime = .2;
 		js.Browser.document.addEventListener("keydown",function(e) {
 			var i = Lambda.indexOf(heldKeys,e.keyCode);
@@ -229,6 +230,9 @@ synth.MonoSynth = function(destination) {
 	this.adsr_decayTime = 0.2;
 	this.adsr_attackTime = .1;
 	var context = destination.context;
+	this.outputGain = context.createGain();
+	this.outputGain.gain.value = 1;
+	this.outputGain.connect(destination);
 	this.osc = [];
 	this.osc[0] = (function($this) {
 		var $r;
@@ -283,12 +287,12 @@ synth.MonoSynth = function(destination) {
 	}(this));
 	this.adsr = (function($this) {
 		var $r;
-		var input = $this.biquad;
+		var input = $this.biquad, destination1 = $this.outputGain;
 		var this1;
 		this1 = context.createGain();
 		this1.gain.value = 0;
 		if(input != null) input.connect(this1);
-		if(destination != null) this1.connect(destination);
+		if(destination1 != null) this1.connect(destination1);
 		$r = this1;
 		return $r;
 	}(this));
@@ -336,6 +340,11 @@ synth.MonoSynth.prototype = {
 			this.biquad.frequency.exponentialRampToValueAtTime(8000,when + .3);
 		}
 		this.noteIsOn = true;
+	}
+	,setOutputGain: function(value,when) {
+		if(when == null) when = 0;
+		this.outputGain.gain.cancelScheduledValues(when);
+		this.outputGain.gain.setValueAtTime(value,when);
 	}
 	,set_oscillatorType: function(type) {
 		switch(type) {
