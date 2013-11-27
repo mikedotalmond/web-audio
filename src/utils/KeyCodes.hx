@@ -5,7 +5,7 @@ package utils;
  * @author Mike Almond - https://github.com/mikedotalmond
  */
 
-class Keyboard {
+class KeyCodes {
 
    public static inline var A:Int = 65;
    public static inline var B:Int = 66;

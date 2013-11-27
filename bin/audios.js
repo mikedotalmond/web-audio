@@ -1,4 +1,10 @@
 (function () { "use strict";
+function $extend(from, fields) {
+	function inherit() {}; inherit.prototype = from; var proto = new inherit();
+	for (var name in fields) proto[name] = fields[name];
+	if( fields.toString !== Object.prototype.toString ) proto.toString = fields.toString;
+	return proto;
+}
 var HxOverrides = function() { }
 HxOverrides.__name__ = true;
 HxOverrides.iter = function(a) {
@@ -21,51 +27,53 @@ Lambda.indexOf = function(it,v) {
 	return -1;
 }
 var Main = function() {
-	this.monoSynthTest();
+	var _g = this;
+	this.initMonoSynth();
+	this.keyboardInput = new utils.KeyboardInput();
+	this.keyboardInput.noteOff.add(($_=this.monoSynth,$bind($_,$_.noteOff)));
+	this.keyboardInput.noteOn.add(function(freq,velocity) {
+		_g.monoSynth.noteOn(Main.context.currentTime,freq,velocity);
+	});
 };
 Main.__name__ = true;
 Main.main = function() {
 	Main.createContext();
-	if(Main.context == null) js.Browser.window.alert("Web Audio API not supported - try a better browser"); else Main.instance = new Main();
+	if(Main.context == null) js.Browser.window.alert("Web Audio API not supported - try a different/better browser"); else Main.instance = new Main();
 }
 Main.createContext = function() {
 	window.AudioContext = window.AudioContext||window.webkitAudioContext;
+	var c;
 	try {
-		Main.context = new AudioContext();
+		c = new AudioContext();
 	} catch( err ) {
-		haxe.Log.trace("Error creating an AudioContext",{ fileName : "Main.hx", lineNumber : 170, className : "Main", methodName : "createContext", customParams : [err]});
-		Main.context = null;
+		haxe.Log.trace("Error creating an AudioContext",{ fileName : "Main.hx", lineNumber : 83, className : "Main", methodName : "createContext", customParams : [err]});
+		c = null;
 	}
+	Main.context = c;
 }
 Main.prototype = {
-	monoSynthTest: function() {
-		var keys = new utils.KeyboardNotes();
-		var noteFreq = keys.keycodeToNoteFreq;
-		var heldKeys = [];
-		var mono = new synth.MonoSynth(Main.context.destination);
-		mono.set_oscillatorType(1);
-		mono.setOutputGain(.4);
-		mono.adsr_attackTime = .01;
-		mono.adsr_sustain = 0.5;
-		mono.adsr_releaseTime = .2;
-		js.Browser.document.addEventListener("keydown",function(e) {
-			var i = Lambda.indexOf(heldKeys,e.keyCode);
-			if(i == -1) {
-				if(noteFreq.exists(e.keyCode)) {
-					mono.noteOn(Main.context.currentTime,noteFreq.get(e.keyCode),.66);
-					heldKeys.push(e.keyCode);
-				}
-			}
-		});
-		js.Browser.document.addEventListener("keyup",function(e) {
-			heldKeys.splice(Lambda.indexOf(heldKeys,e.keyCode),1)[0];
-			if(heldKeys.length == 0) mono.noteOff(Main.context.currentTime); else mono.noteOn(Main.context.currentTime,noteFreq.get(heldKeys[heldKeys.length - 1]),.66);
-		});
+	initMonoSynth: function() {
+		this.monoSynth = new synth.MonoSynth(Main.context.destination);
+		this.monoSynth.set_oscillatorType(1);
+		this.monoSynth.setOutputGain(.4);
+		this.monoSynth.adsr_attackTime = .01;
+		this.monoSynth.adsr_sustain = 0.5;
+		this.monoSynth.adsr_releaseTime = .2;
 	}
 	,__class__: Main
 }
 var IMap = function() { }
 IMap.__name__ = true;
+var Reflect = function() { }
+Reflect.__name__ = true;
+Reflect.isFunction = function(f) {
+	return typeof(f) == "function" && !(f.__name__ || f.__ename__);
+}
+Reflect.compareMethods = function(f1,f2) {
+	if(f1 == f2) return true;
+	if(!Reflect.isFunction(f1) || !Reflect.isFunction(f2)) return false;
+	return f1.scope == f2.scope && f1.method == f2.method && f1.method != null;
+}
 var haxe = {}
 haxe.Log = function() { }
 haxe.Log.__name__ = true;
@@ -220,6 +228,203 @@ js.Boot.__instanceof = function(o,cl) {
 }
 js.Browser = function() { }
 js.Browser.__name__ = true;
+var msignal = {}
+msignal.Signal = function(valueClasses) {
+	if(valueClasses == null) valueClasses = [];
+	this.valueClasses = valueClasses;
+	this.slots = msignal.SlotList.NIL;
+	this.priorityBased = false;
+};
+msignal.Signal.__name__ = true;
+msignal.Signal.prototype = {
+	createSlot: function(listener,once,priority) {
+		if(priority == null) priority = 0;
+		if(once == null) once = false;
+		return null;
+	}
+	,registrationPossible: function(listener,once) {
+		if(!this.slots.nonEmpty) return true;
+		var existingSlot = this.slots.find(listener);
+		if(existingSlot == null) return true;
+		if(existingSlot.once != once) throw "You cannot addOnce() then add() the same listener without removing the relationship first.";
+		return false;
+	}
+	,registerListener: function(listener,once,priority) {
+		if(priority == null) priority = 0;
+		if(once == null) once = false;
+		if(this.registrationPossible(listener,once)) {
+			var newSlot = this.createSlot(listener,once,priority);
+			if(!this.priorityBased && priority != 0) this.priorityBased = true;
+			if(!this.priorityBased && priority == 0) this.slots = this.slots.prepend(newSlot); else this.slots = this.slots.insertWithPriority(newSlot);
+			return newSlot;
+		}
+		return this.slots.find(listener);
+	}
+	,remove: function(listener) {
+		var slot = this.slots.find(listener);
+		if(slot == null) return null;
+		this.slots = this.slots.filterNot(listener);
+		return slot;
+	}
+	,add: function(listener) {
+		return this.registerListener(listener);
+	}
+	,__class__: msignal.Signal
+}
+msignal.Signal1 = function(type) {
+	msignal.Signal.call(this,[type]);
+};
+msignal.Signal1.__name__ = true;
+msignal.Signal1.__super__ = msignal.Signal;
+msignal.Signal1.prototype = $extend(msignal.Signal.prototype,{
+	createSlot: function(listener,once,priority) {
+		if(priority == null) priority = 0;
+		if(once == null) once = false;
+		return new msignal.Slot1(this,listener,once,priority);
+	}
+	,dispatch: function(value) {
+		var slotsToProcess = this.slots;
+		while(slotsToProcess.nonEmpty) {
+			slotsToProcess.head.execute(value);
+			slotsToProcess = slotsToProcess.tail;
+		}
+	}
+	,__class__: msignal.Signal1
+});
+msignal.Signal2 = function(type1,type2) {
+	msignal.Signal.call(this,[type1,type2]);
+};
+msignal.Signal2.__name__ = true;
+msignal.Signal2.__super__ = msignal.Signal;
+msignal.Signal2.prototype = $extend(msignal.Signal.prototype,{
+	createSlot: function(listener,once,priority) {
+		if(priority == null) priority = 0;
+		if(once == null) once = false;
+		return new msignal.Slot2(this,listener,once,priority);
+	}
+	,dispatch: function(value1,value2) {
+		var slotsToProcess = this.slots;
+		while(slotsToProcess.nonEmpty) {
+			slotsToProcess.head.execute(value1,value2);
+			slotsToProcess = slotsToProcess.tail;
+		}
+	}
+	,__class__: msignal.Signal2
+});
+msignal.Slot = function(signal,listener,once,priority) {
+	if(priority == null) priority = 0;
+	if(once == null) once = false;
+	this.signal = signal;
+	this.set_listener(listener);
+	this.once = once;
+	this.priority = priority;
+	this.enabled = true;
+};
+msignal.Slot.__name__ = true;
+msignal.Slot.prototype = {
+	set_listener: function(value) {
+		if(value == null) throw "listener cannot be null";
+		return this.listener = value;
+	}
+	,remove: function() {
+		this.signal.remove(this.listener);
+	}
+	,__class__: msignal.Slot
+}
+msignal.Slot1 = function(signal,listener,once,priority) {
+	if(priority == null) priority = 0;
+	if(once == null) once = false;
+	msignal.Slot.call(this,signal,listener,once,priority);
+};
+msignal.Slot1.__name__ = true;
+msignal.Slot1.__super__ = msignal.Slot;
+msignal.Slot1.prototype = $extend(msignal.Slot.prototype,{
+	execute: function(value1) {
+		if(!this.enabled) return;
+		if(this.once) this.remove();
+		if(this.param != null) value1 = this.param;
+		this.listener(value1);
+	}
+	,__class__: msignal.Slot1
+});
+msignal.Slot2 = function(signal,listener,once,priority) {
+	if(priority == null) priority = 0;
+	if(once == null) once = false;
+	msignal.Slot.call(this,signal,listener,once,priority);
+};
+msignal.Slot2.__name__ = true;
+msignal.Slot2.__super__ = msignal.Slot;
+msignal.Slot2.prototype = $extend(msignal.Slot.prototype,{
+	execute: function(value1,value2) {
+		if(!this.enabled) return;
+		if(this.once) this.remove();
+		if(this.param1 != null) value1 = this.param1;
+		if(this.param2 != null) value2 = this.param2;
+		this.listener(value1,value2);
+	}
+	,__class__: msignal.Slot2
+});
+msignal.SlotList = function(head,tail) {
+	this.nonEmpty = false;
+	if(head == null && tail == null) {
+		if(msignal.SlotList.NIL != null) throw "Parameters head and tail are null. Use the NIL element instead.";
+		this.nonEmpty = false;
+	} else if(head == null) throw "Parameter head cannot be null."; else {
+		this.head = head;
+		this.tail = tail == null?msignal.SlotList.NIL:tail;
+		this.nonEmpty = true;
+	}
+};
+msignal.SlotList.__name__ = true;
+msignal.SlotList.prototype = {
+	find: function(listener) {
+		if(!this.nonEmpty) return null;
+		var p = this;
+		while(p.nonEmpty) {
+			if(Reflect.compareMethods(p.head.listener,listener)) return p.head;
+			p = p.tail;
+		}
+		return null;
+	}
+	,filterNot: function(listener) {
+		if(!this.nonEmpty || listener == null) return this;
+		if(Reflect.compareMethods(this.head.listener,listener)) return this.tail;
+		var wholeClone = new msignal.SlotList(this.head);
+		var subClone = wholeClone;
+		var current = this.tail;
+		while(current.nonEmpty) {
+			if(Reflect.compareMethods(current.head.listener,listener)) {
+				subClone.tail = current.tail;
+				return wholeClone;
+			}
+			subClone = subClone.tail = new msignal.SlotList(current.head);
+			current = current.tail;
+		}
+		return this;
+	}
+	,insertWithPriority: function(slot) {
+		if(!this.nonEmpty) return new msignal.SlotList(slot);
+		var priority = slot.priority;
+		if(priority >= this.head.priority) return this.prepend(slot);
+		var wholeClone = new msignal.SlotList(this.head);
+		var subClone = wholeClone;
+		var current = this.tail;
+		while(current.nonEmpty) {
+			if(priority > current.head.priority) {
+				subClone.tail = current.prepend(slot);
+				return wholeClone;
+			}
+			subClone = subClone.tail = new msignal.SlotList(current.head);
+			current = current.tail;
+		}
+		subClone.tail = new msignal.SlotList(slot);
+		return wholeClone;
+	}
+	,prepend: function(slot) {
+		return new msignal.SlotList(slot,this);
+	}
+	,__class__: msignal.SlotList
+}
 var synth = {}
 synth.MonoSynth = function(destination) {
 	this.oscType = 0;
@@ -360,6 +565,32 @@ synth.MonoSynth.prototype = {
 	,__class__: synth.MonoSynth
 }
 var utils = {}
+utils.KeyboardInput = function() {
+	this.heldKeys = [];
+	this.keyNotes = new utils.KeyboardNotes();
+	this.noteOn = new msignal.Signal2();
+	this.noteOff = new msignal.Signal1();
+	js.Browser.document.addEventListener("keydown",$bind(this,this.handleKeyDown));
+	js.Browser.document.addEventListener("keyup",$bind(this,this.handleKeyUp));
+};
+utils.KeyboardInput.__name__ = true;
+utils.KeyboardInput.prototype = {
+	handleKeyUp: function(e) {
+		this.heldKeys.splice(Lambda.indexOf(this.heldKeys,e.keyCode),1)[0];
+		if(this.heldKeys.length == 0) this.noteOff.dispatch(0); else this.noteOn.dispatch(this.keyNotes.keycodeToNoteFreq.get(this.heldKeys[this.heldKeys.length - 1]),.66);
+	}
+	,handleKeyDown: function(e) {
+		var i = Lambda.indexOf(this.heldKeys,e.keyCode);
+		if(i == -1) {
+			var nf = this.keyNotes.keycodeToNoteFreq;
+			if(nf.exists(e.keyCode)) {
+				this.noteOn.dispatch(nf.get(e.keyCode),.66);
+				this.heldKeys.push(e.keyCode);
+			}
+		}
+	}
+	,__class__: utils.KeyboardInput
+}
 utils.KeyboardNotes = function() {
 	this.noteFreq = new utils.NoteFrequency();
 	this.keycodeToNoteFreq = new haxe.ds.IntMap();
@@ -481,6 +712,7 @@ var Bool = Boolean;
 Bool.__ename__ = ["Bool"];
 var Class = { __name__ : ["Class"]};
 var Enum = { };
+msignal.SlotList.NIL = new msignal.SlotList(null,null);
 js.Browser.window = typeof window != "undefined" ? window : null;
 js.Browser.document = typeof window != "undefined" ? window.document : null;
 Main.main();
