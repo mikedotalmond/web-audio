@@ -36,6 +36,8 @@ class Main {
 	var keyboardInput	:KeyboardInput;
 	var monoSynth		:MonoSynth;
 	
+	var crusher			:ScriptProcessorNode;
+	
 	function new() {
 		initUI();
 		initAudio();
@@ -89,38 +91,16 @@ class Main {
 	
 	function initAudio() {
 		
-		var scriptProcessor:ScriptProcessorNode;
-		
 		try {
-			scriptProcessor = context.createScriptProcessor(); //ff
+			crusher = context.createScriptProcessor(); //ff
 		} catch (err:Dynamic) {
-			scriptProcessor =  context.createScriptProcessor(2048); //chrome
+			crusher =  context.createScriptProcessor(2048); //chrome
 		}
+		crusher.onaudioprocess = crusherImpl;
+		crusher.connect(context.destination);
+		initMonoSynth(crusher);
 		
-		scriptProcessor.onaudioprocess = function (e:AudioProcessingEvent) {
-			var inL		= e.inputBuffer.getChannelData(0);
-			var inR		= e.inputBuffer.getChannelData(1);
-			var outL	= e.outputBuffer.getChannelData(0);
-			var outR	= e.outputBuffer.getChannelData(1);
-			
-			var n 		= outR.length;
-			var bits 	= 4.0;
-			var exp 	= Math.pow(2, bits);
-			var iexp 	= (1 / exp);
-			
-			// bit-crusher...
-			for (i in 0...n) {
-				outL[i] = iexp * Std.int(exp * inL[i]);
-				outR[i] = iexp * Std.int(exp * inR[i]);
-			}
-		}
-		
-		
-		scriptProcessor.connect(context.destination);
-		
-		initMonoSynth(scriptProcessor);
 		//initMonoSynth(context.destination);
-		
 		
 		keyboardInput = new KeyboardInput();
 		keyboardInput.noteOff.add(monoSynth.noteOff);
@@ -131,6 +111,24 @@ class Main {
 		trace('Start');
 	}
 	
+	
+	function crusherImpl(e:AudioProcessingEvent) {
+		var inL		= e.inputBuffer.getChannelData(0);
+		var inR		= e.inputBuffer.getChannelData(1);
+		var outL	= e.outputBuffer.getChannelData(0);
+		var outR	= e.outputBuffer.getChannelData(1);
+		
+		var n 		= outR.length;
+		var bits 	= 4.0;
+		var exp 	= Math.pow(2, bits);
+		var iexp 	= (1 / exp);
+		
+		// bit-crusher...
+		for (i in 0...n) {
+			outL[i] = iexp * Std.int(exp * inL[i]);
+			outR[i] = iexp * Std.int(exp * inR[i]);
+		}
+	}
 	
 	/**
 	 * set up a little monosynth with keyboard input
@@ -154,6 +152,9 @@ class Main {
 	
 	
 	function dispose() {
+		
+		crusher = null;
+		
 		monoSynth.dispose();
 		monoSynth = null;
 		

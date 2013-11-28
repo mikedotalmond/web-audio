@@ -119,12 +119,12 @@ var Main = function() {
 Main.__name__ = true;
 Main.main = function() {
 	js.Browser.window.onload = function(e) {
-		haxe.Log.trace("onLoad",{ fileName : "Main.hx", lineNumber : 171, className : "Main", methodName : "main"});
+		haxe.Log.trace("onLoad",{ fileName : "Main.hx", lineNumber : 173, className : "Main", methodName : "main"});
 		Main.createContext();
 		if(Main.context == null) js.Browser.window.alert("Web Audio API not supported - try a different/better browser"); else Main.instance = new Main();
 	};
 	js.Browser.window.onbeforeunload = function(e) {
-		haxe.Log.trace("unLoad",{ fileName : "Main.hx", lineNumber : 183, className : "Main", methodName : "main"});
+		haxe.Log.trace("unLoad",{ fileName : "Main.hx", lineNumber : 185, className : "Main", methodName : "main"});
 		Main.instance.dispose();
 		Main.instance = null;
 		Main.context = null;
@@ -136,13 +136,14 @@ Main.createContext = function() {
 	try {
 		c = new AudioContext();
 	} catch( err ) {
-		haxe.Log.trace("Error creating an AudioContext",{ fileName : "Main.hx", lineNumber : 199, className : "Main", methodName : "createContext", customParams : [err]});
+		haxe.Log.trace("Error creating an AudioContext",{ fileName : "Main.hx", lineNumber : 201, className : "Main", methodName : "createContext", customParams : [err]});
 		c = null;
 	}
 	Main.context = c;
 }
 Main.prototype = {
 	dispose: function() {
+		this.crusher = null;
 		this.monoSynth.dispose();
 		this.monoSynth = null;
 		this.keyboardInput.dispose();
@@ -157,45 +158,45 @@ Main.prototype = {
 		this.monoSynth.adsr_sustain = 0.5;
 		this.monoSynth.adsr_releaseTime = .2;
 	}
+	,crusherImpl: function(e) {
+		var inL = e.inputBuffer.getChannelData(0);
+		var inR = e.inputBuffer.getChannelData(1);
+		var outL = e.outputBuffer.getChannelData(0);
+		var outR = e.outputBuffer.getChannelData(1);
+		var n = outR.length;
+		var bits = 4.0;
+		var exp = Math.pow(2,bits);
+		var iexp = 1 / exp;
+		var _g = 0;
+		while(_g < n) {
+			var i = _g++;
+			outL[i] = iexp * (exp * inL[i] | 0);
+			outR[i] = iexp * (exp * inR[i] | 0);
+		}
+	}
 	,initAudio: function() {
 		var _g = this;
-		var scriptProcessor;
 		try {
-			scriptProcessor = Main.context.createScriptProcessor();
+			this.crusher = Main.context.createScriptProcessor();
 		} catch( err ) {
-			scriptProcessor = Main.context.createScriptProcessor(2048);
+			this.crusher = Main.context.createScriptProcessor(2048);
 		}
-		scriptProcessor.onaudioprocess = function(e) {
-			var inL = e.inputBuffer.getChannelData(0);
-			var inR = e.inputBuffer.getChannelData(1);
-			var outL = e.outputBuffer.getChannelData(0);
-			var outR = e.outputBuffer.getChannelData(1);
-			var n = outR.length;
-			var bits = 4.0;
-			var exp = Math.pow(2,bits);
-			var iexp = 1 / exp;
-			var _g1 = 0;
-			while(_g1 < n) {
-				var i = _g1++;
-				outL[i] = iexp * (exp * inL[i] | 0);
-				outR[i] = iexp * (exp * inR[i] | 0);
-			}
-		};
-		scriptProcessor.connect(Main.context.destination);
-		this.initMonoSynth(scriptProcessor);
+		this.crusher.onaudioprocess = $bind(this,this.crusherImpl);
+		this.crusher.connect(Main.context.destination);
+		this.initMonoSynth(this.crusher);
 		this.keyboardInput = new utils.KeyboardInput();
 		this.keyboardInput.noteOff.add(($_=this.monoSynth,$bind($_,$_.noteOff)));
 		this.keyboardInput.noteOn.add(function(freq,velocity) {
 			_g.monoSynth.noteOn(Main.context.currentTime,freq,velocity,!_g.monoSynth.noteIsOn);
 		});
-		haxe.Log.trace("Start",{ fileName : "Main.hx", lineNumber : 131, className : "Main", methodName : "initAudio"});
+		haxe.Log.trace("Start",{ fileName : "Main.hx", lineNumber : 112, className : "Main", methodName : "initAudio"});
 	}
 	,initUI: function() {
 		var keys = [{ note : "C", octave : 2, hasSharp : true},{ note : "D", octave : 2, hasSharp : true},{ note : "E", octave : 2, hasSharp : false},{ note : "F", octave : 2, hasSharp : true},{ note : "G", octave : 2, hasSharp : true},{ note : "A", octave : 2, hasSharp : true},{ note : "B", octave : 2, hasSharp : false},{ note : "C", octave : 3, hasSharp : true},{ note : "D", octave : 3, hasSharp : true},{ note : "E", octave : 3, hasSharp : false},{ note : "F", octave : 3, hasSharp : true},{ note : "G", octave : 3, hasSharp : true},{ note : "A", octave : 3, hasSharp : true},{ note : "B", octave : 3, hasSharp : false}];
 		var http = new haxe.Http("synth.tpl");
 		http.async = true;
 		http.onError = function(err) {
-			haxe.Log.trace("Error loading synth template: " + err,{ fileName : "Main.hx", lineNumber : 66, className : "Main", methodName : "initUI"});
+			haxe.Log.trace("Error loading synth template: " + err,{ fileName : "Main.hx", lineNumber : 68, className : "Main", methodName : "initUI"});
 		};
 		http.onData = function(data) {
 			var tpl = new haxe.Template(data);
