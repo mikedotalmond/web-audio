@@ -1,9 +1,12 @@
 package ;
 
+import haxe.Http;
+import haxe.Template;
 import js.Browser;
 import js.html.audio.AudioContext;
 import js.html.audio.AudioProcessingEvent;
 import js.html.audio.ScriptProcessorNode;
+import js.html.DOMParser;
 
 import synth.MonoSynth;
 import synth.Oscillator;
@@ -15,8 +18,15 @@ import utils.KeyboardInput;
 /**
  * ...
  * http://www.w3.org/TR/webaudio/
+ *
+ *
  * @author Mike Almond - https://github.com/mikedotalmond
  */
+typedef UINote = {
+	var note:String;
+	var octave:Int;
+	var hasSharp:Bool;
+}
 
 class Main {
 	
@@ -27,6 +37,57 @@ class Main {
 	var monoSynth		:MonoSynth;
 	
 	function new() {
+		initUI();
+		initAudio();
+	}
+	
+	
+	function initUI() {
+		
+		var keys:Array<UINote> = [
+			{ note:"C", octave:2, hasSharp:true },
+			{ note:"D", octave:2, hasSharp:true},
+			{ note:"E", octave:2, hasSharp:false},
+			{ note:"F", octave:2, hasSharp:true},
+			{ note:"G", octave:2, hasSharp:true},
+			{ note:"A", octave:2, hasSharp:true},
+			{ note:"B", octave:2, hasSharp:false},
+			{ note:"C", octave:3, hasSharp:true },
+			{ note:"D", octave:3, hasSharp:true},
+			{ note:"E", octave:3, hasSharp:false},
+			{ note:"F", octave:3, hasSharp:true},
+			{ note:"G", octave:3, hasSharp:true},
+			{ note:"A", octave:3, hasSharp:true},
+			{ note:"B", octave:3, hasSharp:false},
+		];
+		
+		var http:Http = new Http('synth.tpl');
+		http.async = true;
+		http.onError = function(err) { trace('Error loading synth template: ${err}'); };
+		http.onData = function(data:String) {
+			var tpl = new Template(data);
+			var markup = tpl.execute({
+				modules: {
+					visible:true,
+					osc:{visible:true},
+					adsr:{visible:true},
+					filter:{visible:true},
+					outGain:{visible:true},
+				},
+				keyboard: {
+					visible:true,
+					keys:keys
+				}
+			});
+			
+			Browser.document.body.appendChild(new DOMParser().parseFromString(markup, 'text/html').firstChild);
+			
+		};
+		http.request();
+	}
+	
+	
+	function initAudio() {
 		
 		var scriptProcessor:ScriptProcessorNode;
 		
@@ -65,9 +126,9 @@ class Main {
 		keyboardInput.noteOff.add(monoSynth.noteOff);
 		keyboardInput.noteOn.add(function(freq, velocity) {
 			monoSynth.noteOn(context.currentTime, freq, velocity, !monoSynth.noteIsOn);
-		});	
+		});
 		
-		trace("Start");
+		trace('Start');
 	}
 	
 	
@@ -96,7 +157,7 @@ class Main {
 		monoSynth.dispose();
 		monoSynth = null;
 		
-		keyboardInput.dispose(); 
+		keyboardInput.dispose();
 		keyboardInput = null;
 	}
 	
@@ -108,20 +169,22 @@ class Main {
 		
 		Browser.window.onload = function(e) {
 			trace('onLoad');
+			
 			createContext();
+			
 			if (context == null) {
-				Browser.window.alert("Web Audio API not supported - try a different/better browser");
+				Browser.window.alert('Web Audio API not supported - try a different/better browser');
 			} else {
 				instance = new Main();
 			}
-		};	
+		};
 		
 		Browser.window.onbeforeunload = function(e) {
 			trace('unLoad');
 			instance.dispose();
 			instance = null;
 			context  = null;
-		};	
+		};
 	}
 	
 	static function createContext() {
@@ -133,7 +196,7 @@ class Main {
 		try {
 			c = new AudioContext();
 		} catch (err:Dynamic) {
-			trace("Error creating an AudioContext", err);
+			trace('Error creating an AudioContext', err);
 			c = null;
 		}
 		

@@ -47,6 +47,9 @@ class KeyboardNotes {
 		keycodeToNoteFreq.set(KeyCodes.O, noteFreq.noteIndexToFrequency(noteFreq.noteNameToIndex('D3')));
 		keycodeToNoteFreq.set(KeyCodes.NUMBER_0, noteFreq.noteIndexToFrequency(noteFreq.noteNameToIndex('D#3')));
 		keycodeToNoteFreq.set(KeyCodes.P, noteFreq.noteIndexToFrequency(noteFreq.noteNameToIndex('E3')));		
+		keycodeToNoteFreq.set(KeyCodes.LEFTBRACKET, noteFreq.noteIndexToFrequency(noteFreq.noteNameToIndex('F3')));		
+		keycodeToNoteFreq.set(KeyCodes.EQUAL, noteFreq.noteIndexToFrequency(noteFreq.noteNameToIndex('F#3')));		
+		keycodeToNoteFreq.set(KeyCodes.RIGHTBRACKET, noteFreq.noteIndexToFrequency(noteFreq.noteNameToIndex('G3')));		
 	}
 	
 	public function dispose() {
