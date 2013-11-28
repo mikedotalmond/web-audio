@@ -69,7 +69,7 @@ class MonoSynth { //
 		osc[Oscillator.TRIANGLE]= new Oscillator(context, null, Oscillator.TRIANGLE);
 		osc[Oscillator.SAWTOOTH]= new Oscillator(context, null, Oscillator.SAWTOOTH);
 		
-		biquad					= new BiquadEnvelope(BiquadFilterNode.LOWPASS, 200, 10, context);
+		biquad					= new BiquadEnvelope(BiquadFilterNode.LOWPASS, 200, 20, context);
 		adsr 					= new ADSR(context, biquad, outputGain);
 		oscillatorType 			= Oscillator.SINE;
 		
@@ -84,7 +84,7 @@ class MonoSynth { //
 	}
 	
 	public function noteOn(when:Float, freq:Float, velocity:Float=1, retrigger:Bool=false) {
-		currentOscillator.trigger(when, freq, osc_portamentoTime); 
+		currentOscillator.trigger(when, freq, osc_portamentoTime, retrigger); 
 		if (!noteIsOn || retrigger) {
 			adsr.trigger(when, velocity, adsr_attackTime, adsr_decayTime, adsr_sustain, retrigger);
 			//if FEG active...
@@ -99,5 +99,13 @@ class MonoSynth { //
 			biquad.release(when, 200, .25);
 			noteIsOn = false;
 		}
+	}
+	
+	public function dispose() {
+		adsr = null;
+		osc = null;
+		biquad = null;
+		outputGain = null;
+		osc = null;
 	}
 }

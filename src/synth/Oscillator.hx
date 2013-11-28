@@ -38,9 +38,9 @@ abstract Oscillator(OscillatorNode) from OscillatorNode to OscillatorNode {
 	 * @param	freq
 	 * @param	portamentoTime - when > 0 the oscillator will ramp (exponentially) to the next frequency over the given time.
 	 */
-	inline public function trigger(when:Float, freq:Float = 440, portamentoTime:Float=0) {
+	inline public function trigger(when:Float, freq:Float = 440, portamentoTime:Float=0, retrigger:Bool=false) {
 		this.frequency.cancelScheduledValues(when);
-		if (portamentoTime > 0 && freq != this.frequency.value) {
+		if (portamentoTime > 0 && !retrigger && freq != this.frequency.value) {
 			this.frequency.setValueAtTime(this.frequency.value, when);
 			this.frequency.exponentialRampToValueAtTime(freq, when + portamentoTime);
 		} else {

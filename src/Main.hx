@@ -2,6 +2,8 @@ package ;
 
 import js.Browser;
 import js.html.audio.AudioContext;
+import js.html.audio.AudioProcessingEvent;
+import js.html.audio.ScriptProcessorNode;
 
 import synth.MonoSynth;
 import synth.Oscillator;
@@ -26,35 +28,77 @@ class Main {
 	
 	function new() {
 		
-		initMonoSynth();
+		var scriptProcessor:ScriptProcessorNode;
+		
+		try {
+			scriptProcessor = context.createScriptProcessor(); //ff
+		} catch (err:Dynamic) {
+			scriptProcessor =  context.createScriptProcessor(2048); //chrome
+		}
+		
+		scriptProcessor.onaudioprocess = function (e:AudioProcessingEvent) {
+			var inL		= e.inputBuffer.getChannelData(0);
+			var inR		= e.inputBuffer.getChannelData(1);
+			var outL	= e.outputBuffer.getChannelData(0);
+			var outR	= e.outputBuffer.getChannelData(1);
+			
+			var n 		= outR.length;
+			var bits 	= 4.0;
+			var exp 	= Math.pow(2, bits);
+			var iexp 	= (1 / exp);
+			
+			// bit-crusher...
+			for (i in 0...n) {
+				outL[i] = iexp * Std.int(exp * inL[i]);
+				outR[i] = iexp * Std.int(exp * inR[i]);
+			}
+		}
+		
+		
+		scriptProcessor.connect(context.destination);
+		
+		initMonoSynth(scriptProcessor);
+		//initMonoSynth(context.destination);
+		
 		
 		keyboardInput = new KeyboardInput();
 		keyboardInput.noteOff.add(monoSynth.noteOff);
 		keyboardInput.noteOn.add(function(freq, velocity) {
-			monoSynth.noteOn(context.currentTime, freq, velocity);
-		});
+			monoSynth.noteOn(context.currentTime, freq, velocity, !monoSynth.noteIsOn);
+		});	
+		
+		trace("Start");
 	}
 	
 	
 	/**
 	 * set up a little monosynth with keyboard input
 	 */
-	function initMonoSynth() {
+	function initMonoSynth(destination) {
 		
-		monoSynth = new MonoSynth(context.destination);
-		//mono.oscillatorType = Oscillator.TRIANGLE;
-		//mono.oscillatorType = Oscillator.SAWTOOTH;
-		monoSynth.oscillatorType = Oscillator.SQUARE;
-		monoSynth.setOutputGain(.4);
+		monoSynth = new MonoSynth(destination);
+		//monoSynth.oscillatorType = Oscillator.TRIANGLE;
+		monoSynth.oscillatorType = Oscillator.SAWTOOTH;
+		//monoSynth.oscillatorType = Oscillator.SQUARE;
+		monoSynth.setOutputGain(.66);
 		
-		//mono.osc_portamentoTime = .1;
-		monoSynth.adsr_attackTime = .01;
-		//monoSynth.adsr_decayTime = 1;
+		//monoSynth.osc_portamentoTime = .05;
+		monoSynth.adsr_attackTime = .05;
+		monoSynth.adsr_decayTime = 1;
 		monoSynth.adsr_sustain = 0.5;
 		monoSynth.adsr_releaseTime = .2;
+		
+		//monoSynth.filter_frequency=
 	}
 	
 	
+	function dispose() {
+		monoSynth.dispose();
+		monoSynth = null;
+		
+		keyboardInput.dispose(); 
+		keyboardInput = null;
+	}
 	
 
 	/**
@@ -62,13 +106,22 @@ class Main {
 	 */
 	static function main() {
 		
-		createContext();
+		Browser.window.onload = function(e) {
+			trace('onLoad');
+			createContext();
+			if (context == null) {
+				Browser.window.alert("Web Audio API not supported - try a different/better browser");
+			} else {
+				instance = new Main();
+			}
+		};	
 		
-		if (context == null) {
-			Browser.window.alert("Web Audio API not supported - try a different/better browser");
-		} else {
-			instance = new Main();
-		}
+		Browser.window.onbeforeunload = function(e) {
+			trace('unLoad');
+			instance.dispose();
+			instance = null;
+			context  = null;
+		};	
 	}
 	
 	static function createContext() {

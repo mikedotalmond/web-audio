@@ -44,7 +44,7 @@ class KeyboardInput {
 		if (i == -1) { // not already down?
 			var nf = keyNotes.keycodeToNoteFreq;
 			if(nf.exists(e.keyCode)){
-				noteOn.dispatch(nf.get(e.keyCode), .66);
+				noteOn.dispatch(nf.get(e.keyCode), .8);
 				heldKeys.push(e.keyCode);
 			}
 		}
@@ -52,8 +52,24 @@ class KeyboardInput {
 	
 	
 	function handleKeyUp(e:KeyboardEvent) {
-		heldKeys.splice(Lambda.indexOf(heldKeys, e.keyCode), 1)[0];
-		if (heldKeys.length == 0) noteOff.dispatch(0); // no notes down?
-		else noteOn.dispatch(keyNotes.keycodeToNoteFreq.get(heldKeys[heldKeys.length - 1]),	.66);
+		var n = heldKeys.length;
+		if (n > 0) {
+			var i = Lambda.indexOf(heldKeys, e.keyCode);
+			if (i != -1) { // key released was one of the held keys..?
+				heldKeys.splice(i, 1)[0];
+				if (heldKeys.length == 0) noteOff.dispatch(0); // no notes down?
+				else noteOn.dispatch(keyNotes.keycodeToNoteFreq.get(heldKeys[heldKeys.length - 1]),	.8);
+			}
+		}
 	}
+	
+	
+	public function dispose() {
+		heldKeys = null;
+		keyNotes.dispose(); keyNotes = null;
+		noteOn.removeAll(); noteOn = null;
+		noteOff.removeAll(); noteOff = null;
+		Browser.document.removeEventListener("keydown", handleKeyDown);
+		Browser.document.removeEventListener("keyup", handleKeyUp);
+	}	
 }
