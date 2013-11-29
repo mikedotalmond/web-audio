@@ -10,6 +10,10 @@
 					<span class="label">Osc</span>
 					<input title="Oscillator Select" type="range" id="osc-shape" min="0" max="3" step="1" value="2" />
 				</div>
+				<div class="slider portamento">
+					<span class="label">Slide</span>
+					<input title="Portamento" type="range" id="portamento" min="0" max="2" step=".01" value="0" />
+				</div>
 			</div>
 			::end::
 			
@@ -30,6 +34,19 @@
 				<div class="slider">
 					<span class="label">Gain</span>
 					<input title="Filter Gain" type="range" id="filter-gain" min="-12" max="3" step=".01" value="0" />
+				</div>
+				
+				<div class="slider">
+					<span class="label">Range</span>
+					<input title="FEG Range" type="range" id="adsr-decay" min="0.0" max="3.0" step=".01" value="3.0" />
+				</div>
+				<div class="slider">
+					<span class="label">A</span>
+					<input title="FEG Attack" type="range" id="adsr-attack" min="0.0" max="3.0" step=".01" value="0" />
+				</div>
+				<div class="slider">
+					<span class="label">R</span>
+					<input title="FEG Release" type="range" id="adsr-release" min="0.0" max="3.0" step=".01" value="1.0" />
 				</div>
 			</div>
 			::end::

@@ -121,12 +121,12 @@ var Main = function() {
 Main.__name__ = true;
 Main.main = function() {
 	js.Browser.window.onload = function(e) {
-		haxe.Log.trace("onLoad",{ fileName : "Main.hx", lineNumber : 172, className : "Main", methodName : "main"});
+		haxe.Log.trace("onLoad",{ fileName : "Main.hx", lineNumber : 173, className : "Main", methodName : "main"});
 		Main.createContext();
 		if(Main.context == null) js.Browser.window.alert("Web Audio API not supported - try a different/better browser"); else Main.instance = new Main();
 	};
 	js.Browser.window.onbeforeunload = function(e) {
-		haxe.Log.trace("unLoad",{ fileName : "Main.hx", lineNumber : 184, className : "Main", methodName : "main"});
+		haxe.Log.trace("unLoad",{ fileName : "Main.hx", lineNumber : 185, className : "Main", methodName : "main"});
 		Main.instance.dispose();
 		Main.instance = null;
 		Main.context = null;
@@ -138,7 +138,7 @@ Main.createContext = function() {
 	try {
 		c = new AudioContext();
 	} catch( err ) {
-		haxe.Log.trace("Error creating an AudioContext",{ fileName : "Main.hx", lineNumber : 200, className : "Main", methodName : "createContext", customParams : [err]});
+		haxe.Log.trace("Error creating an AudioContext",{ fileName : "Main.hx", lineNumber : 201, className : "Main", methodName : "createContext", customParams : [err]});
 		c = null;
 	}
 	Main.context = c;
@@ -191,7 +191,7 @@ Main.prototype = {
 		this.keyboardInput.noteOn.add(function(freq,velocity) {
 			_g.monoSynth.noteOn(Main.context.currentTime,freq,velocity,!_g.monoSynth.noteIsOn);
 		});
-		haxe.Log.trace("Start",{ fileName : "Main.hx", lineNumber : 111, className : "Main", methodName : "initAudio"});
+		haxe.Log.trace("Start",{ fileName : "Main.hx", lineNumber : 112, className : "Main", methodName : "initAudio"});
 	}
 	,initUI: function() {
 		var keys = [{ note : "C", octave : 2, hasSharp : true},{ note : "D", octave : 2, hasSharp : true},{ note : "E", octave : 2, hasSharp : false},{ note : "F", octave : 2, hasSharp : true},{ note : "G", octave : 2, hasSharp : true},{ note : "A", octave : 2, hasSharp : true},{ note : "B", octave : 2, hasSharp : false},{ note : "C", octave : 3, hasSharp : true},{ note : "D", octave : 3, hasSharp : true},{ note : "E", octave : 3, hasSharp : false},{ note : "F", octave : 3, hasSharp : true},{ note : "G", octave : 3, hasSharp : true},{ note : "A", octave : 3, hasSharp : true},{ note : "B", octave : 3, hasSharp : false}];
@@ -202,7 +202,7 @@ Main.prototype = {
 		};
 		http.onData = function(data) {
 			var tpl = new haxe.Template(data);
-			var markup = tpl.execute({ modules : { visible : true, osc : { visible : true}, adsr : { visible : true}, filter : { visible : true}, outGain : { visible : true}}, keyboard : { visible : true, keys : keys}});
+			var markup = tpl.execute({ modules : { visible : true, osc : { visible : true}, portamento : { visible : true}, adsr : { visible : true}, filter : { visible : true}, outGain : { visible : true}}, keyboard : { visible : true, keys : keys}});
 			js.Browser.document.body.appendChild(new DOMParser().parseFromString(markup,"text/html").firstChild);
 		};
 		http.request();

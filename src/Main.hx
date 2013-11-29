@@ -72,6 +72,7 @@ class Main {
 				modules: {
 					visible:true,
 					osc:{visible:true},
+					portamento:{visible:true},
 					adsr:{visible:true},
 					filter:{visible:true},
 					outGain:{visible:true},
@@ -82,9 +83,9 @@ class Main {
 				}
 			});
 			
-			Browser.document.body.appendChild(new DOMParser().parseFromString(markup, 'text/html').firstChild);
-			
+			Browser.document.body.appendChild(new DOMParser().parseFromString(markup, 'text/html').firstChild);			
 		};
+		
 		http.request();
 	}
 	

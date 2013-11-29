@@ -18,7 +18,9 @@ input:focus{outline:none;}
 #piano-keys .sharp{background-color:#212531;height:66.6%;width:66.6%;margin-right:50%;position:absolute;left:66.6%;z-index:100;-webkit-border-radius:3px 3px 3px 3px;border-radius:3px 3px 3px 3px;}
 #piano-keys .natural-hover{background-color:#8494B4;}
 #piano-keys .sharp-hover{background-color:#565F79;}
-input[type=range]{-webkit-appearance:none;background-color:LightGray;height:10px;width:200px;border-radius:5px;}
-input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;background-color:gray;width:50px;height:20px;border-radius:3px;}
+input[type=range]{-webkit-appearance:none;height:10px;width:200px;}
+input[type=range]::-moz-range-thumb{background-color:white;width:40px;height:18px;border-radius:7px;}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;background-color:white;width:40px;height:18px;border-radius:7px;}
+input[type=range],::-moz-range-track{background-color:#af2331;}
 input:focus{outline:none;}
 
