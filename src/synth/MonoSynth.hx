@@ -8,12 +8,15 @@ import js.html.audio.OscillatorNode;
 import synth.ADSR.BiquadEnvelope;
 
 /**
- * ...
- * @author Mike Almond - https://github.com/mikedotalmond
+ * A fairly basic monosynth
+ *
+ * Audio routing:
+ *	* Osc -> FEG(AR-BiQuad) -> AEG(ADSR-GainNode) -> OutGain -> Desitnation
+ *
+ *
+ * @author Mike Almond - https://github.com/mikedotalmond *
  */
-
- 
-class MonoSynth { // 
+class MonoSynth { //
 	
 	var adsr						:ADSR;
 	var osc							:Array<Oscillator>;
@@ -53,8 +56,8 @@ class MonoSynth { //
 	
 	
 	/**
-	 * 
-	 * @param	destination
+	 *
+	 * @param	destination AudioNode
 	 */
 	public function new(destination:AudioNode) {
 		
@@ -73,7 +76,7 @@ class MonoSynth { //
 		adsr 					= new ADSR(context, biquad, outputGain);
 		oscillatorType 			= Oscillator.SINE;
 		
-		//todo: use AudioParam?
+		//todo: use AudioParam for timeable param changes...?
 	}
 	
 	
@@ -84,7 +87,7 @@ class MonoSynth { //
 	}
 	
 	public function noteOn(when:Float, freq:Float, velocity:Float=1, retrigger:Bool=false) {
-		currentOscillator.trigger(when, freq, osc_portamentoTime, retrigger); 
+		currentOscillator.trigger(when, freq, osc_portamentoTime, retrigger);
 		if (!noteIsOn || retrigger) {
 			adsr.trigger(when, velocity, adsr_attackTime, adsr_decayTime, adsr_sustain, retrigger);
 			//if FEG active...
