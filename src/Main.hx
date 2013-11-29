@@ -72,7 +72,6 @@ class Main {
 				modules: {
 					visible:true,
 					osc:{visible:true},
-					portamento:{visible:true},
 					adsr:{visible:true},
 					filter:{visible:true},
 					outGain:{visible:true},
