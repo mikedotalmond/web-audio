@@ -78,6 +78,7 @@ class NoteFrequencyUtil {
 	 * conversion functions
 	 * */
 	inline function indexToFrequency(index:Int):Float {
+		//(index - 69.0) == distance in tones to A440 / A3 -- taking note index-zero to be the lowest note, C-2
 		return tuningBase * Math.pow(2, (index - 69.0) * Twelveth);
 	}
 	

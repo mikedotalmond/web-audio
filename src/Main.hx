@@ -7,6 +7,7 @@ import js.html.audio.AudioContext;
 import js.html.audio.AudioProcessingEvent;
 import js.html.audio.ScriptProcessorNode;
 import js.html.DOMParser;
+import synth.ui.KeyboardUI;
 import utils.KeyboardNotes;
 
 import synth.MonoSynth;
@@ -23,70 +24,28 @@ import utils.KeyboardInput;
  *
  * @author Mike Almond - https://github.com/mikedotalmond
  */
-typedef UINote = {
-	var note:String;
-	var octave:Int;
-	var hasSharp:Bool;
-}
-
-class Main {
+@:final class Main {
 	
 	static var instance	:Main;
 	static var context	:AudioContext;
 	
 	var keyboardInput	:KeyboardInput;
+	var keyboardNotes	:KeyboardNotes;
 	var monoSynth		:MonoSynth;
 	
 	var crusher			:ScriptProcessorNode;
 	
+	var keyboardUI		:KeyboardUI;
+	
 	function new() {
-		initUI();
+		
+		trace('MonoSynth');
+		
+		keyboardNotes 	= new KeyboardNotes(); // util
+		keyboardInput 	= new KeyboardInput(keyboardNotes);
+		keyboardUI 		= new KeyboardUI(keyboardNotes);
+		
 		initAudio();
-	}
-	
-	
-	function initUI() {
-		
-		var keys:Array<UINote> = [
-			{ note:"C", octave:2, hasSharp:true },
-			{ note:"D", octave:2, hasSharp:true},
-			{ note:"E", octave:2, hasSharp:false},
-			{ note:"F", octave:2, hasSharp:true},
-			{ note:"G", octave:2, hasSharp:true},
-			{ note:"A", octave:2, hasSharp:true},
-			{ note:"B", octave:2, hasSharp:false},
-			{ note:"C", octave:3, hasSharp:true },
-			{ note:"D", octave:3, hasSharp:true},
-			{ note:"E", octave:3, hasSharp:false},
-			{ note:"F", octave:3, hasSharp:true},
-			{ note:"G", octave:3, hasSharp:true},
-			{ note:"A", octave:3, hasSharp:true},
-			{ note:"B", octave:3, hasSharp:false},
-		];
-		
-		var http:Http = new Http('synth.tpl');
-		http.async = true;
-		http.onError = function(err) { trace('Error loading synth template: ${err}'); };
-		http.onData = function(data:String) {
-			var tpl = new Template(data);
-			var markup = tpl.execute({
-				modules: {
-					visible:true,
-					osc:{visible:true},
-					adsr:{visible:true},
-					filter:{visible:true},
-					outGain:{visible:true},
-				},
-				keyboard: {
-					visible:true,
-					keys:keys
-				}
-			});
-			
-			Browser.document.body.appendChild(new DOMParser().parseFromString(markup, 'text/html').firstChild);			
-		};
-		
-		http.request();
 	}
 	
 	
@@ -102,17 +61,15 @@ class Main {
 		initMonoSynth(crusher);
 		
 		//initMonoSynth(context.destination);
-		var keyboardNotes = new KeyboardNotes();
-		keyboardInput = new KeyboardInput(keyboardNotes);
+		
+		// setup keyboard input
 		keyboardInput.noteOff.add(function() {
 			monoSynth.noteOff(context.currentTime);
-		});
+		});		
 		keyboardInput.noteOn.add(function(index:Int) {
 			var f = keyboardNotes.noteFreq.noteIndexToFrequency(index);
 			monoSynth.noteOn(context.currentTime, f, .8, !monoSynth.noteIsOn);
 		});
-		
-		trace('Start');
 	}
 	
 	

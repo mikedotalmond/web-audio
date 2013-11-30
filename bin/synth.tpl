@@ -1,4 +1,4 @@
-<div class="container"><!-- Based on http://codepen.io/lukeyphills/pen/CEfHx -->
+<div id="container"><!-- Based on http://codepen.io/lukeyphills/pen/CEfHx -->
 	<div class="synth">
 		<div class="touch-move-scroll-blocker"></div>
 		::if modules.visible::
@@ -88,9 +88,9 @@
 		::if keyboard.visible::
 		<div id="piano-keys">
 			::foreach keyboard.keys::
-				<div class="natural" data-note="::note::::octave::">
+				<div class="natural" data-noteindex="::index::">
 				::if hasSharp::
-					<div id="sharp" class="sharp" data-note="::note::#::octave::"></div>
+					<div class="sharp" data-noteindex="::(index+1)::"></div>
 				::end::
 				</div>
 			::end::
