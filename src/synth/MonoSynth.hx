@@ -27,7 +27,10 @@ class MonoSynth { //
 	public var adsr_decayTime		:Float = 0.2;
 	public var adsr_releaseTime		:Float = .25;
 	public var adsr_sustain			:Float = .44;
+	
 	public var osc_portamentoTime	:Float = 0;
+	public var osc_detuneTones		:Int = 0;
+	public var osc_detuneCents		:Float = 0;
 	
 	public var noteIsOn(default, null):Bool = false;
 	
@@ -49,7 +52,7 @@ class MonoSynth { //
 				noteOff(0);
 				currentOscillatorNode.disconnect(0);
 				oscType = type;
-				currentOscillatorNode.connect(biquad,0);
+				currentOscillatorNode.connect(biquad, 0);
 		}
 		return oscType;
 	}
@@ -72,11 +75,9 @@ class MonoSynth { //
 		osc[Oscillator.TRIANGLE]= new Oscillator(context, null, Oscillator.TRIANGLE);
 		osc[Oscillator.SAWTOOTH]= new Oscillator(context, null, Oscillator.SAWTOOTH);
 		
-		biquad					= new BiquadEnvelope(BiquadFilterNode.LOWPASS, 200, 20, context);
+		biquad					= new BiquadEnvelope(BiquadFilterNode.LOWPASS, 200, 10, context);
 		adsr 					= new ADSR(context, biquad, outputGain);
 		oscillatorType 			= Oscillator.SINE;
-		
-		//todo: use AudioParam for timeable param changes...?
 	}
 	
 	

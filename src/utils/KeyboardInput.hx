@@ -11,28 +11,28 @@ import msignal.Signal;
 
 class KeyboardInput {
 	
-	var heldKeys:Array<Int>;
-	var keyNotes:KeyboardNotes;
-	
+	var heldNotes:Array<Int>;
+	var keyToNote:Map<Int, Int>;
 	
 	/**
-	 * Note on signal - KeyNoteData > time, freq, velocity (level)
+	 * Note on signal - note index
 	 */
-	public var noteOn(default,null):Signal2<Float,Float>;
+	public var noteOn(default,null):Signal1<Int>;
 	
 	
 	/**
 	 * Note off signal - time
 	 */
-	public var noteOff(default,null):Signal1<Float>;
+	public var noteOff(default,null):Signal0;
 	
 	
-	public function new() {
+	public function new(keyNotes:KeyboardNotes) {
 		
-		heldKeys 	= [];
-		keyNotes 	= new KeyboardNotes();
-		noteOn 		= new Signal2<Float,Float>();
-		noteOff		= new Signal1<Float>();
+		heldNotes 	= [];
+		noteOn 		= new Signal1<Int>();
+		noteOff		= new Signal0();
+		
+		keyToNote 	= keyNotes.keycodeToNoteIndex;
 		
 		Browser.document.addEventListener("keydown", handleKeyDown);
 		Browser.document.addEventListener("keyup", handleKeyUp);
@@ -40,33 +40,33 @@ class KeyboardInput {
 	
 	
 	function handleKeyDown(e:KeyboardEvent) {
-		var i = Lambda.indexOf(heldKeys, e.keyCode);
-		if (i == -1) { // not already down?
-			var nf = keyNotes.keycodeToNoteFreq;
-			if(nf.exists(e.keyCode)){
-				noteOn.dispatch(nf.get(e.keyCode), .8);
-				heldKeys.push(e.keyCode);
+		if (keyToNote.exists(e.keyCode)) {
+			var noteIndex = keyToNote.get(e.keyCode);
+			var i = Lambda.indexOf(heldNotes, noteIndex);
+			if (i == -1) { // not already down?
+				noteOn.dispatch(noteIndex);
+				heldNotes.push(noteIndex);
 			}
 		}
 	}
 	
 	
 	function handleKeyUp(e:KeyboardEvent) {
-		var n = heldKeys.length;
-		if (n > 0) {
-			var i = Lambda.indexOf(heldKeys, e.keyCode);
+		var n = heldNotes.length;
+		if (n > 0) { // a note is down
+			var i = Lambda.indexOf(heldNotes, keyToNote.get(e.keyCode));
 			if (i != -1) { // key released was one of the held keys..?
-				heldKeys.splice(i, 1)[0];
-				if (heldKeys.length == 0) noteOff.dispatch(0); // no notes down?
-				else noteOn.dispatch(keyNotes.keycodeToNoteFreq.get(heldKeys[heldKeys.length - 1]),	.8);
+				heldNotes.splice(i, 1);
+				if (heldNotes.length == 0) noteOff.dispatch(); // no notes down?
+				else noteOn.dispatch(heldNotes[heldNotes.length - 1]); // retrigger last pressed key
 			}
 		}
 	}
 	
 	
 	public function dispose() {
-		heldKeys = null;
-		keyNotes.dispose(); keyNotes = null;
+		heldNotes = null;
+		keyToNote = null;
 		noteOn.removeAll(); noteOn = null;
 		noteOff.removeAll(); noteOff = null;
 		Browser.document.removeEventListener("keydown", handleKeyDown);

@@ -7,6 +7,7 @@ import js.html.audio.AudioContext;
 import js.html.audio.AudioProcessingEvent;
 import js.html.audio.ScriptProcessorNode;
 import js.html.DOMParser;
+import utils.KeyboardNotes;
 
 import synth.MonoSynth;
 import synth.Oscillator;
@@ -101,11 +102,14 @@ class Main {
 		initMonoSynth(crusher);
 		
 		//initMonoSynth(context.destination);
-		
-		keyboardInput = new KeyboardInput();
-		keyboardInput.noteOff.add(monoSynth.noteOff);
-		keyboardInput.noteOn.add(function(freq, velocity) {
-			monoSynth.noteOn(context.currentTime, freq, velocity, !monoSynth.noteIsOn);
+		var keyboardNotes = new KeyboardNotes();
+		keyboardInput = new KeyboardInput(keyboardNotes);
+		keyboardInput.noteOff.add(function() {
+			monoSynth.noteOff(context.currentTime);
+		});
+		keyboardInput.noteOn.add(function(index:Int) {
+			var f = keyboardNotes.noteFreq.noteIndexToFrequency(index);
+			monoSynth.noteOn(context.currentTime, f, .8, !monoSynth.noteIsOn);
 		});
 		
 		trace('Start');
@@ -141,13 +145,14 @@ class Main {
 		//monoSynth.oscillatorType = Oscillator.SQUARE;
 		monoSynth.setOutputGain(.66);
 		
-		//monoSynth.osc_portamentoTime = .05;
+		monoSynth.osc_portamentoTime = .1;
 		monoSynth.adsr_attackTime = .05;
 		monoSynth.adsr_decayTime = 1;
 		monoSynth.adsr_sustain = 0.5;
 		monoSynth.adsr_releaseTime = .2;
 		
 		//monoSynth.filter_frequency=
+		//monoSynth.filter_q
 	}
 	
 	

@@ -121,12 +121,12 @@ var Main = function() {
 Main.__name__ = true;
 Main.main = function() {
 	js.Browser.window.onload = function(e) {
-		haxe.Log.trace("onLoad",{ fileName : "Main.hx", lineNumber : 172, className : "Main", methodName : "main"});
+		haxe.Log.trace("onLoad",{ fileName : "Main.hx", lineNumber : 177, className : "Main", methodName : "main"});
 		Main.createContext();
 		if(Main.context == null) js.Browser.window.alert("Web Audio API not supported - try a different/better browser"); else Main.instance = new Main();
 	};
 	js.Browser.window.onbeforeunload = function(e) {
-		haxe.Log.trace("unLoad",{ fileName : "Main.hx", lineNumber : 184, className : "Main", methodName : "main"});
+		haxe.Log.trace("unLoad",{ fileName : "Main.hx", lineNumber : 189, className : "Main", methodName : "main"});
 		Main.instance.dispose();
 		Main.instance = null;
 		Main.context = null;
@@ -138,7 +138,7 @@ Main.createContext = function() {
 	try {
 		c = new AudioContext();
 	} catch( err ) {
-		haxe.Log.trace("Error creating an AudioContext",{ fileName : "Main.hx", lineNumber : 200, className : "Main", methodName : "createContext", customParams : [err]});
+		haxe.Log.trace("Error creating an AudioContext",{ fileName : "Main.hx", lineNumber : 205, className : "Main", methodName : "createContext", customParams : [err]});
 		c = null;
 	}
 	Main.context = c;
@@ -155,6 +155,7 @@ Main.prototype = {
 		this.monoSynth = new synth.MonoSynth(destination);
 		this.monoSynth.set_oscillatorType(2);
 		this.monoSynth.setOutputGain(.66);
+		this.monoSynth.osc_portamentoTime = .1;
 		this.monoSynth.adsr_attackTime = .05;
 		this.monoSynth.adsr_decayTime = 1;
 		this.monoSynth.adsr_sustain = 0.5;
@@ -186,19 +187,23 @@ Main.prototype = {
 		this.crusher.onaudioprocess = $bind(this,this.crusherImpl);
 		this.crusher.connect(Main.context.destination);
 		this.initMonoSynth(this.crusher);
-		this.keyboardInput = new utils.KeyboardInput();
-		this.keyboardInput.noteOff.add(($_=this.monoSynth,$bind($_,$_.noteOff)));
-		this.keyboardInput.noteOn.add(function(freq,velocity) {
-			_g.monoSynth.noteOn(Main.context.currentTime,freq,velocity,!_g.monoSynth.noteIsOn);
+		var keyboardNotes = new utils.KeyboardNotes();
+		this.keyboardInput = new utils.KeyboardInput(keyboardNotes);
+		this.keyboardInput.noteOff.add(function() {
+			_g.monoSynth.noteOff(Main.context.currentTime);
 		});
-		haxe.Log.trace("Start",{ fileName : "Main.hx", lineNumber : 111, className : "Main", methodName : "initAudio"});
+		this.keyboardInput.noteOn.add(function(index) {
+			var f = keyboardNotes.noteFreq.noteIndexToFrequency(index);
+			_g.monoSynth.noteOn(Main.context.currentTime,f,.8,!_g.monoSynth.noteIsOn);
+		});
+		haxe.Log.trace("Start",{ fileName : "Main.hx", lineNumber : 115, className : "Main", methodName : "initAudio"});
 	}
 	,initUI: function() {
 		var keys = [{ note : "C", octave : 2, hasSharp : true},{ note : "D", octave : 2, hasSharp : true},{ note : "E", octave : 2, hasSharp : false},{ note : "F", octave : 2, hasSharp : true},{ note : "G", octave : 2, hasSharp : true},{ note : "A", octave : 2, hasSharp : true},{ note : "B", octave : 2, hasSharp : false},{ note : "C", octave : 3, hasSharp : true},{ note : "D", octave : 3, hasSharp : true},{ note : "E", octave : 3, hasSharp : false},{ note : "F", octave : 3, hasSharp : true},{ note : "G", octave : 3, hasSharp : true},{ note : "A", octave : 3, hasSharp : true},{ note : "B", octave : 3, hasSharp : false}];
 		var http = new haxe.Http("synth.tpl");
 		http.async = true;
 		http.onError = function(err) {
-			haxe.Log.trace("Error loading synth template: " + err,{ fileName : "Main.hx", lineNumber : 68, className : "Main", methodName : "initUI"});
+			haxe.Log.trace("Error loading synth template: " + err,{ fileName : "Main.hx", lineNumber : 69, className : "Main", methodName : "initUI"});
 		};
 		http.onData = function(data) {
 			var tpl = new haxe.Template(data);
@@ -935,6 +940,26 @@ msignal.Signal.prototype = {
 	}
 	,__class__: msignal.Signal
 }
+msignal.Signal0 = function() {
+	msignal.Signal.call(this);
+};
+msignal.Signal0.__name__ = true;
+msignal.Signal0.__super__ = msignal.Signal;
+msignal.Signal0.prototype = $extend(msignal.Signal.prototype,{
+	createSlot: function(listener,once,priority) {
+		if(priority == null) priority = 0;
+		if(once == null) once = false;
+		return new msignal.Slot0(this,listener,once,priority);
+	}
+	,dispatch: function() {
+		var slotsToProcess = this.slots;
+		while(slotsToProcess.nonEmpty) {
+			slotsToProcess.head.execute();
+			slotsToProcess = slotsToProcess.tail;
+		}
+	}
+	,__class__: msignal.Signal0
+});
 msignal.Signal1 = function(type) {
 	msignal.Signal.call(this,[type]);
 };
@@ -954,26 +979,6 @@ msignal.Signal1.prototype = $extend(msignal.Signal.prototype,{
 		}
 	}
 	,__class__: msignal.Signal1
-});
-msignal.Signal2 = function(type1,type2) {
-	msignal.Signal.call(this,[type1,type2]);
-};
-msignal.Signal2.__name__ = true;
-msignal.Signal2.__super__ = msignal.Signal;
-msignal.Signal2.prototype = $extend(msignal.Signal.prototype,{
-	createSlot: function(listener,once,priority) {
-		if(priority == null) priority = 0;
-		if(once == null) once = false;
-		return new msignal.Slot2(this,listener,once,priority);
-	}
-	,dispatch: function(value1,value2) {
-		var slotsToProcess = this.slots;
-		while(slotsToProcess.nonEmpty) {
-			slotsToProcess.head.execute(value1,value2);
-			slotsToProcess = slotsToProcess.tail;
-		}
-	}
-	,__class__: msignal.Signal2
 });
 msignal.Slot = function(signal,listener,once,priority) {
 	if(priority == null) priority = 0;
@@ -995,6 +1000,21 @@ msignal.Slot.prototype = {
 	}
 	,__class__: msignal.Slot
 }
+msignal.Slot0 = function(signal,listener,once,priority) {
+	if(priority == null) priority = 0;
+	if(once == null) once = false;
+	msignal.Slot.call(this,signal,listener,once,priority);
+};
+msignal.Slot0.__name__ = true;
+msignal.Slot0.__super__ = msignal.Slot;
+msignal.Slot0.prototype = $extend(msignal.Slot.prototype,{
+	execute: function() {
+		if(!this.enabled) return;
+		if(this.once) this.remove();
+		this.listener();
+	}
+	,__class__: msignal.Slot0
+});
 msignal.Slot1 = function(signal,listener,once,priority) {
 	if(priority == null) priority = 0;
 	if(once == null) once = false;
@@ -1010,23 +1030,6 @@ msignal.Slot1.prototype = $extend(msignal.Slot.prototype,{
 		this.listener(value1);
 	}
 	,__class__: msignal.Slot1
-});
-msignal.Slot2 = function(signal,listener,once,priority) {
-	if(priority == null) priority = 0;
-	if(once == null) once = false;
-	msignal.Slot.call(this,signal,listener,once,priority);
-};
-msignal.Slot2.__name__ = true;
-msignal.Slot2.__super__ = msignal.Slot;
-msignal.Slot2.prototype = $extend(msignal.Slot.prototype,{
-	execute: function(value1,value2) {
-		if(!this.enabled) return;
-		if(this.once) this.remove();
-		if(this.param1 != null) value1 = this.param1;
-		if(this.param2 != null) value2 = this.param2;
-		this.listener(value1,value2);
-	}
-	,__class__: msignal.Slot2
 });
 msignal.SlotList = function(head,tail) {
 	this.nonEmpty = false;
@@ -1149,7 +1152,7 @@ synth.MonoSynth = function(destination) {
 		this1 = context.createBiquadFilter();
 		this1.type = 0;
 		this1.frequency.value = 200;
-		this1.Q.value = 20;
+		this1.Q.value = 10;
 		this1.gain.value = 0;
 		$r = this1;
 		return $r;
@@ -1236,20 +1239,19 @@ synth.MonoSynth.prototype = {
 	,__class__: synth.MonoSynth
 }
 var utils = {}
-utils.KeyboardInput = function() {
-	this.heldKeys = [];
-	this.keyNotes = new utils.KeyboardNotes();
-	this.noteOn = new msignal.Signal2();
-	this.noteOff = new msignal.Signal1();
+utils.KeyboardInput = function(keyNotes) {
+	this.heldNotes = [];
+	this.noteOn = new msignal.Signal1();
+	this.noteOff = new msignal.Signal0();
+	this.keyToNote = keyNotes.keycodeToNoteIndex;
 	js.Browser.document.addEventListener("keydown",$bind(this,this.handleKeyDown));
 	js.Browser.document.addEventListener("keyup",$bind(this,this.handleKeyUp));
 };
 utils.KeyboardInput.__name__ = true;
 utils.KeyboardInput.prototype = {
 	dispose: function() {
-		this.heldKeys = null;
-		this.keyNotes.dispose();
-		this.keyNotes = null;
+		this.heldNotes = null;
+		this.keyToNote = null;
 		this.noteOn.removeAll();
 		this.noteOn = null;
 		this.noteOff.removeAll();
@@ -1258,83 +1260,112 @@ utils.KeyboardInput.prototype = {
 		js.Browser.document.removeEventListener("keyup",$bind(this,this.handleKeyUp));
 	}
 	,handleKeyUp: function(e) {
-		var n = this.heldKeys.length;
+		var n = this.heldNotes.length;
 		if(n > 0) {
-			var i = Lambda.indexOf(this.heldKeys,e.keyCode);
+			var i = Lambda.indexOf(this.heldNotes,this.keyToNote.get(e.keyCode));
 			if(i != -1) {
-				this.heldKeys.splice(i,1)[0];
-				if(this.heldKeys.length == 0) this.noteOff.dispatch(0); else this.noteOn.dispatch(this.keyNotes.keycodeToNoteFreq.get(this.heldKeys[this.heldKeys.length - 1]),.8);
+				this.heldNotes.splice(i,1);
+				if(this.heldNotes.length == 0) this.noteOff.dispatch(); else this.noteOn.dispatch(this.heldNotes[this.heldNotes.length - 1]);
 			}
 		}
 	}
 	,handleKeyDown: function(e) {
-		var i = Lambda.indexOf(this.heldKeys,e.keyCode);
-		if(i == -1) {
-			var nf = this.keyNotes.keycodeToNoteFreq;
-			if(nf.exists(e.keyCode)) {
-				this.noteOn.dispatch(nf.get(e.keyCode),.8);
-				this.heldKeys.push(e.keyCode);
+		if(this.keyToNote.exists(e.keyCode)) {
+			var noteIndex = this.keyToNote.get(e.keyCode);
+			var i = Lambda.indexOf(this.heldNotes,noteIndex);
+			if(i == -1) {
+				this.noteOn.dispatch(noteIndex);
+				this.heldNotes.push(noteIndex);
 			}
 		}
 	}
 	,__class__: utils.KeyboardInput
 }
 utils.KeyboardNotes = function() {
-	this.noteFreq = new utils.NoteFrequency();
+	this.noteFreq = new utils.NoteFrequencyUtil();
 	this.keycodeToNoteFreq = new haxe.ds.IntMap();
-	this.keycodeToNoteFreq.set(90,this.noteFreq.noteIndexToFrequency(this.noteFreq.noteNameToIndex("C1")));
-	this.keycodeToNoteFreq.set(83,this.noteFreq.noteIndexToFrequency(this.noteFreq.noteNameToIndex("C#1")));
-	this.keycodeToNoteFreq.set(88,this.noteFreq.noteIndexToFrequency(this.noteFreq.noteNameToIndex("D1")));
-	this.keycodeToNoteFreq.set(68,this.noteFreq.noteIndexToFrequency(this.noteFreq.noteNameToIndex("D#1")));
-	this.keycodeToNoteFreq.set(67,this.noteFreq.noteIndexToFrequency(this.noteFreq.noteNameToIndex("E1")));
-	this.keycodeToNoteFreq.set(86,this.noteFreq.noteIndexToFrequency(this.noteFreq.noteNameToIndex("F1")));
-	this.keycodeToNoteFreq.set(71,this.noteFreq.noteIndexToFrequency(this.noteFreq.noteNameToIndex("F#1")));
-	this.keycodeToNoteFreq.set(66,this.noteFreq.noteIndexToFrequency(this.noteFreq.noteNameToIndex("G1")));
-	this.keycodeToNoteFreq.set(72,this.noteFreq.noteIndexToFrequency(this.noteFreq.noteNameToIndex("G#1")));
-	this.keycodeToNoteFreq.set(78,this.noteFreq.noteIndexToFrequency(this.noteFreq.noteNameToIndex("A1")));
-	this.keycodeToNoteFreq.set(74,this.noteFreq.noteIndexToFrequency(this.noteFreq.noteNameToIndex("A#1")));
-	this.keycodeToNoteFreq.set(77,this.noteFreq.noteIndexToFrequency(this.noteFreq.noteNameToIndex("B1")));
-	this.keycodeToNoteFreq.set(81,this.noteFreq.noteIndexToFrequency(this.noteFreq.noteNameToIndex("C2")));
-	this.keycodeToNoteFreq.set(50,this.noteFreq.noteIndexToFrequency(this.noteFreq.noteNameToIndex("C#2")));
-	this.keycodeToNoteFreq.set(87,this.noteFreq.noteIndexToFrequency(this.noteFreq.noteNameToIndex("D2")));
-	this.keycodeToNoteFreq.set(51,this.noteFreq.noteIndexToFrequency(this.noteFreq.noteNameToIndex("D#2")));
-	this.keycodeToNoteFreq.set(69,this.noteFreq.noteIndexToFrequency(this.noteFreq.noteNameToIndex("E2")));
-	this.keycodeToNoteFreq.set(82,this.noteFreq.noteIndexToFrequency(this.noteFreq.noteNameToIndex("F2")));
-	this.keycodeToNoteFreq.set(53,this.noteFreq.noteIndexToFrequency(this.noteFreq.noteNameToIndex("F#2")));
-	this.keycodeToNoteFreq.set(84,this.noteFreq.noteIndexToFrequency(this.noteFreq.noteNameToIndex("G2")));
-	this.keycodeToNoteFreq.set(54,this.noteFreq.noteIndexToFrequency(this.noteFreq.noteNameToIndex("G#2")));
-	this.keycodeToNoteFreq.set(89,this.noteFreq.noteIndexToFrequency(this.noteFreq.noteNameToIndex("A2")));
-	this.keycodeToNoteFreq.set(55,this.noteFreq.noteIndexToFrequency(this.noteFreq.noteNameToIndex("A#2")));
-	this.keycodeToNoteFreq.set(85,this.noteFreq.noteIndexToFrequency(this.noteFreq.noteNameToIndex("B2")));
-	this.keycodeToNoteFreq.set(73,this.noteFreq.noteIndexToFrequency(this.noteFreq.noteNameToIndex("C3")));
-	this.keycodeToNoteFreq.set(57,this.noteFreq.noteIndexToFrequency(this.noteFreq.noteNameToIndex("C#3")));
-	this.keycodeToNoteFreq.set(79,this.noteFreq.noteIndexToFrequency(this.noteFreq.noteNameToIndex("D3")));
-	this.keycodeToNoteFreq.set(48,this.noteFreq.noteIndexToFrequency(this.noteFreq.noteNameToIndex("D#3")));
-	this.keycodeToNoteFreq.set(80,this.noteFreq.noteIndexToFrequency(this.noteFreq.noteNameToIndex("E3")));
-	this.keycodeToNoteFreq.set(219,this.noteFreq.noteIndexToFrequency(this.noteFreq.noteNameToIndex("F3")));
-	this.keycodeToNoteFreq.set(187,this.noteFreq.noteIndexToFrequency(this.noteFreq.noteNameToIndex("F#3")));
-	this.keycodeToNoteFreq.set(221,this.noteFreq.noteIndexToFrequency(this.noteFreq.noteNameToIndex("G3")));
+	this.keycodeToNoteIndex = new haxe.ds.IntMap();
+	this.keycodeToNoteIndex.set(90,this.noteFreq.noteNameToIndex("C0"));
+	this.keycodeToNoteIndex.set(83,this.noteFreq.noteNameToIndex("C#0"));
+	this.keycodeToNoteIndex.set(88,this.noteFreq.noteNameToIndex("D0"));
+	this.keycodeToNoteIndex.set(68,this.noteFreq.noteNameToIndex("D#0"));
+	this.keycodeToNoteIndex.set(67,this.noteFreq.noteNameToIndex("E0"));
+	this.keycodeToNoteIndex.set(86,this.noteFreq.noteNameToIndex("F0"));
+	this.keycodeToNoteIndex.set(71,this.noteFreq.noteNameToIndex("F#0"));
+	this.keycodeToNoteIndex.set(66,this.noteFreq.noteNameToIndex("G0"));
+	this.keycodeToNoteIndex.set(72,this.noteFreq.noteNameToIndex("G#0"));
+	this.keycodeToNoteIndex.set(78,this.noteFreq.noteNameToIndex("A0"));
+	this.keycodeToNoteIndex.set(74,this.noteFreq.noteNameToIndex("A#0"));
+	this.keycodeToNoteIndex.set(77,this.noteFreq.noteNameToIndex("B0"));
+	this.keycodeToNoteIndex.set(81,this.noteFreq.noteNameToIndex("C1"));
+	this.keycodeToNoteIndex.set(50,this.noteFreq.noteNameToIndex("C#1"));
+	this.keycodeToNoteIndex.set(87,this.noteFreq.noteNameToIndex("D1"));
+	this.keycodeToNoteIndex.set(51,this.noteFreq.noteNameToIndex("D#1"));
+	this.keycodeToNoteIndex.set(69,this.noteFreq.noteNameToIndex("E1"));
+	this.keycodeToNoteIndex.set(82,this.noteFreq.noteNameToIndex("F1"));
+	this.keycodeToNoteIndex.set(53,this.noteFreq.noteNameToIndex("F#1"));
+	this.keycodeToNoteIndex.set(84,this.noteFreq.noteNameToIndex("G1"));
+	this.keycodeToNoteIndex.set(54,this.noteFreq.noteNameToIndex("G#1"));
+	this.keycodeToNoteIndex.set(89,this.noteFreq.noteNameToIndex("A1"));
+	this.keycodeToNoteIndex.set(55,this.noteFreq.noteNameToIndex("A#1"));
+	this.keycodeToNoteIndex.set(85,this.noteFreq.noteNameToIndex("B1"));
+	this.keycodeToNoteIndex.set(73,this.noteFreq.noteNameToIndex("C2"));
+	this.keycodeToNoteIndex.set(57,this.noteFreq.noteNameToIndex("C#2"));
+	this.keycodeToNoteIndex.set(79,this.noteFreq.noteNameToIndex("D2"));
+	this.keycodeToNoteIndex.set(48,this.noteFreq.noteNameToIndex("D#2"));
+	this.keycodeToNoteIndex.set(80,this.noteFreq.noteNameToIndex("E2"));
+	this.keycodeToNoteIndex.set(219,this.noteFreq.noteNameToIndex("F2"));
+	this.keycodeToNoteIndex.set(187,this.noteFreq.noteNameToIndex("F#2"));
+	this.keycodeToNoteIndex.set(221,this.noteFreq.noteNameToIndex("G2"));
+	this.keycodeToNoteFreq.set(90,this.keycodeToNoteIndex.get(90));
+	this.keycodeToNoteFreq.set(83,this.keycodeToNoteIndex.get(83));
+	this.keycodeToNoteFreq.set(88,this.keycodeToNoteIndex.get(88));
+	this.keycodeToNoteFreq.set(68,this.keycodeToNoteIndex.get(68));
+	this.keycodeToNoteFreq.set(67,this.keycodeToNoteIndex.get(67));
+	this.keycodeToNoteFreq.set(86,this.keycodeToNoteIndex.get(86));
+	this.keycodeToNoteFreq.set(71,this.keycodeToNoteIndex.get(71));
+	this.keycodeToNoteFreq.set(66,this.keycodeToNoteIndex.get(66));
+	this.keycodeToNoteFreq.set(72,this.keycodeToNoteIndex.get(72));
+	this.keycodeToNoteFreq.set(78,this.keycodeToNoteIndex.get(78));
+	this.keycodeToNoteFreq.set(74,this.keycodeToNoteIndex.get(74));
+	this.keycodeToNoteFreq.set(77,this.keycodeToNoteIndex.get(77));
+	this.keycodeToNoteFreq.set(81,this.keycodeToNoteIndex.get(81));
+	this.keycodeToNoteFreq.set(50,this.keycodeToNoteIndex.get(50));
+	this.keycodeToNoteFreq.set(87,this.keycodeToNoteIndex.get(87));
+	this.keycodeToNoteFreq.set(51,this.keycodeToNoteIndex.get(51));
+	this.keycodeToNoteFreq.set(69,this.keycodeToNoteIndex.get(69));
+	this.keycodeToNoteFreq.set(82,this.keycodeToNoteIndex.get(82));
+	this.keycodeToNoteFreq.set(53,this.keycodeToNoteIndex.get(53));
+	this.keycodeToNoteFreq.set(84,this.keycodeToNoteIndex.get(84));
+	this.keycodeToNoteFreq.set(54,this.keycodeToNoteIndex.get(54));
+	this.keycodeToNoteFreq.set(89,this.keycodeToNoteIndex.get(89));
+	this.keycodeToNoteFreq.set(55,this.keycodeToNoteIndex.get(55));
+	this.keycodeToNoteFreq.set(85,this.keycodeToNoteIndex.get(85));
+	this.keycodeToNoteFreq.set(73,this.keycodeToNoteIndex.get(73));
+	this.keycodeToNoteFreq.set(57,this.keycodeToNoteIndex.get(57));
+	this.keycodeToNoteFreq.set(79,this.keycodeToNoteIndex.get(79));
+	this.keycodeToNoteFreq.set(48,this.keycodeToNoteIndex.get(48));
+	this.keycodeToNoteFreq.set(80,this.keycodeToNoteIndex.get(80));
+	this.keycodeToNoteFreq.set(219,this.keycodeToNoteIndex.get(219));
+	this.keycodeToNoteFreq.set(187,this.keycodeToNoteIndex.get(187));
+	this.keycodeToNoteFreq.set(221,this.keycodeToNoteIndex.get(221));
 };
 utils.KeyboardNotes.__name__ = true;
 utils.KeyboardNotes.prototype = {
-	dispose: function() {
-		this.noteFreq = null;
-		this.keycodeToNoteFreq = null;
-	}
-	,__class__: utils.KeyboardNotes
+	__class__: utils.KeyboardNotes
 }
-utils.NoteFrequency = function() {
-	if(utils.NoteFrequency.pitchNames == null) {
-		utils.NoteFrequency.pitchNames = ["C","C#","D","D#","E","F","F#","G","G#","A","A#","B"];
-		utils.NoteFrequency.altPitchNames = [null,"Db#",null,"Eb",null,null,"Gb",null,"Ab",null,"Bb",null];
+utils.NoteFrequencyUtil = function() {
+	if(utils.NoteFrequencyUtil.pitchNames == null) {
+		utils.NoteFrequencyUtil.pitchNames = ["C","C#","D","D#","E","F","F#","G","G#","A","A#","B"];
+		utils.NoteFrequencyUtil.altPitchNames = [null,"Db#",null,"Eb",null,null,"Gb",null,"Ab",null,"Bb",null];
 	}
 	this.noteFrequencies = [];
 	this.noteNames = [];
 	this._octaveMiddleC = 3;
 	this.set_tuningBase(440.0);
 };
-utils.NoteFrequency.__name__ = true;
-utils.NoteFrequency.prototype = {
+utils.NoteFrequencyUtil.__name__ = true;
+utils.NoteFrequencyUtil.prototype = {
 	get_octaveMiddleC: function() {
 		return this._octaveMiddleC;
 	}
@@ -1350,8 +1381,8 @@ utils.NoteFrequency.prototype = {
 	,indexToName: function(index) {
 		var pitch = index % 12;
 		var octave = (index * (1 / 12) | 0) - (5 - this.get_octaveMiddleC());
-		var noteName = utils.NoteFrequency.pitchNames[pitch] + octave;
-		if(utils.NoteFrequency.altPitchNames[pitch] != null) noteName += "/" + utils.NoteFrequency.altPitchNames[pitch] + octave;
+		var noteName = utils.NoteFrequencyUtil.pitchNames[pitch] + octave;
+		if(utils.NoteFrequencyUtil.altPitchNames[pitch] != null) noteName += "/" + utils.NoteFrequencyUtil.altPitchNames[pitch] + octave;
 		return noteName;
 	}
 	,noteNameToIndex: function(name) {
@@ -1380,7 +1411,7 @@ utils.NoteFrequency.prototype = {
 			this.noteFrequencies[i] = this.get_tuningBase() * Math.pow(2,(i - 69.0) * (1 / 12));
 		}
 	}
-	,__class__: utils.NoteFrequency
+	,__class__: utils.NoteFrequencyUtil
 }
 function $iterator(o) { if( o instanceof Array ) return function() { return HxOverrides.iter(o); }; return typeof(o.iterator) == 'function' ? $bind(o,o.iterator) : o.iterator; };
 var $_, $fid = 0;

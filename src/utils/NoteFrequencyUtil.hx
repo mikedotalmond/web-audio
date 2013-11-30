@@ -6,7 +6,7 @@ import haxe.ds.Vector.Vector;
 * ...
 * @author Mike Almond  - MadeByPi
 */
-class NoteFrequency {
+class NoteFrequencyUtil {
 	
 	static inline var defaultTuning	:Float = 440.0;
 	
