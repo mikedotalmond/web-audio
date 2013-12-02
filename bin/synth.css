@@ -136,8 +136,8 @@ input:focus {
   position: relative;
   margin-right: 4px;
   background-color: #fff;
-  -webkit-transition: background-color ease-out .25s;
-  transition: background-color ease-out .25s;
+  -webkit-transition: background-color ease-out .15s;
+  transition: background-color ease-out .15s;
   border-radius: 0px 0px 8px 8px;
   -webkit-border-radius: 0px 0px 8px 8px;
 }
@@ -150,6 +150,8 @@ input:focus {
   position: absolute;
   left: 66.6%;
   z-index: 100;
+  -webkit-transition: background-color ease-out .1s;
+  transition: background-color ease-out .1s;
   -webkit-border-radius: 3px 3px 3px 3px;
   border-radius: 3px 3px 3px 3px;
 }
@@ -182,8 +184,8 @@ input[type=range]::-webkit-slider-thumb {
 	border-radius:7px;
 }
 
-input[type=range], ::-moz-range-track { 
-	background-color: #af2331;	
+input[type=range], ::-moz-range-track {
+	background-color: #af2331;
 }
 
 input:focus {

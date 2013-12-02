@@ -7,7 +7,7 @@ import js.html.audio.OscillatorNode;
 /**
  * Oscillator wrapper for OscillatorNode
  * Provides timeable trigger and release, with optional portamento
- * 
+ *
  * @author Mike Almond - https://github.com/mikedotalmond
  */
 
@@ -19,7 +19,7 @@ abstract Oscillator(OscillatorNode) from OscillatorNode to OscillatorNode {
 	public static inline var TRIANGLE 	:Int = 3;
 
 	/**
-	 * 
+	 *
 	 * @param	context
 	 * @param	?destination
 	 */
@@ -55,6 +55,6 @@ abstract Oscillator(OscillatorNode) from OscillatorNode to OscillatorNode {
 	 */
 	inline public function release(when:Float) {
 		this.frequency.cancelScheduledValues(when);
-		//this.stop(when); // can't restart... doh
+		//this.stop(when); // can't restart... so keep running
 	}
 }

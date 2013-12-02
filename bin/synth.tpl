@@ -88,9 +88,9 @@
 		::if keyboard.visible::
 		<div id="piano-keys">
 			::foreach keyboard.keys::
-				<div class="key natural" data-classes="key natural" data-noteindex="::index::">
+				<div class="key natural" data-classname="natural" data-noteindex="::index::">
 				::if hasSharp::
-					<div class="key sharp" data-classes="key sharp" data-noteindex="::(index+1)::"></div>
+					<div class="key sharp" data-classname="sharp" data-noteindex="::(index+1)::"></div>
 				::end::
 				</div>
 			::end::

@@ -64,13 +64,30 @@ import utils.KeyboardInput;
 		
 		//initMonoSynth(context.destination);
 		
-		// setup keyboard input
-		keyboardInput.noteOff.add(function() {
+		var handleNoteOff = function() {
 			monoSynth.noteOff(context.currentTime);
-		});		
-		keyboardInput.noteOn.add(function(index:Int) {
-			var f = keyboardNotes.noteFreq.noteIndexToFrequency(index);
+		};
+		
+		var handleNoteOn = function(i) {
+			var f = keyboardNotes.noteFreq.noteIndexToFrequency(i);
 			monoSynth.noteOn(context.currentTime, f, .8, !monoSynth.noteIsOn);
+		};
+		
+		
+		// setup keyboardInput(HID) and keyboardUI(UI) inputs
+		keyboardUI.noteOn.add(handleNoteOn);
+		keyboardUI.noteOff.add(handleNoteOff);
+		
+		keyboardInput.noteOn.add(handleNoteOn);
+		keyboardInput.noteOff.add(handleNoteOff);
+		
+		
+		// HID keybopard inputs, update ui-keys...
+		keyboardInput.keyDown.add(function(i) {
+			keyboardUI.setKeyIsDown(keyboardUI.getKeyForNote(i), true);
+		});
+		keyboardInput.keyUp.add(function(i) {
+			keyboardUI.setKeyIsDown(keyboardUI.getKeyForNote(i), false);
 		});
 	}
 	

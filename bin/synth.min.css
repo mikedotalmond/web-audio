@@ -14,8 +14,8 @@ input:focus{outline:none;}
 .synth .modules .module .slider input[type="range"]{background-color:#af2331;-webkit-appearance:none;-webkit-transform:rotate(270deg);transform:rotate(270deg);width:164px;margin:80px -100px 0px -40px;border-radius:25px;}
 .synth .modules .module .slider input[type='range']::-webkit-slider-thumb:{height:20px;width:50px;border:1px solid #ddd;background-color:#ffeac8;}
 #piano-keys{width:1000px;height:180px;margin-left:60px;margin-top:275px;}
-#piano-keys .natural{display:inline-block;width:6%;height:100%;float:left;position:relative;margin-right:4px;background-color:#fff;-webkit-transition:background-color ease-out .25s;transition:background-color ease-out .25s;border-radius:0px 0px 8px 8px;-webkit-border-radius:0px 0px 8px 8px;}
-#piano-keys .sharp{background-color:#212531;height:66.6%;width:66.6%;margin-right:50%;position:absolute;left:66.6%;z-index:100;-webkit-border-radius:3px 3px 3px 3px;border-radius:3px 3px 3px 3px;}
+#piano-keys .natural{display:inline-block;width:6%;height:100%;float:left;position:relative;margin-right:4px;background-color:#fff;-webkit-transition:background-color ease-out .15s;transition:background-color ease-out .15s;border-radius:0px 0px 8px 8px;-webkit-border-radius:0px 0px 8px 8px;}
+#piano-keys .sharp{background-color:#212531;height:66.6%;width:66.6%;margin-right:50%;position:absolute;left:66.6%;z-index:100;-webkit-transition:background-color ease-out .1s;transition:background-color ease-out .1s;-webkit-border-radius:3px 3px 3px 3px;border-radius:3px 3px 3px 3px;}
 #piano-keys .natural-hover{background-color:#8494B4;}
 #piano-keys .sharp-hover{background-color:#565F79;}
 input[type=range]{-webkit-appearance:none;height:10px;width:200px;}
