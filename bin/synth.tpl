@@ -2,7 +2,7 @@
 	<div class="synth">
 		<div class="touch-move-scroll-blocker"></div>
 		::if modules.visible::
-		<div class="modules">
+		<div id="modules" class="modules">
 			
 			::if modules.osc.visible::
 			<div class="module osc">
@@ -88,9 +88,9 @@
 		::if keyboard.visible::
 		<div id="piano-keys">
 			::foreach keyboard.keys::
-				<div class="natural" data-noteindex="::index::">
+				<div class="key natural" data-classes="key natural" data-noteindex="::index::">
 				::if hasSharp::
-					<div class="sharp" data-noteindex="::(index+1)::"></div>
+					<div class="key sharp" data-classes="key sharp" data-noteindex="::(index+1)::"></div>
 				::end::
 				</div>
 			::end::

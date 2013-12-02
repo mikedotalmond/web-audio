@@ -26,11 +26,13 @@ import utils.KeyboardInput;
  */
 @:final class Main {
 	
-	static var instance	:Main;
-	static var context	:AudioContext;
+	static var context:AudioContext;
 	
-	var keyboardInput	:KeyboardInput;
-	var keyboardNotes	:KeyboardNotes;
+	public static var instance(default,null):Main;
+	
+	public var keyboardInput(default,null):KeyboardInput;
+	public var keyboardNotes(default,null):KeyboardNotes;
+	
 	var monoSynth		:MonoSynth;
 	
 	var crusher			:ScriptProcessorNode;
