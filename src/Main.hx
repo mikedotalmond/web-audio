@@ -64,9 +64,11 @@ import utils.KeyboardInput;
 		
 		//initMonoSynth(context.destination);
 		
+		
+		// Key / Note control setup
 		var handleNoteOff = function() {
 			monoSynth.noteOff(context.currentTime);
-		};
+		}
 		
 		var handleNoteOn = function(i) {
 			var f = keyboardNotes.noteFreq.noteIndexToFrequency(i);
@@ -74,21 +76,29 @@ import utils.KeyboardInput;
 		};
 		
 		
-		// setup keyboardInput(HID) and keyboardUI(UI) inputs
-		keyboardUI.noteOn.add(handleNoteOn);
-		keyboardUI.noteOff.add(handleNoteOff);
+		// bind to ui keyboard signals
+		keyboardUI.keyDown.add(handleNoteOn);
+		keyboardUI.keyUp.add(function(i) { 
+			if (keyboardInput.hasNotes()) { // key up on ui keyboard, check for any (HID) keyboard keys
+				handleNoteOn(keyboardInput.lastNote()); // retrigger last pressed key
+			} else {
+				handleNoteOff(); // nothing held? note off.
+			}
+		});
 		
+		// bind to hardware keyboard signals
 		keyboardInput.noteOn.add(handleNoteOn);
-		keyboardInput.noteOff.add(handleNoteOff);
-		
-		
-		// HID keybopard inputs, update ui-keys...
-		keyboardInput.keyDown.add(function(i) {
-			keyboardUI.setKeyIsDown(keyboardUI.getKeyForNote(i), true);
+		keyboardInput.noteOff.add(function() {
+			if (keyboardUI.keyIsDown()) { // still got a ui key pressed?
+				handleNoteOn(keyboardUI.heldKey);  // retrigger the held key
+			} else {
+				handleNoteOff(); // no keys down? note off
+			}
 		});
-		keyboardInput.keyUp.add(function(i) {
-			keyboardUI.setKeyIsDown(keyboardUI.getKeyForNote(i), false);
-		});
+		
+		// HID keyboard inputs, update ui-keys...
+		keyboardInput.keyDown.add(keyboardUI.setNoteState.bind(_, true));
+		keyboardInput.keyUp.add(keyboardUI.setNoteState.bind(_, false));
 	}
 	
 	

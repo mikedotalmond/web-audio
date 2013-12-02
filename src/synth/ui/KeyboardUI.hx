@@ -22,25 +22,25 @@ class KeyboardUI {
 	var template		:Template;
 	var keys			:Array<UINote>;
 	var keyboardNotes	:KeyboardNotes;
-	var keyHeld			:Int;
 	var pointerDown		:Bool;
 	
 	var modules			:NodeList;
 	var keyboardKeys	:NodeList;
 	var noteIndexToKey	:Map<Int, Element>;
 	
+	public var keyDown(default, null):Signal1<Int>;
+	public var keyUp(default, null):Signal1<Int>;
 	
-	public var noteOn(default, null):Signal1<Int>;
-	public var noteOff(default, null):Signal0;
-
+	public var heldKey(default, null):Int;
+	public function keyIsDown() return heldKey != -1;
 	
 	public function new(keyboardNotes:KeyboardNotes) {
 		this.keyboardNotes = keyboardNotes;
 		keys = getUIKeyNoteData();
 		loadTemplate();
 		
-		noteOn 	= new Signal1<Int>();
-		noteOff = new Signal0();
+		keyDown = new Signal1<Int>();
+		keyUp 	= new Signal1<Int>();
 	}
 	
 	
@@ -97,7 +97,7 @@ class KeyboardUI {
 			noteIndexToKey.set(Std.parseInt(k.getAttribute('data-noteindex')), k);
 		}
 		
-		keyHeld = -1;
+		heldKey = -1;
 		pointerDown = false;
 	}
 	
@@ -110,45 +110,47 @@ class KeyboardUI {
 		
 		switch (e.type) {
 			case "mouseover":
-				if (pointerDown) keyDown(noteIndex, node);
+				if (pointerDown) {
+					setKeyIsDown(node, true);
+					heldKey = noteIndex;
+					keyDown.dispatch(noteIndex);
+				}
 				
 			case "mousedown", "touchstart":
 				pointerDown = true;
-				keyDown(noteIndex, node);
+				setKeyIsDown(node, true);
+				heldKey = noteIndex;
+				keyDown.dispatch(noteIndex);
 				
 			case "mouseup", "mouseout", "touchend":
-				if (keyHeld != -1 && keyHeld == noteIndex) {
+				if (heldKey != -1 && heldKey == noteIndex) {
+					
+					heldKey 	= -1;
 					pointerDown = !(e.type == "mouseup" || e.type == "touchend");
-					keyUp(noteIndex);
+					
+					setKeyIsDown(node, false);
+					
+					keyUp.dispatch(noteIndex);
 				}
 		}
 	}
 	
 	
-	public inline function getKeyForNote(noteIndex:Int) {
+	inline function getKeyForNote(noteIndex:Int) {
 		return noteIndexToKey.get(noteIndex);
 	}
 	
 	
-	public function setKeyIsDown(key:Element, isDown:Bool) {
+	public function setNoteState(index:Int, isDown:Bool) {
+		setKeyIsDown(getKeyForNote(index), isDown);
+	}
+	
+	
+	function setKeyIsDown(key:Element, isDown:Bool) {
 		if (key != null) {
 			var className = key.getAttribute('data-classname');
 			key.className = isDown ? 'key ${className} ${className}-hover' : 'key ${className}';
 		}
-	}
-	
-	
-	function keyDown(noteIndex:Int, node:Element) {
-		setKeyIsDown(node, true);
-		keyHeld = noteIndex;
-		noteOn.dispatch(noteIndex);
-	}
-	
-	
-	function keyUp(noteIndex:Int) {
-		setKeyIsDown(getKeyForNote(noteIndex), false);
-		keyHeld = -1;
-		noteOff.dispatch();
 	}
 	
 	

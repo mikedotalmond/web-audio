@@ -11,7 +11,6 @@ import msignal.Signal;
 
 class KeyboardInput {
 	
-	var heldNotes:Array<Int>;
 	var keyToNote:Map<Int, Int>;
 	
 	/**
@@ -23,12 +22,22 @@ class KeyboardInput {
 	 * Note off signal
 	 * */
 	
-	public var noteOff(default,null):Signal0;
+	public var noteOff(default,null):Signal0; // TODO:Move elsewhere
 
-	public var keyDown(default,null):Signal1<Int>;
+	public var keyDown(default, null):Signal1<Int>;
 	public var keyUp(default,null):Signal1<Int>;
 	
+	public var heldNotes(default, null):Array<Int>;
+	// current notes...
+	public inline function noteCount():Int 	return heldNotes.length > 0 ? heldNotes.length : -1;
+	public inline function hasNotes():Bool 	return noteCount() > 0;
+	public inline function firstNote():Int 	return noteCount() > 0 ? heldNotes[0] : -1;
+	public inline function lastNote():Int 	return noteCount() > 0 ? heldNotes[noteCount()-1] : -1;
 	
+	/**
+	 * 
+	 * @param	keyNotes
+	 */
 	public function new(keyNotes:KeyboardNotes) {
 		
 		heldNotes 	= [];
