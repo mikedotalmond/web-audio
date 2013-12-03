@@ -22,13 +22,15 @@ abstract ScriptProcessor(ScriptProcessorNode) from ScriptProcessorNode to Script
 	}
  }
 
- 
- 
+
+
 class Crusher {
 	
 	var exp:Float;
 	var iexp:Float;
 	var sampleCount:Int = 0;
+	var tempLeft:Float = 0;
+	var tempRight:Float = 0;
 	
 	var _bits:Float;
 	public var bits(get_bits, set_bits):Float;
@@ -57,16 +59,16 @@ class Crusher {
 		var n 		= outR.length;
 		var e 		= exp;
 		var ie 		= iexp;
-		// bit-crusher...
 		
-		var samplesPerCycle = Std.int((44100 / 11025) + 0.5);
+		// bit-crusher + sample-rate reduction (simple, skip samples... no interpolation)
+		
+		var samplesPerCycle = Std.int((44100 / 22050) + 0.5);
 		
 		var ditherLevel:Float = .25;
 		var dL:Float = .5;
 		var dR:Float = .5;
 	
-		var l:Float = 0, r:Float = 0,
-			tempLeft:Float = 0, tempRight:Float = 0;
+		var l:Float = 0, r:Float = 0;
 		
 		for (i in 0...n) {
 		
@@ -76,8 +78,8 @@ class Crusher {
 				if (ditherLevel > 0) { //create the random dither +/- 0.5
 					dL = 0.5 - (ditherLevel * Math.random());
 					dR = 0.5 - (ditherLevel * Math.random());
-				} else { 
-					dL = dR = 0.5; 
+				} else {
+					dL = dR = 0.5;
 				}
 				
 				l = tempLeft  = ie * Std.int(e * inL[i] + dL);
@@ -88,7 +90,7 @@ class Crusher {
 				r = tempRight;
 			}
 			
-			outL[i] = l; 
+			outL[i] = l;
 			outR[i] = r;
 			
 			sampleCount++;

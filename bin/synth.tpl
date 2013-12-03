@@ -1,6 +1,7 @@
-<div id="container"><!-- Based on http://codepen.io/lukeyphills/pen/CEfHx -->
+<div id="container"><!-- originally based on http://codepen.io/lukeyphills/pen/CEfHx -->
 	<div class="synth">
 		<div class="touch-move-scroll-blocker"></div>
+		
 		::if modules.visible::
 		<div id="modules" class="modules">
 			
