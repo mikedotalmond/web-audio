@@ -19,14 +19,12 @@ import utils.KeyboardNotes;
  */
 class KeyboardUI {
 	
-	var template		:Template;
-	var keys			:Array<UINote>;
 	var keyboardNotes	:KeyboardNotes;
 	var pointerDown		:Bool;
 	
-	var modules			:NodeList;
 	var keyboardKeys	:NodeList;
 	var noteIndexToKey	:Map<Int, Element>;
+	var ocataves		:Int;
 	
 	public var keyDown(default, null):Signal1<Int>;
 	public var keyUp(default, null):Signal1<Int>;
@@ -34,64 +32,55 @@ class KeyboardUI {
 	public var heldKey(default, null):Int;
 	public function keyIsDown() return heldKey != -1;
 	
+	
 	public function new(keyboardNotes:KeyboardNotes) {
 		this.keyboardNotes = keyboardNotes;
-		keys = getUIKeyNoteData();
-		loadTemplate();
-		
 		keyDown = new Signal1<Int>();
 		keyUp 	= new Signal1<Int>();
+		ocataves = 2;
 	}
 	
-	
-	function loadTemplate():Void {
-		var http:Http = new Http('synth.tpl');
-		http.async = true;
-		http.onError = function(err) { trace('Error loading synth ui-template: ${err}'); };
-		http.onData = renderTemplate;
-		http.request();
-	}
-	
-	
-	function renderTemplate(data:String) {
+	public function getKeyboardData(octaveShift:Int = 2, octaveCount:Int=2):Dynamic {
 		
-		template = new Template(data);
+		ocataves = octaveCount;
 		
-		var tData = {
-			modules: {
-				visible:true,
-				osc:{visible:true},
-				adsr:{visible:true},
-				filter:{visible:true},
-				outGain:{visible:true},
-			},
-			keyboard: {
-				visible:true,
-				keys:keys
-			}
+		return {
+			visible:true,
+			keys:getUIKeyNoteData(octaveShift, octaveCount)
 		};
-		
-		var markup 		= template.execute(tData);
-		var container 	= new DOMParser().parseFromString(markup, 'text/html').getElementById('container');
-		
-		while (Browser.document.body.firstChild != null) Browser.document.body.removeChild(Browser.document.body.firstChild);
-		Browser.document.body.appendChild(container);
-		
-		setupControls(container);
 	}
 	
 	
-	function setupControls(container:Element) {
+	public function setup(keyboardKeys:NodeList) {
 		
-		modules 		= container.getElementsByClassName("module");
-		keyboardKeys 	= container.getElementsByClassName("key");
-		noteIndexToKey 	= new Map<Int,Element>();
+		this.keyboardKeys 	= keyboardKeys;
+		noteIndexToKey 		= new Map<Int,Element>();
+		
+		var n 			= keyboardKeys.length;
+		var keyWidth 	= 	(ocataves == 1) ? 123:
+							(ocataves == 2) ? 60 : 
+							(ocataves == 3) ? 39.5 : 30;
+							
+		var keyHeight	= 	(ocataves == 1) ? 200:
+							(ocataves == 2) ? 180 : 
+							(ocataves == 3) ? 150 : 128;
+							
+		var marginRight	=	(ocataves == 1) ? 5 :
+							(ocataves == 2) ? 4 : 
+							(ocataves == 3) ? 3 : 2;
 		
 		for (key in keyboardKeys) {
 			key.addEventListener("mousedown", onKeyMouse);
 			key.addEventListener("mouseup", onKeyMouse);
 			key.addEventListener("mouseout", onKeyMouse);
 			key.addEventListener("mouseover", onKeyMouse);
+			
+			var k:Element = cast key;
+			if (k.className.indexOf("natural") != -1) {
+				k.style.width = '${keyWidth}px';
+				k.style.height = '${keyHeight}px';
+				k.style.marginRight = '${marginRight}px';
+			}
 			
 			var k:Element = cast key;
 			noteIndexToKey.set(Std.parseInt(k.getAttribute('data-noteindex')), k);

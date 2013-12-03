@@ -118,18 +118,19 @@ var Main = function() {
 	haxe.Log.trace("MonoSynth",{ fileName : "Main.hx", lineNumber : 45, className : "Main", methodName : "new"});
 	this.keyboardNotes = new utils.KeyboardNotes();
 	this.keyboardInput = new utils.KeyboardInput(this.keyboardNotes);
-	this.keyboardUI = new synth.ui.KeyboardUI(this.keyboardNotes);
+	this.monoSynthUI = new synth.ui.MonoSynthUI(this.keyboardNotes);
 	this.initAudio();
+	this.initKeyboardInputs();
 };
 Main.__name__ = true;
 Main.main = function() {
 	js.Browser.window.onload = function(e) {
-		haxe.Log.trace("onLoad",{ fileName : "Main.hx", lineNumber : 147, className : "Main", methodName : "main"});
+		haxe.Log.trace("onLoad",{ fileName : "Main.hx", lineNumber : 144, className : "Main", methodName : "main"});
 		Main.createContext();
 		if(Main.context == null) js.Browser.window.alert("Web Audio API not supported - try a different/better browser"); else Main.instance = new Main();
 	};
 	js.Browser.window.onbeforeunload = function(e) {
-		haxe.Log.trace("unLoad",{ fileName : "Main.hx", lineNumber : 159, className : "Main", methodName : "main"});
+		haxe.Log.trace("unLoad",{ fileName : "Main.hx", lineNumber : 156, className : "Main", methodName : "main"});
 		Main.instance.dispose();
 		Main.instance = null;
 		Main.context = null;
@@ -141,7 +142,7 @@ Main.createContext = function() {
 	try {
 		c = new AudioContext();
 	} catch( err ) {
-		haxe.Log.trace("Error creating an AudioContext",{ fileName : "Main.hx", lineNumber : 175, className : "Main", methodName : "createContext", customParams : [err]});
+		haxe.Log.trace("Error creating an AudioContext",{ fileName : "Main.hx", lineNumber : 172, className : "Main", methodName : "createContext", customParams : [err]});
 		c = null;
 	}
 	Main.context = c;
@@ -173,30 +174,29 @@ Main.prototype = {
 			var f = _g.keyboardNotes.noteFreq.noteIndexToFrequency(i);
 			_g.monoSynth.noteOn(Main.context.currentTime,f,.8,!_g.monoSynth.noteIsOn);
 		};
-		this.keyboardUI.keyDown.add(handleNoteOn);
-		this.keyboardUI.keyUp.add(function(i) {
+		this.monoSynthUI.keyboard.keyDown.add(handleNoteOn);
+		this.monoSynthUI.keyboard.keyUp.add(function(i) {
 			if(_g.keyboardInput.hasNotes()) handleNoteOn(_g.keyboardInput.lastNote()); else handleNoteOff();
 		});
 		this.keyboardInput.noteOn.add(handleNoteOn);
 		this.keyboardInput.noteOff.add(function() {
-			if(_g.keyboardUI.keyIsDown()) handleNoteOn(_g.keyboardUI.heldKey); else handleNoteOff();
+			if(_g.monoSynthUI.keyboard.keyIsDown()) handleNoteOn(_g.monoSynthUI.keyboard.heldKey); else handleNoteOff();
 		});
 		this.keyboardInput.keyDown.add((function(f1,a2) {
 			return function(a1) {
 				return f1(a1,a2);
 			};
-		})(($_=this.keyboardUI,$bind($_,$_.setNoteState)),true));
+		})(($_=this.monoSynthUI.keyboard,$bind($_,$_.setNoteState)),true));
 		this.keyboardInput.keyUp.add((function(f2,a21) {
 			return function(a1) {
 				return f2(a1,a21);
 			};
-		})(($_=this.keyboardUI,$bind($_,$_.setNoteState)),false));
+		})(($_=this.monoSynthUI.keyboard,$bind($_,$_.setNoteState)),false));
 	}
 	,initAudio: function() {
 		this.crusher = new synth.processor.Crusher(Main.context,null,Main.context.destination);
 		this.crusher.set_bits(4);
 		this.initMonoSynth(this.crusher.node);
-		this.initKeyboardInputs();
 	}
 	,__class__: Main
 }
@@ -1294,10 +1294,9 @@ synth.processor.Crusher.prototype = {
 synth.ui = {}
 synth.ui.KeyboardUI = function(keyboardNotes) {
 	this.keyboardNotes = keyboardNotes;
-	this.keys = this.getUIKeyNoteData();
-	this.loadTemplate();
 	this.keyDown = new msignal.Signal1();
 	this.keyUp = new msignal.Signal1();
+	this.ocataves = 2;
 };
 synth.ui.KeyboardUI.__name__ = true;
 synth.ui.KeyboardUI.prototype = {
@@ -1357,46 +1356,76 @@ synth.ui.KeyboardUI.prototype = {
 			break;
 		}
 	}
-	,setupControls: function(container) {
-		this.modules = container.getElementsByClassName("module");
-		this.keyboardKeys = container.getElementsByClassName("key");
+	,setup: function(keyboardKeys) {
+		this.keyboardKeys = keyboardKeys;
 		this.noteIndexToKey = new haxe.ds.IntMap();
-		var _g = 0, _g1 = this.keyboardKeys;
-		while(_g < _g1.length) {
-			var key = _g1[_g];
+		var n = keyboardKeys.length;
+		var keyWidth = this.ocataves == 1?123:this.ocataves == 2?60:this.ocataves == 3?39.5:30;
+		var keyHeight = this.ocataves == 1?200:this.ocataves == 2?180:this.ocataves == 3?150:128;
+		var marginRight = this.ocataves == 1?5:this.ocataves == 2?4:this.ocataves == 3?3:2;
+		var _g = 0;
+		while(_g < keyboardKeys.length) {
+			var key = keyboardKeys[_g];
 			++_g;
 			key.addEventListener("mousedown",$bind(this,this.onKeyMouse));
 			key.addEventListener("mouseup",$bind(this,this.onKeyMouse));
 			key.addEventListener("mouseout",$bind(this,this.onKeyMouse));
 			key.addEventListener("mouseover",$bind(this,this.onKeyMouse));
 			var k = key;
-			this.noteIndexToKey.set(Std.parseInt(k.getAttribute("data-noteindex")),k);
+			if(k.className.indexOf("natural") != -1) {
+				k.style.width = "" + keyWidth + "px";
+				k.style.height = "" + keyHeight + "px";
+				k.style.marginRight = "" + marginRight + "px";
+			}
+			var k1 = key;
+			this.noteIndexToKey.set(Std.parseInt(k1.getAttribute("data-noteindex")),k1);
 		}
 		this.heldKey = -1;
 		this.pointerDown = false;
 	}
-	,renderTemplate: function(data) {
-		this.template = new haxe.Template(data);
-		var tData = { modules : { visible : true, osc : { visible : true}, adsr : { visible : true}, filter : { visible : true}, outGain : { visible : true}}, keyboard : { visible : true, keys : this.keys}};
+	,getKeyboardData: function(octaveShift,octaveCount) {
+		if(octaveCount == null) octaveCount = 2;
+		if(octaveShift == null) octaveShift = 2;
+		this.ocataves = octaveCount;
+		return { visible : true, keys : this.getUIKeyNoteData(octaveShift,octaveCount)};
+	}
+	,keyIsDown: function() {
+		return this.heldKey != -1;
+	}
+	,__class__: synth.ui.KeyboardUI
+}
+synth.ui.MonoSynthUI = function(keyboardNotes) {
+	this.keyboard = new synth.ui.KeyboardUI(keyboardNotes);
+	this.loadTemplate();
+};
+synth.ui.MonoSynthUI.__name__ = true;
+synth.ui.MonoSynthUI.prototype = {
+	setupControls: function(container) {
+		this.modules = container.getElementsByClassName("module");
+		this.keyboard.setup(container.getElementsByClassName("key"));
+	}
+	,renderTemplate: function() {
+		var tData = { modules : { visible : true, osc : { visible : true}, adsr : { visible : true}, filter : { visible : true}, outGain : { visible : true}}, keyboard : this.keyboard.getKeyboardData(2,3)};
 		var markup = this.template.execute(tData);
 		var container = new DOMParser().parseFromString(markup,"text/html").getElementById("container");
 		while(js.Browser.document.body.firstChild != null) js.Browser.document.body.removeChild(js.Browser.document.body.firstChild);
 		js.Browser.document.body.appendChild(container);
 		this.setupControls(container);
 	}
+	,templateLoaded: function(data) {
+		this.template = new haxe.Template(data);
+		this.renderTemplate();
+	}
 	,loadTemplate: function() {
 		var http = new haxe.Http("synth.tpl");
 		http.async = true;
 		http.onError = function(err) {
-			haxe.Log.trace("Error loading synth ui-template: " + err,{ fileName : "KeyboardUI.hx", lineNumber : 50, className : "synth.ui.KeyboardUI", methodName : "loadTemplate"});
+			haxe.Log.trace("Error loading synth ui-template: " + err,{ fileName : "MonoSynthUI.hx", lineNumber : 34, className : "synth.ui.MonoSynthUI", methodName : "loadTemplate"});
 		};
-		http.onData = $bind(this,this.renderTemplate);
+		http.onData = $bind(this,this.templateLoaded);
 		http.request();
 	}
-	,keyIsDown: function() {
-		return this.heldKey != -1;
-	}
-	,__class__: synth.ui.KeyboardUI
+	,__class__: synth.ui.MonoSynthUI
 }
 var utils = {}
 utils.KeyboardInput = function(keyNotes) {

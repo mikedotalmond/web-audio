@@ -8,7 +8,7 @@ import js.html.audio.AudioProcessingEvent;
 import js.html.audio.ScriptProcessorNode;
 import js.html.DOMParser;
 import synth.processor.Crusher;
-import synth.ui.KeyboardUI;
+import synth.ui.MonoSynthUI;
 import utils.KeyboardNotes;
 
 import synth.MonoSynth;
@@ -38,7 +38,7 @@ import utils.KeyboardInput;
 	
 	var crusher			:Crusher;
 	
-	var keyboardUI		:KeyboardUI;
+	var monoSynthUI		:MonoSynthUI;
 	
 	function new() {
 		
@@ -46,22 +46,19 @@ import utils.KeyboardInput;
 		
 		keyboardNotes 	= new KeyboardNotes(); // util
 		keyboardInput 	= new KeyboardInput(keyboardNotes);
-		keyboardUI 		= new KeyboardUI(keyboardNotes);
+		monoSynthUI		= new MonoSynthUI(keyboardNotes);
 		
 		initAudio();
+		initKeyboardInputs();
 	}
 	
 	
 	function initAudio() {
-		
 		crusher 		= new Crusher(context, null, context.destination); 
 		crusher.bits	= 4;
 		
 		initMonoSynth(crusher.node);
 		//initMonoSynth(context.destination);
-		
-		initKeyboardInputs();
-		
 	}
 	
 	function initKeyboardInputs() {
@@ -78,8 +75,8 @@ import utils.KeyboardInput;
 		
 		
 		// bind to ui keyboard signals
-		keyboardUI.keyDown.add(handleNoteOn);
-		keyboardUI.keyUp.add(function(i) { 
+		monoSynthUI.keyboard.keyDown.add(handleNoteOn);
+		monoSynthUI.keyboard.keyUp.add(function(i) { 
 			if (keyboardInput.hasNotes()) { // key up on ui keyboard, check for any (HID) keyboard keys
 				handleNoteOn(keyboardInput.lastNote()); // retrigger last pressed key
 			} else {
@@ -90,16 +87,16 @@ import utils.KeyboardInput;
 		// bind to hardware keyboard signals
 		keyboardInput.noteOn.add(handleNoteOn);
 		keyboardInput.noteOff.add(function() {
-			if (keyboardUI.keyIsDown()) { // still got a ui key pressed?
-				handleNoteOn(keyboardUI.heldKey);  // retrigger the held key
+			if (monoSynthUI.keyboard.keyIsDown()) { // still got a ui key pressed?
+				handleNoteOn(monoSynthUI.keyboard.heldKey);  // retrigger the held key
 			} else {
 				handleNoteOff(); // no keys down? note off
 			}
 		});
 		
 		// HID keyboard inputs, update ui-keys...
-		keyboardInput.keyDown.add(keyboardUI.setNoteState.bind(_, true));
-		keyboardInput.keyUp.add(keyboardUI.setNoteState.bind(_, false));
+		keyboardInput.keyDown.add(monoSynthUI.keyboard.setNoteState.bind(_, true));
+		keyboardInput.keyUp.add(monoSynthUI.keyboard.setNoteState.bind(_, false));
 	}
 	
 
