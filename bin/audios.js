@@ -115,7 +115,7 @@ List.prototype = {
 	,__class__: List
 }
 var Main = function() {
-	haxe.Log.trace("MonoSynth",{ fileName : "Main.hx", lineNumber : 44, className : "Main", methodName : "new"});
+	haxe.Log.trace("MonoSynth",{ fileName : "Main.hx", lineNumber : 45, className : "Main", methodName : "new"});
 	this.keyboardNotes = new utils.KeyboardNotes();
 	this.keyboardInput = new utils.KeyboardInput(this.keyboardNotes);
 	this.keyboardUI = new synth.ui.KeyboardUI(this.keyboardNotes);
@@ -124,12 +124,12 @@ var Main = function() {
 Main.__name__ = true;
 Main.main = function() {
 	js.Browser.window.onload = function(e) {
-		haxe.Log.trace("onLoad",{ fileName : "Main.hx", lineNumber : 161, className : "Main", methodName : "main"});
+		haxe.Log.trace("onLoad",{ fileName : "Main.hx", lineNumber : 147, className : "Main", methodName : "main"});
 		Main.createContext();
 		if(Main.context == null) js.Browser.window.alert("Web Audio API not supported - try a different/better browser"); else Main.instance = new Main();
 	};
 	js.Browser.window.onbeforeunload = function(e) {
-		haxe.Log.trace("unLoad",{ fileName : "Main.hx", lineNumber : 173, className : "Main", methodName : "main"});
+		haxe.Log.trace("unLoad",{ fileName : "Main.hx", lineNumber : 159, className : "Main", methodName : "main"});
 		Main.instance.dispose();
 		Main.instance = null;
 		Main.context = null;
@@ -141,7 +141,7 @@ Main.createContext = function() {
 	try {
 		c = new AudioContext();
 	} catch( err ) {
-		haxe.Log.trace("Error creating an AudioContext",{ fileName : "Main.hx", lineNumber : 189, className : "Main", methodName : "createContext", customParams : [err]});
+		haxe.Log.trace("Error creating an AudioContext",{ fileName : "Main.hx", lineNumber : 175, className : "Main", methodName : "createContext", customParams : [err]});
 		c = null;
 	}
 	Main.context = c;
@@ -157,39 +157,15 @@ Main.prototype = {
 	,initMonoSynth: function(destination) {
 		this.monoSynth = new synth.MonoSynth(destination);
 		this.monoSynth.set_oscillatorType(2);
-		this.monoSynth.setOutputGain(.66);
-		this.monoSynth.osc_portamentoTime = .1;
+		this.monoSynth.setOutputGain(1);
+		this.monoSynth.osc_portamentoTime = .05;
 		this.monoSynth.adsr_attackTime = .05;
 		this.monoSynth.adsr_decayTime = 1;
 		this.monoSynth.adsr_sustain = 0.5;
 		this.monoSynth.adsr_releaseTime = .2;
 	}
-	,crusherImpl: function(e) {
-		var inL = e.inputBuffer.getChannelData(0);
-		var inR = e.inputBuffer.getChannelData(1);
-		var outL = e.outputBuffer.getChannelData(0);
-		var outR = e.outputBuffer.getChannelData(1);
-		var n = outR.length;
-		var bits = 4.0;
-		var exp = Math.pow(2,bits);
-		var iexp = 1 / exp;
-		var _g = 0;
-		while(_g < n) {
-			var i = _g++;
-			outL[i] = iexp * (exp * inL[i] | 0);
-			outR[i] = iexp * (exp * inR[i] | 0);
-		}
-	}
-	,initAudio: function() {
+	,initKeyboardInputs: function() {
 		var _g = this;
-		try {
-			this.crusher = Main.context.createScriptProcessor();
-		} catch( err ) {
-			this.crusher = Main.context.createScriptProcessor(2048);
-		}
-		this.crusher.onaudioprocess = $bind(this,this.crusherImpl);
-		this.crusher.connect(Main.context.destination);
-		this.initMonoSynth(this.crusher);
 		var handleNoteOff = function() {
 			_g.monoSynth.noteOff(Main.context.currentTime);
 		};
@@ -215,6 +191,12 @@ Main.prototype = {
 				return f2(a1,a21);
 			};
 		})(($_=this.keyboardUI,$bind($_,$_.setNoteState)),false));
+	}
+	,initAudio: function() {
+		this.crusher = new synth.processor.Crusher(Main.context,null,Main.context.destination);
+		this.crusher.set_bits(4);
+		this.initMonoSynth(this.crusher.node);
+		this.initKeyboardInputs();
 	}
 	,__class__: Main
 }
@@ -1196,8 +1178,8 @@ synth.MonoSynth.prototype = {
 			}(this)));
 			this.biquad.frequency.cancelScheduledValues(when);
 			this.biquad.frequency.setValueAtTime(this.biquad.frequency.value,when);
-			this.biquad.frequency.exponentialRampToValueAtTime(200,when + .25);
-			when + .25;
+			this.biquad.frequency.exponentialRampToValueAtTime(100,when + .45);
+			when + .45;
 			this.noteIsOn = false;
 		}
 	}
@@ -1216,11 +1198,11 @@ synth.MonoSynth.prototype = {
 			if(retrigger) this.adsr.gain.setValueAtTime(0,when);
 			this.adsr.gain.setTargetAtTime(velocity,when,1 - 1 / Math.exp(attackTime));
 			if(sustainLevel != 1.0) this.adsr.gain.setTargetAtTime(velocity * sustainLevel,when + attackTime,1 - 1 / Math.exp(this.adsr_decayTime));
-			var startFreq = 200;
+			var startFreq = 100;
 			startFreq = retrigger?startFreq:this.biquad.frequency.value;
 			this.biquad.frequency.cancelScheduledValues(when);
 			this.biquad.frequency.setValueAtTime(startFreq,when);
-			this.biquad.frequency.exponentialRampToValueAtTime(8000,when + .3);
+			this.biquad.frequency.exponentialRampToValueAtTime(8000,when + .35);
 		}
 		this.noteIsOn = true;
 	}
@@ -1241,6 +1223,73 @@ synth.MonoSynth.prototype = {
 		return this.oscType;
 	}
 	,__class__: synth.MonoSynth
+}
+synth.processor = {}
+synth.processor.Crusher = function(context,input,destination) {
+	this.sampleCount = 0;
+	this.set_bits(8);
+	this.node = (function($this) {
+		var $r;
+		var this1;
+		this1 = (function($this) {
+			var $r;
+			try {
+				$r = context.createScriptProcessor();
+			} catch( err ) {
+				$r = context.createScriptProcessor(2048);
+			}
+			return $r;
+		}($this));
+		if(input != null) input.connect(this1);
+		if(destination != null) this1.connect(destination);
+		$r = this1;
+		return $r;
+	}(this));
+	this.node.onaudioprocess = $bind(this,this.crusherImpl);
+};
+synth.processor.Crusher.__name__ = true;
+synth.processor.Crusher.prototype = {
+	crusherImpl: function(e) {
+		var inL = e.inputBuffer.getChannelData(0);
+		var inR = e.inputBuffer.getChannelData(1);
+		var outL = e.outputBuffer.getChannelData(0);
+		var outR = e.outputBuffer.getChannelData(1);
+		var n = outR.length;
+		var e1 = this.exp;
+		var ie = this.iexp;
+		var samplesPerCycle = 4;
+		var ditherLevel = .25;
+		var dL = .5;
+		var dR = .5;
+		var l = 0, r = 0, tempLeft = 0, tempRight = 0;
+		var _g = 0;
+		while(_g < n) {
+			var i = _g++;
+			if(this.sampleCount >= samplesPerCycle) {
+				this.sampleCount = 0;
+				if(ditherLevel > 0) {
+					dL = 0.5 - ditherLevel * Math.random();
+					dR = 0.5 - ditherLevel * Math.random();
+				} else dL = dR = 0.5;
+				l = tempLeft = ie * (e1 * inL[i] + dL | 0);
+				r = tempRight = ie * (e1 * inR[i] + dR | 0);
+			} else {
+				l = tempLeft;
+				r = tempRight;
+			}
+			outL[i] = l;
+			outR[i] = r;
+			this.sampleCount++;
+		}
+	}
+	,set_bits: function(value) {
+		if(this._bits != value) {
+			this.exp = Math.pow(2,value);
+			this.iexp = 1 / this.exp;
+		}
+		return this._bits = value;
+	}
+	,__class__: synth.processor.Crusher
 }
 synth.ui = {}
 synth.ui.KeyboardUI = function(keyboardNotes) {

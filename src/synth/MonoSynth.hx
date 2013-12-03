@@ -16,6 +16,7 @@ import synth.ADSR.BiquadEnvelope;
  *
  * @author Mike Almond - https://github.com/mikedotalmond *
  */
+
 class MonoSynth { //
 	
 	var adsr						:ADSR;
@@ -92,7 +93,7 @@ class MonoSynth { //
 		if (!noteIsOn || retrigger) {
 			adsr.trigger(when, velocity, adsr_attackTime, adsr_decayTime, adsr_sustain, retrigger);
 			//if FEG active...
-			biquad.trigger(when, 200, .3, 8000, retrigger);
+			biquad.trigger(when, 100, .35, 8000, retrigger);
 		}
 		noteIsOn = true;
 	}
@@ -100,7 +101,7 @@ class MonoSynth { //
 	public function noteOff(when) {
 		if (noteIsOn) {
 			currentOscillator.release(adsr.release(when, adsr_releaseTime));
-			biquad.release(when, 200, .25);
+			biquad.release(when, 100, .45);
 			noteIsOn = false;
 		}
 	}

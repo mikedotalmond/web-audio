@@ -7,6 +7,7 @@ import js.html.audio.AudioContext;
 import js.html.audio.AudioProcessingEvent;
 import js.html.audio.ScriptProcessorNode;
 import js.html.DOMParser;
+import synth.processor.Crusher;
 import synth.ui.KeyboardUI;
 import utils.KeyboardNotes;
 
@@ -35,7 +36,7 @@ import utils.KeyboardInput;
 	
 	var monoSynth		:MonoSynth;
 	
-	var crusher			:ScriptProcessorNode;
+	var crusher			:Crusher;
 	
 	var keyboardUI		:KeyboardUI;
 	
@@ -53,19 +54,19 @@ import utils.KeyboardInput;
 	
 	function initAudio() {
 		
-		try {
-			crusher = context.createScriptProcessor(); //ff
-		} catch (err:Dynamic) {
-			crusher =  context.createScriptProcessor(2048); //chrome
-		}
-		crusher.onaudioprocess = crusherImpl;
-		crusher.connect(context.destination);
-		initMonoSynth(crusher);
+		crusher 		= new Crusher(context, null, context.destination); 
+		crusher.bits	= 4;
 		
+		initMonoSynth(crusher.node);
 		//initMonoSynth(context.destination);
 		
+		initKeyboardInputs();
 		
-		// Key / Note control setup
+	}
+	
+	function initKeyboardInputs() {
+		
+		// Monophonic key / note control setup
 		var handleNoteOff = function() {
 			monoSynth.noteOff(context.currentTime);
 		}
@@ -101,25 +102,7 @@ import utils.KeyboardInput;
 		keyboardInput.keyUp.add(keyboardUI.setNoteState.bind(_, false));
 	}
 	
-	
-	function crusherImpl(e:AudioProcessingEvent) {
-		var inL		= e.inputBuffer.getChannelData(0);
-		var inR		= e.inputBuffer.getChannelData(1);
-		var outL	= e.outputBuffer.getChannelData(0);
-		var outR	= e.outputBuffer.getChannelData(1);
-		
-		var n 		= outR.length;
-		var bits 	= 4.0;
-		var exp 	= Math.pow(2, bits);
-		var iexp 	= (1 / exp);
-		
-		// bit-crusher...
-		for (i in 0...n) {
-			outL[i] = iexp * Std.int(exp * inL[i]);
-			outR[i] = iexp * Std.int(exp * inR[i]);
-		}
-	}
-	
+
 	/**
 	 * set up a little monosynth with keyboard input
 	 */
@@ -129,9 +112,10 @@ import utils.KeyboardInput;
 		//monoSynth.oscillatorType = Oscillator.TRIANGLE;
 		monoSynth.oscillatorType = Oscillator.SAWTOOTH;
 		//monoSynth.oscillatorType = Oscillator.SQUARE;
-		monoSynth.setOutputGain(.66);
+		monoSynth.setOutputGain(1);
 		
-		monoSynth.osc_portamentoTime = .1;
+		monoSynth.osc_portamentoTime = .05;
+		//monoSynth.osc_portamentoTime = 1;
 		monoSynth.adsr_attackTime = .05;
 		monoSynth.adsr_decayTime = 1;
 		monoSynth.adsr_sustain = 0.5;
