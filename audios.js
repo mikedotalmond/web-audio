@@ -34,6 +34,7 @@ EReg.prototype = {
 		this.r.s = s;
 		return this.r.m != null;
 	}
+	,__class__: EReg
 }
 var HxOverrides = function() { }
 HxOverrides.__name__ = true;
@@ -111,6 +112,7 @@ List.prototype = {
 		this.q = x;
 		this.length++;
 	}
+	,__class__: List
 }
 var Main = function() {
 	haxe.Log.trace("MonoSynth",{ fileName : "Main.hx", lineNumber : 45, className : "Main", methodName : "new"});
@@ -119,16 +121,17 @@ var Main = function() {
 	this.monoSynthUI = new synth.ui.MonoSynthUI(this.keyboardNotes);
 	this.initAudio();
 	this.initKeyboardInputs();
+	this.monoSynthUI.ready.addOnce($bind(this,this.uiReady));
 };
 Main.__name__ = true;
 Main.main = function() {
 	js.Browser.window.onload = function(e) {
-		haxe.Log.trace("onLoad",{ fileName : "Main.hx", lineNumber : 144, className : "Main", methodName : "main"});
+		haxe.Log.trace("onLoad",{ fileName : "Main.hx", lineNumber : 190, className : "Main", methodName : "main"});
 		Main.createContext();
 		if(Main.context == null) js.Browser.window.alert("Web Audio API not supported - try a different/better browser"); else Main.instance = new Main();
 	};
 	js.Browser.window.onbeforeunload = function(e) {
-		haxe.Log.trace("unLoad",{ fileName : "Main.hx", lineNumber : 156, className : "Main", methodName : "main"});
+		haxe.Log.trace("unLoad",{ fileName : "Main.hx", lineNumber : 202, className : "Main", methodName : "main"});
 		Main.instance.dispose();
 		Main.instance = null;
 		Main.context = null;
@@ -140,7 +143,7 @@ Main.createContext = function() {
 	try {
 		c = new AudioContext();
 	} catch( err ) {
-		haxe.Log.trace("Error creating an AudioContext",{ fileName : "Main.hx", lineNumber : 172, className : "Main", methodName : "createContext", customParams : [err]});
+		haxe.Log.trace("Error creating an AudioContext",{ fileName : "Main.hx", lineNumber : 218, className : "Main", methodName : "createContext", customParams : [err]});
 		c = null;
 	}
 	Main.context = c;
@@ -156,7 +159,6 @@ Main.prototype = {
 	,initMonoSynth: function(destination) {
 		this.monoSynth = new synth.MonoSynth(destination);
 		this.monoSynth.set_oscillatorType(2);
-		this.monoSynth.setOutputGain(1);
 		this.monoSynth.osc_portamentoTime = .05;
 		this.monoSynth.adsr_attackTime = .05;
 		this.monoSynth.adsr_decayTime = 1;
@@ -196,6 +198,67 @@ Main.prototype = {
 		this.crusher.set_bits(4);
 		this.initMonoSynth(this.crusher.node);
 	}
+	,onModuleSliderChange: function(id,value) {
+		haxe.Log.trace("" + id + ": " + value,{ fileName : "Main.hx", lineNumber : 66, className : "Main", methodName : "onModuleSliderChange"});
+		var now = Main.context.currentTime;
+		var m = this.monoSynth;
+		if(id.indexOf("osc-") == 0) switch(id) {
+		case "osc-shape":
+			m.set_oscillatorType(value | 0);
+			break;
+		case "osc-slide":
+			m.osc_portamentoTime = value;
+			break;
+		} else if(id.indexOf("filter-") == 0) switch(id) {
+		case "filter-type":
+			m.biquad.type = value | 0;
+			break;
+		case "filter-freq":
+			m.filterFrequency = (Math.exp(value) - 1) / 2.718281828459045 / 0.6321205588285577;
+			break;
+		case "filter-res":
+			m.filterQ = value;
+			break;
+		case "filter-gain":
+			m.filterGain = (Math.exp(value) - 1) / 2.718281828459045 / 0.6321205588285577;
+			break;
+		case "filter-env-range":
+			m.filterEnvRange = (Math.exp(value) - 1) / 2.718281828459045 / 0.6321205588285577;
+			break;
+		case "filter-env-attack":
+			m.filterEnvAttack = value;
+			break;
+		case "filter-env-release":
+			m.filterEnvRelease = value;
+			break;
+		} else if(id.indexOf("adsr-") == 0) switch(id) {
+		case "adsr-attack":
+			m.adsr_attackTime = value;
+			break;
+		case "adsr-decay":
+			m.adsr_decayTime = value;
+			break;
+		case "adsr-sustain":
+			m.adsr_sustain = value;
+			break;
+		case "adsr-release":
+			m.adsr_releaseTime = value;
+			break;
+		} else if(id.indexOf("out-") == 0) switch(id) {
+		case "out-gain":
+			m.setOutputGain((Math.exp(value) - 1) / 2.718281828459045 / 0.6321205588285577);
+			break;
+		}
+	}
+	,uiReady: function() {
+		var _g = 0, _g1 = this.monoSynthUI.modules;
+		while(_g < _g1.length) {
+			var module = _g1[_g];
+			++_g;
+			module.sliderChange.add($bind(this,this.onModuleSliderChange));
+		}
+	}
+	,__class__: Main
 }
 var IMap = function() { }
 IMap.__name__ = true;
@@ -238,6 +301,9 @@ var StringBuf = function() {
 	this.b = "";
 };
 StringBuf.__name__ = true;
+StringBuf.prototype = {
+	__class__: StringBuf
+}
 var StringTools = function() { }
 StringTools.__name__ = true;
 StringTools.urlEncode = function(s) {
@@ -316,6 +382,7 @@ haxe.Http.prototype = {
 		r.send(uri);
 		if(!this.async) onreadystatechange(null);
 	}
+	,__class__: haxe.Http
 }
 haxe.Log = function() { }
 haxe.Log.__name__ = true;
@@ -700,6 +767,7 @@ haxe.Template.prototype = {
 		this.run(this.expr);
 		return this.buf.b;
 	}
+	,__class__: haxe.Template
 }
 haxe.ds = {}
 haxe.ds.IntMap = function() {
@@ -717,6 +785,7 @@ haxe.ds.IntMap.prototype = {
 	,set: function(key,value) {
 		this.h[key] = value;
 	}
+	,__class__: haxe.ds.IntMap
 }
 haxe.ds.StringMap = function() {
 	this.h = { };
@@ -734,6 +803,7 @@ haxe.ds.StringMap.prototype = {
 	,get: function(key) {
 		return this.h["$" + key];
 	}
+	,__class__: haxe.ds.StringMap
 }
 var js = {}
 js.Boot = function() { }
@@ -821,6 +891,48 @@ js.Boot.__string_rec = function(o,s) {
 		return String(o);
 	}
 }
+js.Boot.__interfLoop = function(cc,cl) {
+	if(cc == null) return false;
+	if(cc == cl) return true;
+	var intf = cc.__interfaces__;
+	if(intf != null) {
+		var _g1 = 0, _g = intf.length;
+		while(_g1 < _g) {
+			var i = _g1++;
+			var i1 = intf[i];
+			if(i1 == cl || js.Boot.__interfLoop(i1,cl)) return true;
+		}
+	}
+	return js.Boot.__interfLoop(cc.__super__,cl);
+}
+js.Boot.__instanceof = function(o,cl) {
+	if(cl == null) return false;
+	switch(cl) {
+	case Int:
+		return (o|0) === o;
+	case Float:
+		return typeof(o) == "number";
+	case Bool:
+		return typeof(o) == "boolean";
+	case String:
+		return typeof(o) == "string";
+	case Dynamic:
+		return true;
+	default:
+		if(o != null) {
+			if(typeof(cl) == "function") {
+				if(o instanceof cl) {
+					if(cl == Array) return o.__enum__ == null;
+					return true;
+				}
+				if(js.Boot.__interfLoop(o.__class__,cl)) return true;
+			}
+		} else return false;
+		if(cl == Class && o.__name__ != null) return true;
+		if(cl == Enum && o.__ename__ != null) return true;
+		return o.__enum__ == cl;
+	}
+}
 js.Browser = function() { }
 js.Browser.__name__ = true;
 js.Browser.createXMLHttpRequest = function() {
@@ -869,9 +981,13 @@ msignal.Signal.prototype = {
 		this.slots = this.slots.filterNot(listener);
 		return slot;
 	}
+	,addOnce: function(listener) {
+		return this.registerListener(listener,true);
+	}
 	,add: function(listener) {
 		return this.registerListener(listener);
 	}
+	,__class__: msignal.Signal
 }
 msignal.Signal0 = function() {
 	msignal.Signal.call(this);
@@ -891,6 +1007,7 @@ msignal.Signal0.prototype = $extend(msignal.Signal.prototype,{
 			slotsToProcess = slotsToProcess.tail;
 		}
 	}
+	,__class__: msignal.Signal0
 });
 msignal.Signal1 = function(type) {
 	msignal.Signal.call(this,[type]);
@@ -910,6 +1027,27 @@ msignal.Signal1.prototype = $extend(msignal.Signal.prototype,{
 			slotsToProcess = slotsToProcess.tail;
 		}
 	}
+	,__class__: msignal.Signal1
+});
+msignal.Signal2 = function(type1,type2) {
+	msignal.Signal.call(this,[type1,type2]);
+};
+msignal.Signal2.__name__ = true;
+msignal.Signal2.__super__ = msignal.Signal;
+msignal.Signal2.prototype = $extend(msignal.Signal.prototype,{
+	createSlot: function(listener,once,priority) {
+		if(priority == null) priority = 0;
+		if(once == null) once = false;
+		return new msignal.Slot2(this,listener,once,priority);
+	}
+	,dispatch: function(value1,value2) {
+		var slotsToProcess = this.slots;
+		while(slotsToProcess.nonEmpty) {
+			slotsToProcess.head.execute(value1,value2);
+			slotsToProcess = slotsToProcess.tail;
+		}
+	}
+	,__class__: msignal.Signal2
 });
 msignal.Slot = function(signal,listener,once,priority) {
 	if(priority == null) priority = 0;
@@ -929,6 +1067,7 @@ msignal.Slot.prototype = {
 	,remove: function() {
 		this.signal.remove(this.listener);
 	}
+	,__class__: msignal.Slot
 }
 msignal.Slot0 = function(signal,listener,once,priority) {
 	if(priority == null) priority = 0;
@@ -943,6 +1082,7 @@ msignal.Slot0.prototype = $extend(msignal.Slot.prototype,{
 		if(this.once) this.remove();
 		this.listener();
 	}
+	,__class__: msignal.Slot0
 });
 msignal.Slot1 = function(signal,listener,once,priority) {
 	if(priority == null) priority = 0;
@@ -958,6 +1098,24 @@ msignal.Slot1.prototype = $extend(msignal.Slot.prototype,{
 		if(this.param != null) value1 = this.param;
 		this.listener(value1);
 	}
+	,__class__: msignal.Slot1
+});
+msignal.Slot2 = function(signal,listener,once,priority) {
+	if(priority == null) priority = 0;
+	if(once == null) once = false;
+	msignal.Slot.call(this,signal,listener,once,priority);
+};
+msignal.Slot2.__name__ = true;
+msignal.Slot2.__super__ = msignal.Slot;
+msignal.Slot2.prototype = $extend(msignal.Slot.prototype,{
+	execute: function(value1,value2) {
+		if(!this.enabled) return;
+		if(this.once) this.remove();
+		if(this.param1 != null) value1 = this.param1;
+		if(this.param2 != null) value2 = this.param2;
+		this.listener(value1,value2);
+	}
+	,__class__: msignal.Slot2
 });
 msignal.SlotList = function(head,tail) {
 	this.nonEmpty = false;
@@ -1018,9 +1176,16 @@ msignal.SlotList.prototype = {
 	,prepend: function(slot) {
 		return new msignal.SlotList(slot,this);
 	}
+	,__class__: msignal.SlotList
 }
 var synth = {}
 synth.MonoSynth = function(destination) {
+	this.filterEnvRelease = 1;
+	this.filterEnvAttack = .1;
+	this.filterEnvRange = 1;
+	this.filterGain = 1;
+	this.filterQ = 10;
+	this.filterFrequency = .001;
 	this.oscType = 0;
 	this.noteIsOn = false;
 	this.osc_portamentoTime = 0;
@@ -1078,8 +1243,8 @@ synth.MonoSynth = function(destination) {
 		var this1;
 		this1 = context.createBiquadFilter();
 		this1.type = 0;
-		this1.frequency.value = 200;
-		this1.Q.value = 10;
+		this1.frequency.value = $this.filterFrequency;
+		this1.Q.value = $this.filterQ;
 		this1.gain.value = 0;
 		$r = this1;
 		return $r;
@@ -1117,10 +1282,11 @@ synth.MonoSynth.prototype = {
 				$r = when + er;
 				return $r;
 			}(this)));
+			var releaseDuration = this.filterEnvRelease;
 			this.biquad.frequency.cancelScheduledValues(when);
 			this.biquad.frequency.setValueAtTime(this.biquad.frequency.value,when);
-			this.biquad.frequency.exponentialRampToValueAtTime(100,when + .45);
-			when + .45;
+			this.biquad.frequency.exponentialRampToValueAtTime(this.filterFrequency * 6000,when + releaseDuration);
+			when + releaseDuration;
 			this.noteIsOn = false;
 		}
 	}
@@ -1139,11 +1305,14 @@ synth.MonoSynth.prototype = {
 			if(retrigger) this.adsr.gain.setValueAtTime(0,when);
 			this.adsr.gain.setTargetAtTime(velocity,when,1 - 1 / Math.exp(attackTime));
 			if(sustainLevel != 1.0) this.adsr.gain.setTargetAtTime(velocity * sustainLevel,when + attackTime,1 - 1 / Math.exp(this.adsr_decayTime));
-			var startFreq = 100;
+			var start = this.filterFrequency * 6000;
+			var dest = start + this.filterEnvRange * 8000;
+			var startFreq = start;
+			haxe.Log.trace(startFreq,{ fileName : "ADSR.hx", lineNumber : 35, className : "synth._ADSR.BiquadEnvelope_Impl_", methodName : "trigger", customParams : [dest]});
 			startFreq = retrigger?startFreq:this.biquad.frequency.value;
 			this.biquad.frequency.cancelScheduledValues(when);
 			this.biquad.frequency.setValueAtTime(startFreq,when);
-			this.biquad.frequency.exponentialRampToValueAtTime(8000,when + .35);
+			this.biquad.frequency.exponentialRampToValueAtTime(dest,when + this.filterEnvAttack);
 		}
 		this.noteIsOn = true;
 	}
@@ -1163,6 +1332,7 @@ synth.MonoSynth.prototype = {
 		}
 		return this.oscType;
 	}
+	,__class__: synth.MonoSynth
 }
 synth.processor = {}
 synth.processor.Crusher = function(context,input,destination) {
@@ -1231,6 +1401,7 @@ synth.processor.Crusher.prototype = {
 		}
 		return this._bits = value;
 	}
+	,__class__: synth.processor.Crusher
 }
 synth.ui = {}
 synth.ui.KeyboardUI = function(keyboardNotes) {
@@ -1333,24 +1504,93 @@ synth.ui.KeyboardUI.prototype = {
 	,keyIsDown: function() {
 		return this.heldKey != -1;
 	}
+	,__class__: synth.ui.KeyboardUI
+}
+synth.ui.ModuleUI = function() {
+	this.controls = [];
+	this.sliderChange = new msignal.Signal2();
+};
+synth.ui.ModuleUI.__name__ = true;
+synth.ui.ModuleUI.setupFromNodes = function(nodes) {
+	var modules = [];
+	var _g = 0;
+	while(_g < nodes.length) {
+		var node = nodes[_g];
+		++_g;
+		var module = new synth.ui.ModuleUI();
+		var e = node;
+		var _g1 = 0, _g2 = node.childNodes;
+		while(_g1 < _g2.length) {
+			var n = _g2[_g1];
+			++_g1;
+			if(n.nodeType == 1) {
+				var control = synth.ui.ModuleUI.createControl(n);
+				if(control != null) module.addControl(control);
+			}
+		}
+		modules.push(module);
+	}
+	return modules;
+}
+synth.ui.ModuleUI.createControl = function(control) {
+	if(control.className.indexOf("slider") != -1) {
+		var input = control.getElementsByTagName("input").item(0);
+		var settings = { title : input.getAttribute("title"), type : input.getAttribute("type"), min : Std.parseFloat(input.getAttribute("min")), max : Std.parseFloat(input.getAttribute("max")), step : Std.parseFloat(input.getAttribute("step")), defaultValue : Std.parseFloat(input.getAttribute("value"))};
+		var range = new synth.ui.RangeControl(input,settings);
+		return range;
+	}
+	return null;
+}
+synth.ui.ModuleUI.prototype = {
+	onRangeChange: function(e,index) {
+		e.stopPropagation();
+		var control = this.controls[index];
+		var value = Std.parseFloat(control.input.value);
+		this.sliderChange.dispatch(control.id,value);
+	}
+	,addControl: function(control) {
+		var n = this.controls.length;
+		control.input.addEventListener("change",(function(f,a1) {
+			return function(e) {
+				return f(e,a1);
+			};
+		})($bind(this,this.onRangeChange),n));
+		this.controls.push(control);
+	}
+	,__class__: synth.ui.ModuleUI
+}
+synth.ui.RangeControl = function(input,settings) {
+	this.input = input;
+	this.settings = settings;
+	this.id = input.id;
+};
+synth.ui.RangeControl.__name__ = true;
+synth.ui.RangeControl.prototype = {
+	__class__: synth.ui.RangeControl
 }
 synth.ui.MonoSynthUI = function(keyboardNotes) {
+	this.ready = new msignal.Signal0();
 	this.keyboard = new synth.ui.KeyboardUI(keyboardNotes);
+	this.modules = new Array();
 	this.loadTemplate();
 };
 synth.ui.MonoSynthUI.__name__ = true;
 synth.ui.MonoSynthUI.prototype = {
 	setupControls: function(container) {
-		this.modules = container.getElementsByClassName("module");
+		this.modules = synth.ui.ModuleUI.setupFromNodes(container.getElementsByClassName("module"));
 		this.keyboard.setup(container.getElementsByClassName("key"));
 	}
+	,getModuleData: function() {
+		return { visible : true, osc : { visible : true}, adsr : { visible : true}, filter : { visible : true}, outGain : { visible : true}};
+	}
 	,renderTemplate: function() {
-		var tData = { modules : { visible : true, osc : { visible : true}, adsr : { visible : true}, filter : { visible : true}, outGain : { visible : true}}, keyboard : this.keyboard.getKeyboardData(2,3)};
-		var markup = this.template.execute(tData);
+		var data = { modules : this.getModuleData(), keyboard : this.keyboard.getKeyboardData(2,3)};
+		var markup = this.template.execute(data);
 		var container = new DOMParser().parseFromString(markup,"text/html").getElementById("container");
 		while(js.Browser.document.body.firstChild != null) js.Browser.document.body.removeChild(js.Browser.document.body.firstChild);
 		js.Browser.document.body.appendChild(container);
 		this.setupControls(container);
+		this.ready.dispatch();
 	}
 	,templateLoaded: function(data) {
 		this.template = new haxe.Template(data);
@@ -1360,11 +1600,12 @@ synth.ui.MonoSynthUI.prototype = {
 		var http = new haxe.Http("synth.tpl");
 		http.async = true;
 		http.onError = function(err) {
-			haxe.Log.trace("Error loading synth ui-template: " + err,{ fileName : "MonoSynthUI.hx", lineNumber : 34, className : "synth.ui.MonoSynthUI", methodName : "loadTemplate"});
+			haxe.Log.trace("Error loading synth ui-template: " + err,{ fileName : "MonoSynthUI.hx", lineNumber : 37, className : "synth.ui.MonoSynthUI", methodName : "loadTemplate"});
 		};
 		http.onData = $bind(this,this.templateLoaded);
 		http.request();
 	}
+	,__class__: synth.ui.MonoSynthUI
 }
 var utils = {}
 utils.KeyboardInput = function(keyNotes) {
@@ -1422,6 +1663,7 @@ utils.KeyboardInput.prototype = {
 	,hasNotes: function() {
 		return (this.heldNotes.length > 0?this.heldNotes.length:-1) > 0;
 	}
+	,__class__: utils.KeyboardInput
 }
 utils.KeyboardNotes = function() {
 	this.noteFreq = new utils.NoteFrequencyUtil();
@@ -1493,6 +1735,9 @@ utils.KeyboardNotes = function() {
 	this.keycodeToNoteFreq.set(221,this.keycodeToNoteIndex.get(221));
 };
 utils.KeyboardNotes.__name__ = true;
+utils.KeyboardNotes.prototype = {
+	__class__: utils.KeyboardNotes
+}
 utils.NoteFrequencyUtil = function() {
 	if(utils.NoteFrequencyUtil.pitchNames == null) {
 		utils.NoteFrequencyUtil.pitchNames = ["C","C#","D","D#","E","F","F#","G","G#","A","A#","B"];
@@ -1550,6 +1795,7 @@ utils.NoteFrequencyUtil.prototype = {
 			this.noteFrequencies[i] = this.get_tuningBase() * Math.pow(2,(i - 69.0) * (1 / 12));
 		}
 	}
+	,__class__: utils.NoteFrequencyUtil
 }
 function $iterator(o) { if( o instanceof Array ) return function() { return HxOverrides.iter(o); }; return typeof(o.iterator) == 'function' ? $bind(o,o.iterator) : o.iterator; };
 var $_, $fid = 0;
@@ -1564,8 +1810,18 @@ Math.isFinite = function(i) {
 Math.isNaN = function(i) {
 	return isNaN(i);
 };
+String.prototype.__class__ = String;
 String.__name__ = true;
+Array.prototype.__class__ = Array;
 Array.__name__ = true;
+var Int = { __name__ : ["Int"]};
+var Dynamic = { __name__ : ["Dynamic"]};
+var Float = Number;
+Float.__name__ = ["Float"];
+var Bool = Boolean;
+Bool.__ename__ = ["Bool"];
+var Class = { __name__ : ["Class"]};
+var Enum = { };
 msignal.SlotList.NIL = new msignal.SlotList(null,null);
 haxe.Template.splitter = new EReg("(::[A-Za-z0-9_ ()&|!+=/><*.\"-]+::|\\$\\$([A-Za-z0-9_-]+)\\()","");
 haxe.Template.expr_splitter = new EReg("(\\(|\\)|[ \r\n\t]*\"[^\"]*\"[ \r\n\t]*|[!+=/><*.&|-]+)","");

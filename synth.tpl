@@ -6,54 +6,54 @@
 		<div id="modules" class="modules">
 			
 			::if modules.osc.visible::
-			<div class="module osc">
+			<div class="module" id="module-oscillator">
 				<div class="slider waveform">
 					<span class="label">Osc</span>
 					<input title="Oscillator Select" type="range" id="osc-shape" min="0" max="3" step="1" value="2" />
 				</div>
 				<div class="slider portamento">
 					<span class="label">Slide</span>
-					<input title="Portamento" type="range" id="portamento" min="0" max="2" step=".01" value="0" />
+					<input title="Portamento" type="range" id="osc-slide" min="0" max="2" step=".01" value="0" />
 				</div>
 			</div>
 			::end::
 			
 			::if modules.filter.visible::
-			<div class="module filter">
+			<div class="module" id="module-filter">
 				<div class="slider filterType">
 					<span class="label">Filter</span>
 					<input title="Filter Mode" type="range" id="filter-type" min="0" max="5" step="1" value="0" />
 				</div>
 				<div class="slider">
 					<span class="label">Freq</span>
-					<input title="Filter Frequency" type="range" id="filter-freq" min="0" max="1" step=".05" value=".7" />
+					<input title="Filter Frequency" type="range" id="filter-freq" min="0" max="1" step=".001" value=".1" />
 				</div>
 				<div class="slider">
 					<span class="label">Q</span>
-					<input title="Filter Q-factor" type="range" id="filter-res" min="0" max="1" step=".01" value=".4" />
+					<input title="Filter Q-factor" type="range" id="filter-res" min="0" max="32" step="1" value="10" />
 				</div>
 				<div class="slider">
 					<span class="label">Gain</span>
-					<input title="Filter Gain" type="range" id="filter-gain" min="-12" max="3" step=".01" value="0" />
+					<input title="Filter Gain" type="range" id="filter-gain" min="0" max="1" step=".001" value="0" />
 				</div>
 				
 				<div class="slider">
 					<span class="label">Range</span>
-					<input title="FEG Range" type="range" id="adsr-decay" min="0.0" max="3.0" step=".01" value="3.0" />
+					<input title="FEG Range" type="range" id="filter-env-range" min="0.0" max="1.0" step=".001" value="3.0" />
 				</div>
 				<div class="slider">
 					<span class="label">A</span>
-					<input title="FEG Attack" type="range" id="adsr-attack" min="0.0" max="3.0" step=".01" value="0" />
+					<input title="FEG Attack" type="range" id="filter-env-attack" min="0.0" max="3.0" step=".001" value="0" />
 				</div>
 				<div class="slider">
 					<span class="label">R</span>
-					<input title="FEG Release" type="range" id="adsr-release" min="0.0" max="3.0" step=".01" value="1.0" />
+					<input title="FEG Release" type="range" id="filter-env-release" min="0.0" max="3.0" step=".001" value="1.0" />
 				</div>
 			</div>
 			::end::
 			
 			::if modules.adsr.visible::
-			<div class="module adsr">
+			<div class="module" id="module-adsr">
 				<div class="slider">
 					<span class="label">A</span>
 					<input title="AEG Attack" type="range" id="adsr-attack" min="0.0" max="3.0" step=".01" value="0" />
@@ -74,10 +74,10 @@
 			::end::
 			
 			::if modules.outGain.visible::
-			<div class="module outGain">
+			<div class="module" id="module-outputGain">
 				<div class="slider volume">
 					<span class="label">Out</span>
-					<input title="Output gain" type="range" id="outGain" min="-1" max="1" step=".01" value="0" />
+					<input title="Output gain" type="range" id="out-gain" min="0" max="1" step=".01" value="1" />
 				</div>
 			</div>
 			::end::
