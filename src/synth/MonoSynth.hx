@@ -19,10 +19,11 @@ import synth.ADSR.BiquadEnvelope;
 
 class MonoSynth { //
 	
-	var adsr						:ADSR;
 	var osc							:Array<Oscillator>;
-	var biquad						:BiquadEnvelope;
-	var outputGain					:GainNode;
+	
+	public var adsr(default, null):ADSR;
+	public var outputGain(default, null):GainNode;
+	public var biquad(default, null):BiquadEnvelope;
 	
 	public var adsr_attackTime		:Float = .1;
 	public var adsr_decayTime		:Float = 0.2;
@@ -42,10 +43,8 @@ class MonoSynth { //
 	var currentOscillatorNode(get_currentOscillatorNode, never):OscillatorNode;
 	inline function get_currentOscillatorNode():OscillatorNode { return osc[oscillatorType]; }
 	
-	
 	var oscType:Int = 0;
 	public var oscillatorType(get_oscillatorType, set_oscillatorType):Int;
-
 	inline function get_oscillatorType() { return oscType; }
 	function set_oscillatorType(type:Int) {
 		switch (type) {
@@ -57,6 +56,17 @@ class MonoSynth { //
 		}
 		return oscType;
 	}
+	
+	/**
+	 * filter
+	 */
+	public var filterType:Int = 0;
+	public var filterFrequency:Float=.001;
+	public var filterQ:Float=10;
+	public var filterGain:Float=1;
+	public var filterEnvRange:Float=1;
+	public var filterEnvAttack:Float=.1;
+	public var filterEnvRelease:Float=1;
 	
 	
 	/**
@@ -76,7 +86,7 @@ class MonoSynth { //
 		osc[Oscillator.TRIANGLE]= new Oscillator(context, null, Oscillator.TRIANGLE);
 		osc[Oscillator.SAWTOOTH]= new Oscillator(context, null, Oscillator.SAWTOOTH);
 		
-		biquad					= new BiquadEnvelope(BiquadFilterNode.LOWPASS, 200, 10, context);
+		biquad					= new BiquadEnvelope(BiquadFilterNode.LOWPASS, filterFrequency, filterQ, context);
 		adsr 					= new ADSR(context, biquad, outputGain);
 		oscillatorType 			= Oscillator.SINE;
 	}
@@ -93,7 +103,9 @@ class MonoSynth { //
 		if (!noteIsOn || retrigger) {
 			adsr.trigger(when, velocity, adsr_attackTime, adsr_decayTime, adsr_sustain, retrigger);
 			//if FEG active...
-			biquad.trigger(when, 100, .35, 8000, retrigger);
+			var start = filterFrequency * 6000;
+			var dest  = start + filterEnvRange * 8000;
+			biquad.trigger(when, start, filterEnvAttack, dest, retrigger);
 		}
 		noteIsOn = true;
 	}
@@ -101,7 +113,7 @@ class MonoSynth { //
 	public function noteOff(when) {
 		if (noteIsOn) {
 			currentOscillator.release(adsr.release(when, adsr_releaseTime));
-			biquad.release(when, 100, .45);
+			biquad.release(when, filterFrequency*6000, filterEnvRelease);
 			noteIsOn = false;
 		}
 	}

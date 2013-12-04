@@ -50,8 +50,55 @@ import utils.KeyboardInput;
 		
 		initAudio();
 		initKeyboardInputs();
+		
+		monoSynthUI.ready.addOnce(uiReady);
 	}
 	
+	
+	function uiReady() {
+		for (module in monoSynthUI.modules) {
+			module.sliderChange.add(onModuleSliderChange);
+		}
+	}
+	
+	
+	function onModuleSliderChange(id:String, value:Float) {
+		trace('${id}: ${value}');
+		var now = context.currentTime;
+		var m = monoSynth;
+		
+		if (id.indexOf('osc-') == 0) {
+			switch(id) {
+				case 'osc-shape': m.oscillatorType = Std.int(value);
+				case 'osc-slide': m.osc_portamentoTime = value;
+			}
+		} else if (id.indexOf('filter-') == 0) {
+			switch(id) {
+				case 'filter-type': cast(m.biquad).type = Std.int(value);
+				case 'filter-freq': m.filterFrequency = remapExpo(value);
+				case 'filter-res': m.filterQ = value;
+				case 'filter-gain': m.filterGain = remapExpo(value);
+				case 'filter-env-range': m.filterEnvRange = remapExpo(value);
+				case 'filter-env-attack': m.filterEnvAttack = value;
+				case 'filter-env-release': m.filterEnvRelease = value;
+			}			
+		} else if (id.indexOf('adsr-') == 0) {
+			switch(id) {
+				case 'adsr-attack': m.adsr_attackTime = value;
+				case 'adsr-decay': m.adsr_decayTime = value;
+				case 'adsr-sustain': m.adsr_sustain = value;
+				case 'adsr-release': m.adsr_releaseTime = value;
+			}
+		} else if (id.indexOf('out-') == 0) {
+			switch(id) {
+				case 'out-gain': m.setOutputGain(remapExpo(value));
+			}
+		}
+	}
+	
+	static inline function remapExpo(value) {
+		return (Math.exp(value) - 1) / 2.718281828459045 / 0.6321205588285577;
+	}
 	
 	function initAudio() {
 		crusher 		= new Crusher(context, null, context.destination); 
@@ -109,7 +156,6 @@ import utils.KeyboardInput;
 		//monoSynth.oscillatorType = Oscillator.TRIANGLE;
 		monoSynth.oscillatorType = Oscillator.SAWTOOTH;
 		//monoSynth.oscillatorType = Oscillator.SQUARE;
-		monoSynth.setOutputGain(1);
 		
 		monoSynth.osc_portamentoTime = .05;
 		//monoSynth.osc_portamentoTime = 1;

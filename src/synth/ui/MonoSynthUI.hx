@@ -5,6 +5,7 @@ import js.Browser;
 import js.html.DOMParser;
 import js.html.Element;
 import js.html.NodeList;
+import msignal.Signal.Signal0;
 import msignal.Signal.Signal1;
 import utils.KeyboardNotes;
 
@@ -16,13 +17,15 @@ class MonoSynthUI {
 	
 	var template		:Template;
 	
-	var modules			:NodeList;
-	
+	public var modules	(default,null):Array<ModuleUI>;
 	public var keyboard	(default,null):KeyboardUI;
+	public var ready	(default,null):Signal0;
 	
 	public function new(keyboardNotes:KeyboardNotes) {
 		
-		keyboard = new KeyboardUI(keyboardNotes);
+		ready		= new Signal0();
+		keyboard 	= new KeyboardUI(keyboardNotes);
+		modules  	= new Array<ModuleUI>();
 		
 		loadTemplate();
 	}
@@ -44,32 +47,32 @@ class MonoSynthUI {
 	
 	function renderTemplate() {
 		
-		var tData = {
-			modules: {
+		var data = { modules:getModuleData(), keyboard:keyboard.getKeyboardData(2,3) };
+		
+		var markup = template.execute(data);
+		var container = new DOMParser().parseFromString(markup, 'text/html').getElementById('container');
+		
+		while (Browser.document.body.firstChild != null) Browser.document.body.removeChild(Browser.document.body.firstChild);
+		Browser.document.body.appendChild(container);
+		
+		setupControls(container);
+		
+		ready.dispatch();
+	}
+	
+	function getModuleData() {
+		return {
 				visible:true,
 				osc:{visible:true},
 				adsr:{visible:true},
 				filter:{visible:true},
 				outGain:{visible:true},
-			},
-			keyboard : keyboard.getKeyboardData(2,3)
-		};
-		
-		var markup 		= template.execute(tData);
-		var container 	= new DOMParser().parseFromString(markup, 'text/html').getElementById('container');
-			
-		while (Browser.document.body.firstChild != null) Browser.document.body.removeChild(Browser.document.body.firstChild);
-		Browser.document.body.appendChild(container);
-		
-		setupControls(container);
+			}
 	}
 	
 	
 	function setupControls(container:Element) {
-		
-		modules = container.getElementsByClassName("module");
-		
+		modules = ModuleUI.setupFromNodes(container.getElementsByClassName("module"));
 		keyboard.setup(container.getElementsByClassName("key"));
 	}
-	
 }

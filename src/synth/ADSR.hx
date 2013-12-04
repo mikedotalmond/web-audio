@@ -31,7 +31,8 @@ abstract BiquadEnvelope(BiquadFilterNode) from BiquadFilterNode to BiquadFilterN
 	 * @param	sustainFreq=1000.0
 	 * @param	retrigger
 	 */
-	inline public function trigger(when=.0, startFreq = 350.0, attackTime=1.0, sustainFreq=1000.0, retrigger:Bool=false) {
+	inline public function trigger(when:Float, startFreq:Float, attackTime:Float, sustainFreq:Float, retrigger:Bool=false) {
+		trace(startFreq,sustainFreq);
 		startFreq = retrigger ? startFreq : this.frequency.value;
 		rampToFreqAtTime(when, attackTime, startFreq, sustainFreq);
 	}
