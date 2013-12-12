@@ -13,7 +13,7 @@
 				</div>
 				<div class="slider portamento">
 					<span class="label">Slide</span>
-					<input title="Portamento" type="range" id="osc-slide" min="0" max="2" step=".01" value="0" />
+					<input title="Portamento" type="range" id="osc-slide" min="0" max="1" step=".001" value="0" />
 				</div>
 			</div>
 			::end::
@@ -43,11 +43,11 @@
 				</div>
 				<div class="slider">
 					<span class="label">A</span>
-					<input title="FEG Attack" type="range" id="filter-env-attack" min="0.001" max="3.0" step=".001" value="0" />
+					<input title="FEG Attack" type="range" id="filter-env-attack" min="0.001" max="1.0" step=".001" value="0" />
 				</div>
 				<div class="slider">
 					<span class="label">R</span>
-					<input title="FEG Release" type="range" id="filter-env-release" min="0.001" max="3.0" step=".001" value="1.0" />
+					<input title="FEG Release" type="range" id="filter-env-release" min="0.001" max="1.0" step=".001" value="1.0" />
 				</div>
 			</div>
 			::end::
@@ -60,7 +60,7 @@
 				</div>
 				<div class="slider">
 					<span class="label">D</span>
-					<input title="AEG Decay" type="range" id="adsr-decay" min="0.001" max="3.0" step=".01" value="3.0" />
+					<input title="AEG Decay" type="range" id="adsr-decay" min="0.001" max="1.0" step=".01" value="3.0" />
 				</div>
 				<div class="slider">
 					<span class="label">S</span>
@@ -68,7 +68,7 @@
 				</div>
 				<div class="slider">
 					<span class="label">R</span>
-					<input title="AEG Release" type="range" id="adsr-release" min="0.001" max="3.0" step=".01" value="1.0" />
+					<input title="AEG Release" type="range" id="adsr-release" min="0.001" max="1.0" step=".01" value="1.0" />
 				</div>
 			</div>
 			::end::
