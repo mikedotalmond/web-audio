@@ -26,7 +26,7 @@
 				</div>
 				<div class="slider">
 					<span class="label">Freq</span>
-					<input title="Filter Frequency" type="range" id="filter-freq" min="0" max="1" step=".001" value=".1" />
+					<input title="Filter Frequency" type="range" id="filter-freq" min="0.001" max="1" step=".001" value=".1" />
 				</div>
 				<div class="slider">
 					<span class="label">Q</span>
@@ -34,20 +34,20 @@
 				</div>
 				<div class="slider">
 					<span class="label">Gain</span>
-					<input title="Filter Gain" type="range" id="filter-gain" min="0" max="1" step=".001" value="0" />
+					<input title="Filter Gain" type="range" id="filter-gain" min="0.001" max="1" step=".001" value="0" />
 				</div>
 				
 				<div class="slider">
 					<span class="label">Range</span>
-					<input title="FEG Range" type="range" id="filter-env-range" min="0.0" max="1.0" step=".001" value="3.0" />
+					<input title="FEG Range" type="range" id="filter-env-range" min="0.001" max="1.0" step=".001" value="3.0" />
 				</div>
 				<div class="slider">
 					<span class="label">A</span>
-					<input title="FEG Attack" type="range" id="filter-env-attack" min="0.0" max="3.0" step=".001" value="0" />
+					<input title="FEG Attack" type="range" id="filter-env-attack" min="0.001" max="3.0" step=".001" value="0" />
 				</div>
 				<div class="slider">
 					<span class="label">R</span>
-					<input title="FEG Release" type="range" id="filter-env-release" min="0.0" max="3.0" step=".001" value="1.0" />
+					<input title="FEG Release" type="range" id="filter-env-release" min="0.001" max="3.0" step=".001" value="1.0" />
 				</div>
 			</div>
 			::end::
@@ -56,19 +56,19 @@
 			<div class="module" id="module-adsr">
 				<div class="slider">
 					<span class="label">A</span>
-					<input title="AEG Attack" type="range" id="adsr-attack" min="0.0" max="3.0" step=".01" value="0" />
+					<input title="AEG Attack" type="range" id="adsr-attack" min="0.001" max="3.0" step=".01" value="0" />
 				</div>
 				<div class="slider">
 					<span class="label">D</span>
-					<input title="AEG Decay" type="range" id="adsr-decay" min="0.0" max="3.0" step=".01" value="3.0" />
+					<input title="AEG Decay" type="range" id="adsr-decay" min="0.001" max="3.0" step=".01" value="3.0" />
 				</div>
 				<div class="slider">
 					<span class="label">S</span>
-					<input title="AEG Sustain" type="range" id="adsr-sustain" min="0.0" max="1.0" step=".01" value="1.0" />
+					<input title="AEG Sustain" type="range" id="adsr-sustain" min="0.001" max="1.0" step=".01" value="1.0" />
 				</div>
 				<div class="slider">
 					<span class="label">R</span>
-					<input title="AEG Release" type="range" id="adsr-release" min="0.0" max="3.0" step=".01" value="1.0" />
+					<input title="AEG Release" type="range" id="adsr-release" min="0.001" max="3.0" step=".01" value="1.0" />
 				</div>
 			</div>
 			::end::
@@ -77,7 +77,7 @@
 			<div class="module" id="module-outputGain">
 				<div class="slider volume">
 					<span class="label">Out</span>
-					<input title="Output gain" type="range" id="out-gain" min="0" max="1" step=".01" value="1" />
+					<input title="Output gain" type="range" id="out-gain" min="0.001" max="1" step=".01" value="1" />
 				</div>
 			</div>
 			::end::
