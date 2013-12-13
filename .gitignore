@@ -1,1 +1,6 @@
-/src/Version.hx
+/build/
+
+.*.swp
+._*
+.DS_Store
+RECOVER_*

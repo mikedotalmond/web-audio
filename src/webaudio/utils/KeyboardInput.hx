@@ -1,8 +1,9 @@
-package utils;
+package webaudio.utils;
 
+import flambe.util.Signal0;
+import flambe.util.Signal1;
 import js.Browser;
 import js.html.KeyboardEvent;
-import msignal.Signal;
 
 /**
  * ...
@@ -60,8 +61,8 @@ class KeyboardInput {
 			var noteIndex = keyToNote.get(e.keyCode);
 			var i = Lambda.indexOf(heldNotes, noteIndex);
 			if (i == -1) { // not already down?
-				noteOn.dispatch(noteIndex);
-				keyDown.dispatch(noteIndex);
+				noteOn.emit(noteIndex);
+				keyDown.emit(noteIndex);
 				heldNotes.push(noteIndex);
 			}
 		}
@@ -78,11 +79,11 @@ class KeyboardInput {
 				var off  = heldNotes.splice(i, 1)[0];
 				var n	 = heldNotes.length; // active note count
 				
-				keyUp.dispatch(off);
+				keyUp.emit(off);
 				
 				// TODO:refactor this monophonic noteOn/Off logic elsewhere - just work with keys up/down here (and the keys-ui), and let something else (NotecCntrol) decide whether a noteOn/off occurs
-				if (heldNotes.length == 0) noteOff.dispatch(); // no notes down?
-				else noteOn.dispatch(heldNotes[heldNotes.length - 1]); // retrigger last pressed key
+				if (heldNotes.length == 0) noteOff.emit(); // no notes down?
+				else noteOn.emit(heldNotes[heldNotes.length - 1]); // retrigger last pressed key
 				
 			}
 		}
@@ -92,10 +93,10 @@ class KeyboardInput {
 	public function dispose() {
 		heldNotes = null;
 		keyToNote = null;
-		keyDown.removeAll(); keyDown = null;
-		keyUp.removeAll(); keyUp = null;
-		noteOn.removeAll(); noteOn = null;
-		noteOff.removeAll(); noteOff = null;
+		keyDown = null;
+		keyUp = null;
+		noteOn = null;
+		noteOff = null;
 		Browser.document.removeEventListener("keydown", handleKeyDown);
 		Browser.document.removeEventListener("keyup", handleKeyUp);
 	}

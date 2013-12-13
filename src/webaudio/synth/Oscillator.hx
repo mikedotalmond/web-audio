@@ -1,4 +1,4 @@
-package synth;
+package webaudio.synth;
 
 import js.html.audio.AudioContext;
 import js.html.audio.AudioNode;

@@ -1,13 +1,14 @@
-package synth.ui;
+package webaudio.synth.ui;
+
+import flambe.util.Signal0;
 import haxe.Http;
 import haxe.Template;
 import js.Browser;
 import js.html.DOMParser;
 import js.html.Element;
 import js.html.NodeList;
-import msignal.Signal.Signal0;
-import msignal.Signal.Signal1;
-import utils.KeyboardNotes;
+
+import webaudio.utils.KeyboardNotes;
 
 /**
  * ...
@@ -57,7 +58,7 @@ class MonoSynthUI {
 		
 		setupControls(container);
 		
-		ready.dispatch();
+		ready.emit();
 	}
 	
 	function getModuleData() {

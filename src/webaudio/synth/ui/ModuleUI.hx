@@ -1,10 +1,12 @@
-package synth.ui;
+package webaudio.synth.ui;
+
+import flambe.util.Signal2;
 import js.html.Element;
 import js.html.Event;
 import js.html.InputElement;
 import js.html.NodeList;
-import msignal.Signal.Signal2;
-import synth.ui.ModuleUI.RangeControl;
+
+import webaudio.synth.ui.ModuleUI.RangeControl;
 
 /**
  * ...
@@ -39,7 +41,7 @@ class ModuleUI {
 		var control = controls[index];
 		var value 	= Std.parseFloat(control.input.value);
 		
-		sliderChange.dispatch(control.id, value);
+		sliderChange.emit(control.id, value);
 	}
 	
 	
@@ -107,7 +109,7 @@ typedef RangeControlSettings = {
 	var	defaultValue:Float;
 }
 
-@:allow(synth.ui.ModuleUI) 
+@:allow(webaudio.synth.ui.ModuleUI) 
 class RangeControl {
 	
 	var id		:String;

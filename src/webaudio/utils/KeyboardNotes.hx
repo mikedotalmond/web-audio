@@ -1,11 +1,11 @@
-﻿package utils;
+﻿package webaudio.utils;
 
 /**
  * ...
  * @author Mike Almond - MadeByPi
  */
 
-import utils.NoteFrequencyUtil;
+import webaudio.utils.NoteFrequencyUtil;
 
 class KeyboardNotes {
 	

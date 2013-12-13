@@ -1,20 +1,21 @@
-package ;
+package webaudio;
 
-import haxe.Http;
-import haxe.Template;
+import flambe.asset.AssetPack;
+import flambe.asset.Manifest;
+import flambe.display.FillSprite;
+import flambe.Entity;
+import flambe.platform.html.WebAudioSound;
+import flambe.System;
 import js.Browser;
+
 import js.html.audio.AudioContext;
-import js.html.audio.AudioProcessingEvent;
-import js.html.audio.ScriptProcessorNode;
-import js.html.DOMParser;
-import synth.processor.Crusher;
-import synth.ui.MonoSynthUI;
-import utils.KeyboardNotes;
 
-import synth.MonoSynth;
-import synth.Oscillator;
-import utils.KeyboardInput;
-
+import webaudio.synth.MonoSynth;
+import webaudio.synth.Oscillator;
+import webaudio.synth.processor.Crusher;
+import webaudio.synth.ui.MonoSynthUI;
+import webaudio.utils.KeyboardInput;
+import webaudio.utils.KeyboardNotes;
 
 
 
@@ -26,10 +27,6 @@ import utils.KeyboardInput;
  * @author Mike Almond - https://github.com/mikedotalmond
  */
 @:final class Main {
-	
-	static var context:AudioContext;
-	
-	public static var instance(default,null):Main;
 	
 	public var keyboardInput(default,null):KeyboardInput;
 	public var keyboardNotes(default,null):KeyboardNotes;
@@ -46,25 +43,31 @@ import utils.KeyboardInput;
 		
 		keyboardNotes 	= new KeyboardNotes(); // util
 		keyboardInput 	= new KeyboardInput(keyboardNotes);
-		monoSynthUI		= new MonoSynthUI(keyboardNotes);
+		//monoSynthUI		= new MonoSynthUI(keyboardNotes);
 		
 		initAudio();
 		initKeyboardInputs();
 		
-		monoSynthUI.ready.addOnce(uiReady);
+		//monoSynthUI.ready.connect(uiReady).once();
 	}
 	
 	
+    function assetsReady (pack:AssetPack) {
+        // Add a solid color background
+        var background = new FillSprite(0x202020, System.stage.width, System.stage.height);
+        System.root.addChild(new Entity().add(background));
+    }
+	
 	function uiReady() {
 		for (module in monoSynthUI.modules) {
-			module.sliderChange.add(onModuleSliderChange);
+			module.sliderChange.connect(onModuleSliderChange);
 		}
 	}
 	
 	
 	function onModuleSliderChange(id:String, value:Float) {
 		trace('${id}: ${value}');
-		var now = context.currentTime;
+		var now = audioContext.currentTime;
 		var m = monoSynth;
 		
 		if (id.indexOf('osc-') == 0) {
@@ -101,39 +104,43 @@ import utils.KeyboardInput;
 	}
 	
 	function initAudio() {
-		crusher 		= new Crusher(context, null, context.destination); 
+		
+		crusher 		= new Crusher(audioContext, null, WebAudioSound.gain); 
 		crusher.bits	= 4;
 		
 		initMonoSynth(crusher.node);
-		//initMonoSynth(context.destination);
+		//initMonoSynth(audioContext.destination);
 	}
 	
 	function initKeyboardInputs() {
 		
 		// Monophonic key / note control setup
 		var handleNoteOff = function() {
-			monoSynth.noteOff(context.currentTime);
+			monoSynth.noteOff(audioContext.currentTime);
 		}
 		
 		var handleNoteOn = function(i) {
 			var f = keyboardNotes.noteFreq.noteIndexToFrequency(i);
-			monoSynth.noteOn(context.currentTime, f, .8, !monoSynth.noteIsOn);
+			monoSynth.noteOn(audioContext.currentTime, f, .8, !monoSynth.noteIsOn);
 		};
 		
+		keyboardInput.noteOn.connect(handleNoteOn);
+		keyboardInput.noteOff.connect(handleNoteOff);
 		
-		// bind to ui keyboard signals
-		monoSynthUI.keyboard.keyDown.add(handleNoteOn);
-		monoSynthUI.keyboard.keyUp.add(function(i) { 
+		
+		/*// bind to ui keyboard signals
+		monoSynthUI.keyboard.keyDown.connect(handleNoteOn);
+		monoSynthUI.keyboard.keyUp.connect(function(i) { 
 			if (keyboardInput.hasNotes()) { // key up on ui keyboard, check for any (HID) keyboard keys
 				handleNoteOn(keyboardInput.lastNote()); // retrigger last pressed key
 			} else {
 				handleNoteOff(); // nothing held? note off.
 			}
-		});
+		});//*/
 		
-		// bind to hardware keyboard signals
-		keyboardInput.noteOn.add(handleNoteOn);
-		keyboardInput.noteOff.add(function() {
+		/*// bind to hardware keyboard signals
+		keyboardInput.noteOn.connect(handleNoteOn);
+		keyboardInput.noteOff.connect(function() {
 			if (monoSynthUI.keyboard.keyIsDown()) { // still got a ui key pressed?
 				handleNoteOn(monoSynthUI.keyboard.heldKey);  // retrigger the held key
 			} else {
@@ -142,8 +149,9 @@ import utils.KeyboardInput;
 		});
 		
 		// HID keyboard inputs, update ui-keys...
-		keyboardInput.keyDown.add(monoSynthUI.keyboard.setNoteState.bind(_, true));
-		keyboardInput.keyUp.add(monoSynthUI.keyboard.setNoteState.bind(_, false));
+		keyboardInput.keyDown.connect(monoSynthUI.keyboard.setNoteState.bind(_, true));
+		keyboardInput.keyUp.connect(monoSynthUI.keyboard.setNoteState.bind(_, false));
+		//*/
 	}
 	
 
@@ -168,6 +176,7 @@ import utils.KeyboardInput;
 		//monoSynth.filter_q
 	}
 	
+
 	
 	function dispose() {
 		
@@ -181,44 +190,37 @@ import utils.KeyboardInput;
 	}
 	
 
+	
+	
 	/**
-	 * entry point...
+	 * Entry point...
 	 */
 	static function main() {
 		
-		Browser.window.onload = function(e) {
-			trace('onLoad');
-			
-			createContext();
-			
-			if (context == null) {
-				Browser.window.alert('Web Audio API not supported - try a different/better browser');
-			} else {
-				instance = new Main();
-			}
-		};
+		System.init();
 		
-		Browser.window.onbeforeunload = function(e) {
-			trace('unLoad');
-			instance.dispose();
-			instance = null;
-			context  = null;
-		};
+		if (WebAudioSound.supported) {
+			
+			audioContext 	= cast WebAudioSound.ctx;
+			instance 		= new Main();
+			
+			// Load up the compiled pack in the assets directory named "bootstrap"
+			var manifest = Manifest.build("bootstrap");
+			var loader = System.loadAssetPack(manifest);
+			loader.get(instance.assetsReady);
+			
+			Browser.window.onbeforeunload = function(e) {
+				trace('unLoad');
+				instance.dispose();
+				instance = null;
+				audioContext = null;
+			};
+			
+		} else {
+			throw('Could not create AudioaudioContext. Sorry, but it looks like your browser does support Web-Audio APIs ;(');
+		}
 	}
 	
-	static function createContext() {
-		
-		// fix for webkit prefix
-		untyped __js__('window.AudioContext = window.AudioContext||window.webkitAudioContext');
-		
-		var c;
-		try {
-			c = new AudioContext();
-		} catch (err:Dynamic) {
-			trace('Error creating an AudioContext', err);
-			c = null;
-		}
-		
-		context = c;
-	}
+	public static var instance(default,null):Main;
+	public static var audioContext(default,null):AudioContext;
 }

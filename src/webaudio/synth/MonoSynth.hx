@@ -1,11 +1,12 @@
-package synth;
+package webaudio.synth;
 
 import js.html.audio.AudioNode;
 import js.html.audio.AudioParam;
 import js.html.audio.BiquadFilterNode;
 import js.html.audio.GainNode;
 import js.html.audio.OscillatorNode;
-import synth.ADSR.BiquadEnvelope;
+
+import webaudio.synth.ADSR.BiquadEnvelope;
 
 /**
  * A fairly basic monosynth

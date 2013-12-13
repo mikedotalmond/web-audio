@@ -1,5 +1,6 @@
-package synth.ui;
+package webaudio.synth.ui;
 
+import flambe.util.Signal1;
 import haxe.Http;
 import haxe.Template;
 import js.Browser;
@@ -9,9 +10,8 @@ import js.html.Event;
 import js.html.MouseEvent;
 import js.html.Node;
 import js.html.NodeList;
-import msignal.Signal.Signal0;
-import msignal.Signal.Signal1;
-import utils.KeyboardNotes;
+
+import webaudio.utils.KeyboardNotes;
 
 /**
  * ...
@@ -102,14 +102,14 @@ class KeyboardUI {
 				if (pointerDown) {
 					setKeyIsDown(node, true);
 					heldKey = noteIndex;
-					keyDown.dispatch(noteIndex);
+					keyDown.emit(noteIndex);
 				}
 				
 			case "mousedown", "touchstart":
 				pointerDown = true;
 				setKeyIsDown(node, true);
 				heldKey = noteIndex;
-				keyDown.dispatch(noteIndex);
+				keyDown.emit(noteIndex);
 				
 			case "mouseup", "mouseout", "touchend":
 				if (heldKey != -1 && heldKey == noteIndex) {
@@ -119,7 +119,7 @@ class KeyboardUI {
 					
 					setKeyIsDown(node, false);
 					
-					keyUp.dispatch(noteIndex);
+					keyUp.emit(noteIndex);
 				}
 		}
 	}

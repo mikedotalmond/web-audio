@@ -1,4 +1,5 @@
-package synth.processor;
+package webaudio.synth.processor;
+
 import js.html.audio.AudioContext;
 import js.html.audio.AudioNode;
 import js.html.audio.AudioProcessingEvent;
@@ -21,7 +22,6 @@ abstract ScriptProcessor(ScriptProcessorNode) from ScriptProcessorNode to Script
 		if (destination != null) this.connect(destination);
 	}
  }
-
 
 
 class Crusher {

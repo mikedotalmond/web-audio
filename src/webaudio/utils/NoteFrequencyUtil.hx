@@ -1,6 +1,4 @@
-﻿package utils;
-
-import haxe.ds.Vector.Vector;
+﻿package webaudio.utils;
 
 /**
 * ...
