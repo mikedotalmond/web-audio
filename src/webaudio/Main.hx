@@ -3,6 +3,10 @@ package webaudio;
 import flambe.asset.AssetPack;
 import flambe.asset.Manifest;
 import flambe.display.FillSprite;
+import flambe.display.Font;
+import flambe.display.SubImageSprite;
+import flambe.display.SubImageSprite.StarlingSpriteSheet;
+import flambe.display.TextSprite;
 import flambe.Entity;
 import flambe.platform.html.WebAudioSound;
 import flambe.System;
@@ -56,6 +60,26 @@ import webaudio.utils.KeyboardNotes;
         // Add a solid color background
         var background = new FillSprite(0x202020, System.stage.width, System.stage.height);
         System.root.addChild(new Entity().add(background));
+		
+		
+		var xml			= Xml.parse(pack.getFile('sprites.xml').toString());
+		var texture 	= pack.getTexture('sprites');
+		var textureAtlas= StarlingSpriteSheet.parse(xml, texture);
+		
+		var test 		= SubImageSprite.fromSubTextureData(textureAtlas.get('panel-bg_50%'));
+		//var test2 		= SubImageSprite.fromSubTextureData(textureAtlas.get('whiteKey'));
+		var test2 		= SubImageSprite.fromSubTextureData(textureAtlas.get('knob_50%'));
+		System.root.addChild(new Entity().add(test));
+		System.root.addChild(new Entity().add(test2));
+		
+		/*
+		var font = new Font(pack, "font/prime32");
+		var myTextField:TextSprite = new TextSprite(font, "Hello world!");
+		System.root.addChild(new Entity().add(myTextField));
+		// change the text using .text property:
+		myTextField.text = "Flambe";
+		*/
+		
     }
 	
 	function uiReady() {
@@ -205,7 +229,7 @@ import webaudio.utils.KeyboardNotes;
 			instance 		= new Main();
 			
 			// Load up the compiled pack in the assets directory named "bootstrap"
-			var manifest = Manifest.build("bootstrap");
+			var manifest = Manifest.build('bootstrap');
 			var loader = System.loadAssetPack(manifest);
 			loader.get(instance.assetsReady);
 			
@@ -217,7 +241,7 @@ import webaudio.utils.KeyboardNotes;
 			};
 			
 		} else {
-			throw('Could not create AudioaudioContext. Sorry, but it looks like your browser does support Web-Audio APIs ;(');
+			throw('Could not create AudioContext. Sorry, but it looks like your browser does not support the Web-Audio APIs ;(');
 		}
 	}
 	
