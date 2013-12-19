@@ -1,6 +1,7 @@
 package webaudio;
 
 
+import audio.core.MIDITimeCode;
 import flambe.asset.AssetPack;
 import flambe.asset.Manifest;
 import flambe.display.FillSprite;
@@ -19,8 +20,10 @@ import webaudio.synth.ui.MonoSynthUI;
 import webaudio.utils.KeyboardInput;
 import webaudio.utils.KeyboardNotes;
 
-import audio.parameter.IParameterObserver;
+
+import audio.core.MIDIClock;
 import audio.parameter.Parameter;
+import audio.parameter.IParameterObserver;
 
 
 /**
@@ -51,7 +54,13 @@ import audio.parameter.Parameter;
 		
 		initAudio();
 		initKeyboardInputs();
-
+		
+		System.root.addChild(
+			new Entity()
+			.add(new MIDIClock())
+			.add(new MIDITimeCode())
+		);
+		
 		/*
 		var test	:Complex = new Complex(.5, .25);
 		var test2	:Complex = new Complex(1, -.5);
@@ -100,7 +109,7 @@ import audio.parameter.Parameter;
 	}
 	
 	
-	public function onParameterChange(parameter:Parameter):Void {
+	public function onParameterChange(parameter:Parameter) {
 		trace('onParameterChange');
 		trace(parameter.getValue());
 		trace(parameter.getValue(true));
