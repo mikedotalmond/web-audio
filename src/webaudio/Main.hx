@@ -1,20 +1,15 @@
 package webaudio;
 
-import math.Complex;
+
 import flambe.asset.AssetPack;
 import flambe.asset.Manifest;
 import flambe.display.FillSprite;
-import flambe.display.Font;
 import flambe.display.SubImageSprite;
-import flambe.display.SubImageSprite.StarlingSpriteSheet;
-import flambe.display.TextSprite;
 import flambe.Entity;
 import flambe.platform.html.WebAudioSound;
 import flambe.System;
-import js.Browser;
-import math.FloatRange;
-import math.IntRange;
 
+import js.Browser;
 import js.html.audio.AudioContext;
 
 import webaudio.synth.MonoSynth;
@@ -24,6 +19,8 @@ import webaudio.synth.ui.MonoSynthUI;
 import webaudio.utils.KeyboardInput;
 import webaudio.utils.KeyboardNotes;
 
+import audio.parameter.IParameterObserver;
+import audio.parameter.Parameter;
 
 
 /**
@@ -33,7 +30,7 @@ import webaudio.utils.KeyboardNotes;
  *
  * @author Mike Almond - https://github.com/mikedotalmond
  */
-@:final class Main {
+@:final class Main implements IParameterObserver {
 	
 	public var keyboardInput(default,null):KeyboardInput;
 	public var keyboardNotes(default,null):KeyboardNotes;
@@ -54,7 +51,8 @@ import webaudio.utils.KeyboardNotes;
 		
 		initAudio();
 		initKeyboardInputs();
-		
+
+		/*
 		var test	:Complex = new Complex(.5, .25);
 		var test2	:Complex = new Complex(1, -.5);
 		
@@ -67,9 +65,45 @@ import webaudio.utils.KeyboardNotes;
 		var test4 = test / test2;
 		var test5 = test * test2;
 		trace(test5);
-		var test6 = test / Complex.zero();
+		var test6 = test / Complex.zero();*/
+		/*
+		var mapb = MapFactory.getMapping(Mapping.BOOL);
+		var mapi = MapFactory.getMapping(Mapping.INT);
+		var mapf = MapFactory.getMapping(Mapping.FLOAT,0,6);
+		var mapfe = MapFactory.getMapping(Mapping.FLOAT_EXPONENTIAL,0,6);
 		
+		trace(mapb.map(1)==1); //true
+		trace(mapb.map(0)==1); //false
+		trace(mapb.map(.5)==1); //false
+		trace(mapb.map(.51)==1); //true
+		
+		trace(mapi.map(.5));
+		trace(mapi.map(5.5));
+		
+		trace(mapf.map(.5));
+		trace(mapf.map(5.5));
+		
+		trace(mapfe.map(.5));
+		trace(mapfe.map(1));
+		trace(mapfe.map(1) == 6);
+		trace(mapfe.mapInverse(6) == 1);
+		
+		//var testParameter = new Parameter("test parameter", .5, MapFactory.getMapping(Mapping.FLOAT_EXPONENTIAL,-1,1));
+		//var testParameter2 = new Parameter("test parameter2", 0, MapFactory.getMapping(Mapping.FLOAT,-1,1));
 		//monoSynthUI.ready.connect(uiReady).once();
+		
+		//testParameter.addObserver(this);
+		//testParameter2.addObserver(this, true);
+		
+		//testParameter.setValue(-.5);
+		//testParameter.setValue(-.5, true);*/
+	}
+	
+	
+	public function onParameterChange(parameter:Parameter):Void {
+		trace('onParameterChange');
+		trace(parameter.getValue());
+		trace(parameter.getValue(true));
 	}
 	
 	
@@ -216,7 +250,6 @@ import webaudio.utils.KeyboardNotes;
 		//monoSynth.filter_q
 	}
 	
-
 	
 	function dispose() {
 		
@@ -230,7 +263,7 @@ import webaudio.utils.KeyboardNotes;
 	}
 	
 
-	
+
 	
 	/**
 	 * Entry point...
