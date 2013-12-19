@@ -1,5 +1,6 @@
 package webaudio;
 
+import math.Complex;
 import flambe.asset.AssetPack;
 import flambe.asset.Manifest;
 import flambe.display.FillSprite;
@@ -11,6 +12,8 @@ import flambe.Entity;
 import flambe.platform.html.WebAudioSound;
 import flambe.System;
 import js.Browser;
+import math.FloatRange;
+import math.IntRange;
 
 import js.html.audio.AudioContext;
 
@@ -52,6 +55,20 @@ import webaudio.utils.KeyboardNotes;
 		initAudio();
 		initKeyboardInputs();
 		
+		var test	:Complex = new Complex(.5, .25);
+		var test2	:Complex = new Complex(1, -.5);
+		
+		trace(test2.phase);
+		trace(test2.magnitude);
+		trace(test2.squaredMagnitude);
+		trace(test2);
+		
+		var test3 = test - test2;
+		var test4 = test / test2;
+		var test5 = test * test2;
+		trace(test5);
+		var test6 = test / Complex.zero();
+		
 		//monoSynthUI.ready.connect(uiReady).once();
 	}
 	
@@ -79,7 +96,6 @@ import webaudio.utils.KeyboardNotes;
 		// change the text using .text property:
 		myTextField.text = "Flambe";
 		*/
-		
     }
 	
 	function uiReady() {
@@ -108,7 +124,7 @@ import webaudio.utils.KeyboardNotes;
 				case 'filter-env-range': m.filterEnvRange = remapExpo(value);
 				case 'filter-env-attack': m.filterEnvAttack = value;
 				case 'filter-env-release': m.filterEnvRelease = value;
-			}			
+			}
 		} else if (id.indexOf('adsr-') == 0) {
 			switch(id) {
 				case 'adsr-attack': m.adsr_attackTime = value;
@@ -129,7 +145,7 @@ import webaudio.utils.KeyboardNotes;
 	
 	function initAudio() {
 		
-		crusher 		= new Crusher(audioContext, null, WebAudioSound.gain); 
+		crusher 		= new Crusher(audioContext, null, WebAudioSound.gain);
 		crusher.bits	= 4;
 		
 		initMonoSynth(crusher.node);
@@ -154,7 +170,7 @@ import webaudio.utils.KeyboardNotes;
 		
 		/*// bind to ui keyboard signals
 		monoSynthUI.keyboard.keyDown.connect(handleNoteOn);
-		monoSynthUI.keyboard.keyUp.connect(function(i) { 
+		monoSynthUI.keyboard.keyUp.connect(function(i) {
 			if (keyboardInput.hasNotes()) { // key up on ui keyboard, check for any (HID) keyboard keys
 				handleNoteOn(keyboardInput.lastNote()); // retrigger last pressed key
 			} else {

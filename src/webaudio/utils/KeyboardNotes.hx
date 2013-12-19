@@ -2,7 +2,7 @@
 
 /**
  * ...
- * @author Mike Almond - MadeByPi
+ * @author Mike Almond
  */
 
 import webaudio.utils.NoteFrequencyUtil;

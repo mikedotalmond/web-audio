@@ -34,7 +34,6 @@ EReg.prototype = {
 		this.r.s = s;
 		return this.r.m != null;
 	}
-	,__class__: EReg
 }
 var HxOverrides = function() { }
 HxOverrides.__name__ = true;
@@ -112,7 +111,6 @@ List.prototype = {
 		this.q = x;
 		this.length++;
 	}
-	,__class__: List
 }
 var Main = function() {
 	haxe.Log.trace("MonoSynth",{ fileName : "Main.hx", lineNumber : 45, className : "Main", methodName : "new"});
@@ -258,7 +256,6 @@ Main.prototype = {
 			module.sliderChange.add($bind(this,this.onModuleSliderChange));
 		}
 	}
-	,__class__: Main
 }
 var IMap = function() { }
 IMap.__name__ = true;
@@ -301,9 +298,6 @@ var StringBuf = function() {
 	this.b = "";
 };
 StringBuf.__name__ = true;
-StringBuf.prototype = {
-	__class__: StringBuf
-}
 var StringTools = function() { }
 StringTools.__name__ = true;
 StringTools.urlEncode = function(s) {
@@ -382,7 +376,6 @@ haxe.Http.prototype = {
 		r.send(uri);
 		if(!this.async) onreadystatechange(null);
 	}
-	,__class__: haxe.Http
 }
 haxe.Log = function() { }
 haxe.Log.__name__ = true;
@@ -767,7 +760,6 @@ haxe.Template.prototype = {
 		this.run(this.expr);
 		return this.buf.b;
 	}
-	,__class__: haxe.Template
 }
 haxe.ds = {}
 haxe.ds.IntMap = function() {
@@ -785,7 +777,6 @@ haxe.ds.IntMap.prototype = {
 	,set: function(key,value) {
 		this.h[key] = value;
 	}
-	,__class__: haxe.ds.IntMap
 }
 haxe.ds.StringMap = function() {
 	this.h = { };
@@ -803,7 +794,6 @@ haxe.ds.StringMap.prototype = {
 	,get: function(key) {
 		return this.h["$" + key];
 	}
-	,__class__: haxe.ds.StringMap
 }
 var js = {}
 js.Boot = function() { }
@@ -891,48 +881,6 @@ js.Boot.__string_rec = function(o,s) {
 		return String(o);
 	}
 }
-js.Boot.__interfLoop = function(cc,cl) {
-	if(cc == null) return false;
-	if(cc == cl) return true;
-	var intf = cc.__interfaces__;
-	if(intf != null) {
-		var _g1 = 0, _g = intf.length;
-		while(_g1 < _g) {
-			var i = _g1++;
-			var i1 = intf[i];
-			if(i1 == cl || js.Boot.__interfLoop(i1,cl)) return true;
-		}
-	}
-	return js.Boot.__interfLoop(cc.__super__,cl);
-}
-js.Boot.__instanceof = function(o,cl) {
-	if(cl == null) return false;
-	switch(cl) {
-	case Int:
-		return (o|0) === o;
-	case Float:
-		return typeof(o) == "number";
-	case Bool:
-		return typeof(o) == "boolean";
-	case String:
-		return typeof(o) == "string";
-	case Dynamic:
-		return true;
-	default:
-		if(o != null) {
-			if(typeof(cl) == "function") {
-				if(o instanceof cl) {
-					if(cl == Array) return o.__enum__ == null;
-					return true;
-				}
-				if(js.Boot.__interfLoop(o.__class__,cl)) return true;
-			}
-		} else return false;
-		if(cl == Class && o.__name__ != null) return true;
-		if(cl == Enum && o.__ename__ != null) return true;
-		return o.__enum__ == cl;
-	}
-}
 js.Browser = function() { }
 js.Browser.__name__ = true;
 js.Browser.createXMLHttpRequest = function() {
@@ -987,7 +935,6 @@ msignal.Signal.prototype = {
 	,add: function(listener) {
 		return this.registerListener(listener);
 	}
-	,__class__: msignal.Signal
 }
 msignal.Signal0 = function() {
 	msignal.Signal.call(this);
@@ -1007,7 +954,6 @@ msignal.Signal0.prototype = $extend(msignal.Signal.prototype,{
 			slotsToProcess = slotsToProcess.tail;
 		}
 	}
-	,__class__: msignal.Signal0
 });
 msignal.Signal1 = function(type) {
 	msignal.Signal.call(this,[type]);
@@ -1027,7 +973,6 @@ msignal.Signal1.prototype = $extend(msignal.Signal.prototype,{
 			slotsToProcess = slotsToProcess.tail;
 		}
 	}
-	,__class__: msignal.Signal1
 });
 msignal.Signal2 = function(type1,type2) {
 	msignal.Signal.call(this,[type1,type2]);
@@ -1047,7 +992,6 @@ msignal.Signal2.prototype = $extend(msignal.Signal.prototype,{
 			slotsToProcess = slotsToProcess.tail;
 		}
 	}
-	,__class__: msignal.Signal2
 });
 msignal.Slot = function(signal,listener,once,priority) {
 	if(priority == null) priority = 0;
@@ -1067,7 +1011,6 @@ msignal.Slot.prototype = {
 	,remove: function() {
 		this.signal.remove(this.listener);
 	}
-	,__class__: msignal.Slot
 }
 msignal.Slot0 = function(signal,listener,once,priority) {
 	if(priority == null) priority = 0;
@@ -1082,7 +1025,6 @@ msignal.Slot0.prototype = $extend(msignal.Slot.prototype,{
 		if(this.once) this.remove();
 		this.listener();
 	}
-	,__class__: msignal.Slot0
 });
 msignal.Slot1 = function(signal,listener,once,priority) {
 	if(priority == null) priority = 0;
@@ -1098,7 +1040,6 @@ msignal.Slot1.prototype = $extend(msignal.Slot.prototype,{
 		if(this.param != null) value1 = this.param;
 		this.listener(value1);
 	}
-	,__class__: msignal.Slot1
 });
 msignal.Slot2 = function(signal,listener,once,priority) {
 	if(priority == null) priority = 0;
@@ -1115,7 +1056,6 @@ msignal.Slot2.prototype = $extend(msignal.Slot.prototype,{
 		if(this.param2 != null) value2 = this.param2;
 		this.listener(value1,value2);
 	}
-	,__class__: msignal.Slot2
 });
 msignal.SlotList = function(head,tail) {
 	this.nonEmpty = false;
@@ -1176,7 +1116,6 @@ msignal.SlotList.prototype = {
 	,prepend: function(slot) {
 		return new msignal.SlotList(slot,this);
 	}
-	,__class__: msignal.SlotList
 }
 var synth = {}
 synth.MonoSynth = function(destination) {
@@ -1332,7 +1271,6 @@ synth.MonoSynth.prototype = {
 		}
 		return this.oscType;
 	}
-	,__class__: synth.MonoSynth
 }
 synth.processor = {}
 synth.processor.Crusher = function(context,input,destination) {
@@ -1401,7 +1339,6 @@ synth.processor.Crusher.prototype = {
 		}
 		return this._bits = value;
 	}
-	,__class__: synth.processor.Crusher
 }
 synth.ui = {}
 synth.ui.KeyboardUI = function(keyboardNotes) {
@@ -1504,7 +1441,6 @@ synth.ui.KeyboardUI.prototype = {
 	,keyIsDown: function() {
 		return this.heldKey != -1;
 	}
-	,__class__: synth.ui.KeyboardUI
 }
 synth.ui.ModuleUI = function() {
 	this.controls = [];
@@ -1557,7 +1493,6 @@ synth.ui.ModuleUI.prototype = {
 		})($bind(this,this.onRangeChange),n));
 		this.controls.push(control);
 	}
-	,__class__: synth.ui.ModuleUI
 }
 synth.ui.RangeControl = function(input,settings) {
 	this.input = input;
@@ -1565,9 +1500,6 @@ synth.ui.RangeControl = function(input,settings) {
 	this.id = input.id;
 };
 synth.ui.RangeControl.__name__ = true;
-synth.ui.RangeControl.prototype = {
-	__class__: synth.ui.RangeControl
-}
 synth.ui.MonoSynthUI = function(keyboardNotes) {
 	this.ready = new msignal.Signal0();
 	this.keyboard = new synth.ui.KeyboardUI(keyboardNotes);
@@ -1605,7 +1537,6 @@ synth.ui.MonoSynthUI.prototype = {
 		http.onData = $bind(this,this.templateLoaded);
 		http.request();
 	}
-	,__class__: synth.ui.MonoSynthUI
 }
 var utils = {}
 utils.KeyboardInput = function(keyNotes) {
@@ -1663,7 +1594,6 @@ utils.KeyboardInput.prototype = {
 	,hasNotes: function() {
 		return (this.heldNotes.length > 0?this.heldNotes.length:-1) > 0;
 	}
-	,__class__: utils.KeyboardInput
 }
 utils.KeyboardNotes = function() {
 	this.noteFreq = new utils.NoteFrequencyUtil();
@@ -1735,9 +1665,6 @@ utils.KeyboardNotes = function() {
 	this.keycodeToNoteFreq.set(221,this.keycodeToNoteIndex.get(221));
 };
 utils.KeyboardNotes.__name__ = true;
-utils.KeyboardNotes.prototype = {
-	__class__: utils.KeyboardNotes
-}
 utils.NoteFrequencyUtil = function() {
 	if(utils.NoteFrequencyUtil.pitchNames == null) {
 		utils.NoteFrequencyUtil.pitchNames = ["C","C#","D","D#","E","F","F#","G","G#","A","A#","B"];
@@ -1795,7 +1722,6 @@ utils.NoteFrequencyUtil.prototype = {
 			this.noteFrequencies[i] = this.get_tuningBase() * Math.pow(2,(i - 69.0) * (1 / 12));
 		}
 	}
-	,__class__: utils.NoteFrequencyUtil
 }
 function $iterator(o) { if( o instanceof Array ) return function() { return HxOverrides.iter(o); }; return typeof(o.iterator) == 'function' ? $bind(o,o.iterator) : o.iterator; };
 var $_, $fid = 0;
@@ -1810,18 +1736,8 @@ Math.isFinite = function(i) {
 Math.isNaN = function(i) {
 	return isNaN(i);
 };
-String.prototype.__class__ = String;
 String.__name__ = true;
-Array.prototype.__class__ = Array;
 Array.__name__ = true;
-var Int = { __name__ : ["Int"]};
-var Dynamic = { __name__ : ["Dynamic"]};
-var Float = Number;
-Float.__name__ = ["Float"];
-var Bool = Boolean;
-Bool.__ename__ = ["Bool"];
-var Class = { __name__ : ["Class"]};
-var Enum = { };
 msignal.SlotList.NIL = new msignal.SlotList(null,null);
 haxe.Template.splitter = new EReg("(::[A-Za-z0-9_ ()&|!+=/><*.\"-]+::|\\$\\$([A-Za-z0-9_-]+)\\()","");
 haxe.Template.expr_splitter = new EReg("(\\(|\\)|[ \r\n\t]*\"[^\"]*\"[ \r\n\t]*|[!+=/><*.&|-]+)","");

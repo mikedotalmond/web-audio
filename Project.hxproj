@@ -40,7 +40,6 @@
   </library>
   <!-- Paths to exclude from the Project Explorer tree -->
   <hiddenPaths>
-    <hidden path="build" />
     <hidden path="obj" />
   </hiddenPaths>
   <!-- Executed before build -->
