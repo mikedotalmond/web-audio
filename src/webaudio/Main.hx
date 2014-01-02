@@ -1,7 +1,8 @@
 package webaudio;
 
 
-import audio.core.MIDITimeCode;
+import audio.core.Timecode.TimecodeData;
+import audio.core.TimeSignature;
 import flambe.asset.AssetPack;
 import flambe.asset.Manifest;
 import flambe.display.FillSprite;
@@ -21,7 +22,7 @@ import webaudio.utils.KeyboardInput;
 import webaudio.utils.KeyboardNotes;
 
 
-import audio.core.MIDIClock;
+import audio.core.Clock;
 import audio.parameter.Parameter;
 import audio.parameter.IParameterObserver;
 
@@ -55,11 +56,22 @@ import audio.parameter.IParameterObserver;
 		initAudio();
 		initKeyboardInputs();
 		
+		var clock = new Clock();
 		System.root.addChild(
 			new Entity()
-			.add(new MIDIClock())
-			.add(new MIDITimeCode())
+			.add(clock)
+			//.add(new Clock(133, new TimeSignature(3, 4)))
+			//.add(new Clock(133, new TimeSignature(16, 8)))
 		);
+		
+		clock.tick.connect(function(t:TimecodeData) {
+			//trace(t);
+		});
+		
+		//clock.bpm = 134.5;
+		//clock.goto(61.897);
+		clock.start();
+		//clock.start(5.15);
 		
 		/*
 		var test	:Complex = new Complex(.5, .25);
