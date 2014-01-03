@@ -7,7 +7,7 @@
 
 import math.Tools;
 
-class MapIntLinear implements IMapping {
+class MapIntLinear implements Mapping {
 	
 	var _min:Int;
 	var _max:Int;

@@ -1,7 +1,25 @@
 package math;
 
 /**
- * ...
+ *	var a:Complex = new Complex(.5, .25);
+ *	var b = new Complex(1, -.5);
+ *
+ *	trace(a.phase);
+ *	trace(a.magnitude);
+ *	trace(a.squaredMagnitude);
+ *	trace(a);
+ *
+ *	var c = a - b;
+ *	var d = a / b;
+ *	var e = a * b;
+ *
+ *  e*=a;
+ *  c+=e;
+ *
+ *	trace(d);
+ *	trace(e);
+ *
+ *	var f = (a+b+c) / d;
  */
 
 abstract Complex(ComplexNumber) from ComplexNumber to ComplexNumber {
@@ -68,16 +86,15 @@ abstract Complex(ComplexNumber) from ComplexNumber to ComplexNumber {
 	}
 }
 
-
-private class ComplexNumber {
+class ComplexNumber {
 	
 	public var re:Float;
 	public var im:Float;
 	
 	/**
 	 *
-	 * @param	re	real part
-	 * @param	im	imaginary part
+	 * @param	re	real
+	 * @param	im	imaginary
 	 */
 	public function new(re:Float = .0, im:Float = .0) {
 		this.re = re;

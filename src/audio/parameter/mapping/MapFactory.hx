@@ -1,12 +1,11 @@
 ﻿package audio.parameter.mapping;
-import audio.parameter.mapping.MapFactory.Mapping;
 
 /**
  * ...
  * @author Mike Almond
  */
 
- enum Mapping {
+ enum MapType {
 	BOOL;
 	INT;
 	FLOAT;
@@ -15,19 +14,19 @@ import audio.parameter.mapping.MapFactory.Mapping;
 
 class MapFactory {
 	
-	public static function getMapping(type:Mapping, min = .0, max = 1.0):IMapping {
+	public static function getMapping(type:MapType, min = .0, max = 1.0):Mapping {
 		
 		switch(type) {
-			case Mapping.BOOL:
+			case MapType.BOOL:
 				return new MapBool();
 			
-			case Mapping.INT:
+			case MapType.INT:
 				return new MapIntLinear(Std.int(min), Std.int(max));
 			
-			case Mapping.FLOAT:
+			case MapType.FLOAT:
 				return new MapFloatLinear(min, max);
 			
-			case Mapping.FLOAT_EXPONENTIAL:
+			case MapType.FLOAT_EXPONENTIAL:
 				return new MapFloatExponential(min, max);
 		}
 		

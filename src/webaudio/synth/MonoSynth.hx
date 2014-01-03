@@ -1,5 +1,7 @@
 package webaudio.synth;
 
+import audio.parameter.ParameterObserver;
+import audio.parameter.Parameter;
 import js.html.audio.AudioNode;
 import js.html.audio.AudioParam;
 import js.html.audio.BiquadFilterNode;
@@ -18,7 +20,7 @@ import webaudio.synth.ADSR.BiquadEnvelope;
  * @author Mike Almond - https://github.com/mikedotalmond *
  */
 
-class MonoSynth { //
+class MonoSynth implements ParameterObserver { //
 	
 	var osc							:Array<Oscillator>;
 	
@@ -125,5 +127,11 @@ class MonoSynth { //
 		biquad = null;
 		outputGain = null;
 		osc = null;
+	}
+	
+	/* INTERFACE audio.parameter.IParameterObserver */
+	public function onParameterChange(parameter:Parameter) {
+		trace('[MonoSynth] onParameterChange');
+		trace('${parameter.name} - value:${parameter.getValue()}, normalised:${parameter.getValue(true)}');
 	}
 }

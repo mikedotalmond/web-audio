@@ -1,8 +1,9 @@
-package audio.core;
+package audio.time;
 
-import audio.core.Timecode;
-import audio.core.Timecode.TimecodeData;
-import audio.core.TimeSignature;
+import audio.time.Timecode;
+import audio.time.Timecode.TimecodeData;
+import audio.time.TimeSignature;
+
 import flambe.Component;
 import flambe.util.Signal0;
 import flambe.util.Signal1;
@@ -12,10 +13,10 @@ import flambe.util.Signal1;
  * @author Mike Almond - https://github.com/mikedotalmond
  */
 
+@:allow(audio.time)
 class Clock extends Component {
 
-	@:allow(audio.core.Timecode)
-	static inline var PPQN:Int = 24; // pulses per quarter note
+	static inline var PPQN:Int = 24; // pulses per quarter note (24 is the midi spec, may as well use that...)
 	
 	var ticks			:Int = -1;
 	var lastTickedAt	:Float = 0;
@@ -44,8 +45,11 @@ class Clock extends Component {
 		
 		this.timeSignature 	= timeSignature == null ? new TimeSignature() : timeSignature;
 		timecode 			= new Timecode(this.timeSignature);
-		this.bpm 			= bpm;
+		
+		set_bpm(bpm);
 		goto(0);
+		
+		this.timeSignature.change.connect(set_bpm.bind(_bpm));
 	}
 	
 	

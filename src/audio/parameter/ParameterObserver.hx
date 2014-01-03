@@ -7,6 +7,6 @@
 
 import audio.parameter.Parameter;
 
-interface IParameterObserver {
+interface ParameterObserver {
 	function onParameterChange(parameter:Parameter):Void;
 }

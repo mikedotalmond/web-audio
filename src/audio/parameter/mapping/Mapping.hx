@@ -5,7 +5,7 @@
  * @author Mike Almond
  */
 
-interface IMapping {
+interface Mapping {
 	
 	/**
 	 * @param	normalisedValue (0-1)

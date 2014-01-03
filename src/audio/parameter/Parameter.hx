@@ -8,26 +8,26 @@ import flambe.util.Signal1.Signal1;
 import flambe.util.SignalConnection;
 
 import audio.parameter.mapping.MapBool;
-import audio.parameter.mapping.IMapping;
+import audio.parameter.mapping.Mapping;
 import audio.parameter.mapping.MapFactory;
 
 class Parameter {
 	
-	var observers:Map<IParameterObserver, SignalConnection>;
+	var observers:Map<ParameterObserver, SignalConnection>;
 	
 	var normalisedValue:Float;
 	
 	public var name:String;
 	public var defaultValue:Float;
 	
-	public var mapping(default, null):IMapping;
+	public var mapping(default, null):Mapping;
 	public var change(default, null):Signal1<Parameter>;
 	
 	
-	public function new(name:String, defaultValue:Float, mapping:IMapping) {
+	public function new(name:String, defaultValue:Float, mapping:Mapping) {
 		
 		change = new Signal1<Parameter>();
-		observers = new Map<IParameterObserver,SignalConnection>();
+		observers = new Map<ParameterObserver,SignalConnection>();
 		
 		this.name 			= name;
 		this.defaultValue	= defaultValue;
@@ -62,7 +62,7 @@ class Parameter {
 		}
 	}
 	
-	public function addObserver(observer:IParameterObserver, triggerImmediately=false, once=false) {
+	public function addObserver(observer:ParameterObserver, triggerImmediately=false, once=false) {
 		if (!observers.exists(observer)) {
 			var conn = change.connect(observer.onParameterChange);
 			
@@ -73,7 +73,7 @@ class Parameter {
 		if (triggerImmediately) observer.onParameterChange(this);
 	}
 	
-	public function removeObserver(o:IParameterObserver) {
+	public function removeObserver(o:ParameterObserver) {
 		if (observers.exists(o)) {
 			observers.get(o).dispose();
 			observers.remove(o);

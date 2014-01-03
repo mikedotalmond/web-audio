@@ -4,7 +4,7 @@
  * ...
  * @author Mike Almond
  */
-class MapBool implements IMapping {
+class MapBool implements Mapping {
 	
 	public function new() { }
 	

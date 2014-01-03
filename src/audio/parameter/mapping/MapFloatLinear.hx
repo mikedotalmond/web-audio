@@ -4,7 +4,7 @@
  * ...
  * @author Mike Almond
  */
-class MapFloatLinear implements IMapping {
+class MapFloatLinear implements Mapping {
 	
 	var _min:Float;
 	var _max:Float;

@@ -4,7 +4,7 @@
  * ...
  * @author Mike Almond
  */
-class MapFloatExponential implements IMapping {
+class MapFloatExponential implements Mapping {
 	
 	var _min:Float;
 	var _max:Float;
