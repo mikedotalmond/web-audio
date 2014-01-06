@@ -4,15 +4,19 @@ import audio.parameter.mapping.MapFactory;
 import audio.parameter.mapping.Mapping;
 import flambe.asset.AssetPack;
 import flambe.asset.Manifest;
+import flambe.Component;
 import flambe.display.FillSprite;
+import flambe.display.Font;
 import flambe.display.Sprite;
 import flambe.display.SubImageSprite;
+import flambe.display.TextSprite;
 import flambe.Entity;
 import flambe.math.FMath;
 import flambe.System;
 import flambe.platform.html.WebAudioSound;
 import math.Complex;
 import webaudio.synth.ui.controls.Rotary;
+import webaudio.synth.ui.Fonts;
 
 import js.Browser;
 import js.html.audio.AudioContext;
@@ -40,14 +44,18 @@ import audio.time.Timecode.TimecodeData;
  */
 @:final class Main implements ParameterObserver {
 	
-	public var keyboardInput(default,null):KeyboardInput;
-	public var keyboardNotes(default,null):KeyboardNotes;
+	public var keyboardInput(default,null)	:KeyboardInput;
+	public var keyboardNotes(default, null)	:KeyboardNotes;
+	
+	public var textureAtlas	(default, null)	:Map<String,SubTextureData>;
+	
 	
 	var monoSynth		:MonoSynth;
 	
 	var crusher			:Crusher;
 	
 	var monoSynthUI		:MonoSynthUI;
+	
 	
 	function new() {
 		
@@ -62,7 +70,7 @@ import audio.time.Timecode.TimecodeData;
 		
 		//testClock();
 		//testComplex();
-		testParameterMapping();
+		//testParameterMapping();
 	}
 	
 	function testParameterMapping() {
@@ -161,50 +169,52 @@ import audio.time.Timecode.TimecodeData;
 	
     function assetsReady (pack:AssetPack) {
 		
-        // Add a solid color background
+		// initialise font/text stuff
+		Fonts.setup(pack);
+		
+        // Add a solid background colour
         var background = new FillSprite(0x202020, System.stage.width, System.stage.height);
         System.root.add(background);
 		
-		
+		// setup (starling) texture atlas
 		var xml			= Xml.parse(pack.getFile('sprites.xml').toString());
 		var texture 	= pack.getTexture('sprites');
-		var textureAtlas= StarlingSpriteSheet.parse(xml, texture);
+		textureAtlas 	= StarlingSpriteSheet.parse(xml, texture);
 		
-		//var test 		= SubImageSprite.fromSubTextureData(textureAtlas.get('panel-bg_50%'));
 		//var test2 		= SubImageSprite.fromSubTextureData(textureAtlas.get('whiteKey'));
 		//var test2 		= SubImageSprite.fromSubTextureData(textureAtlas.get('blackKey'));
 	
+		
+		// panel ui test...
 		var panel;
-		var knobington;
-		var nipppler;
+		var knob = Rotary.create(MapFactory.getMapping(MapType.FLOAT, 0, 1), 0.5, -FMath.PI / 1.25, FMath.PI / 1.25);
 		
 		System.root.addChild(
-			(panel = new Entity()
-				.add(SubImageSprite.fromSubTextureData(textureAtlas.get('panel-bg_50%')))
-			)
-			.addChild(
-				(knobington = new Entity()
-					.add(SubImageSprite.fromSubTextureData(textureAtlas.get('knob_50%')))
-					.addChild(
-						nipppler = new Entity().add(SubImageSprite.fromSubTextureData(textureAtlas.get('knob-nipple_50%')))
-					)
-					.add(new Rotary(-FMath.PI/1.25, FMath.PI/1.25, 12))
-				)
-			)
+			(panel = new Entity().add(SubImageSprite.fromSubTextureData(textureAtlas.get('panel-bg_50%'))))
+			.addChild(knob)
 		);
 		
+		//panel.get(Sprite).x._ = 64;
+		//panel.get(Sprite).y._ = 64;
 		
-		knobington.get(Sprite).x._ = 64;
-		knobington.get(Sprite).y._ = 40;
+		var slicedX;
+		var slicedY;
 		
-		/*
-		var font = new Font(pack, "font/prime32");
-		var myTextField:TextSprite = new TextSprite(font, "Hello world!");
-		System.root.addChild(new Entity().add(myTextField));
-		// change the text using .text property:
-		myTextField.text = "Flambe";
-		*/
+		System.root.addChild(new Entity().add(slicedX = new ThreeSliceX('nubbin-button-bg_50%')));
+		System.root.addChild(new Entity().add(slicedY = new ThreeSliceY('nubbin-button-bg_50%')));
+		
+		slicedX.x = 256;
+		slicedX.y = 96;
+		slicedX.width = 384;
+		
+		slicedY.x = 96;
+		slicedY.y = 96;
+		slicedY.height = 256;
+		
+		knob.get(Sprite).x._ = 35;
+		knob.get(Sprite).y._ = 35;
 	}
+	
 	
 	function uiReady() {
 		for (module in monoSynthUI.modules) {
@@ -370,4 +380,127 @@ import audio.time.Timecode.TimecodeData;
 	
 	public static var instance(default,null):Main;
 	public static var audioContext(default,null):AudioContext;
+}
+
+
+
+class NineSlice extends Component {
+	
+	
+}
+
+class ThreeSliceX extends Component {
+	
+	public var x(get, set):Float;
+	public var y(get, set):Float;
+	public var width(get, set):Float;
+	
+	public var minWidth(get, never):Float;
+	function get_minWidth():Float return edgesWidth + 1;
+	
+	var parts		:Array<SubImageSprite>;
+	var edgesWidth	:Float;
+	
+	public function new(textureName:String) {
+		parts 		= SubImageSprite.threeSliceXfromSubTextureData(Main.instance.textureAtlas.get(textureName));
+		edgesWidth 	= parts[0].getNaturalWidth() + parts[2].getNaturalWidth();
+		_width 		= minWidth;
+	}
+	
+	override public function onAdded() {
+		owner.addChild(new Entity().add(parts[0]));
+		owner.addChild(new Entity().add(parts[1]));
+		owner.addChild(new Entity().add(parts[2]));
+	}
+	
+	
+	var _width:Float = 0;
+	function get_width() return _width;
+	function set_width(value) {
+		
+		var w 			= (value < minWidth) ? minWidth : value;
+		var midScale 	= w - edgesWidth;
+		
+		parts[1].scaleX._ = midScale;
+		parts[2].x._ = parts[1].x._ + parts[1].scaleX._;
+		
+		return _width = w;
+	}
+	
+	
+	var _x:Float = 0;
+	function get_x() return _x;
+	function set_x(value) {
+		parts[0].x._ = value;
+		parts[1].x._ = value + parts[0].getNaturalWidth();
+		parts[2].x._ = parts[1].x._ + parts[1].scaleX._;
+		return _x = value;
+	}
+	
+	var _y:Float = 0;
+	function get_y() return _y;
+	function set_y(value) {
+		return _y 		=
+		parts[0].y._ 	=
+		parts[1].y._ 	=
+		parts[2].y._ 	= value;
+	}
+}
+
+
+class ThreeSliceY extends Component {
+	public var x(get, set):Float;
+	public var y(get, set):Float;
+	public var height(get, set):Float;
+	
+	public var minHeight(get, never):Float;
+	function get_minHeight():Float return edgesHeight + 1;
+	
+	var parts		:Array<SubImageSprite>;
+	var edgesHeight	:Float;
+	
+	public function new(textureName:String) {
+		parts 		= SubImageSprite.threeSliceYfromSubTextureData(Main.instance.textureAtlas.get(textureName));
+		edgesHeight	= parts[0].getNaturalHeight() + parts[2].getNaturalHeight();
+		_height		= minHeight;
+	}
+	
+	override public function onAdded() {
+		owner.addChild(new Entity().add(parts[0]));
+		owner.addChild(new Entity().add(parts[1]));
+		owner.addChild(new Entity().add(parts[2]));
+	}
+	
+	
+	var _height:Float = 0;
+	function get_height() return _height;
+	function set_height(value) {
+		
+		var h 			= (value < minHeight) ? minHeight : value;
+		var midScale 	= h - edgesHeight;
+		
+		parts[1].scaleY._ = midScale;
+		parts[2].y._ = parts[1].y._ + parts[1].scaleY._;
+		
+		return _height = h;
+	}
+	
+	
+	var _y:Float = 0;
+	function get_y() return _y;
+	function set_y(value) {
+		parts[0].y._ = value;
+		parts[1].y._ = value + parts[0].getNaturalHeight();
+		parts[2].y._ = parts[1].y._ + parts[1].scaleY._;
+		return _y = value;
+	}
+	
+	var _x:Float = 0;
+	function get_x() return _x;
+	function set_x(value) {
+		return _x 		=
+		parts[0].x._ 	=
+		parts[1].x._ 	=
+		parts[2].x._ 	= value;
+	}
 }

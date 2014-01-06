@@ -48,6 +48,24 @@ import flambe.math.Rectangle;
 	public static inline function fromSubTextureData(d:SubTextureData):SubImageSprite {
 		return new SubImageSprite(d.name, d.texture, d.x, d.y, d.width, d.height);
 	}
+	
+	public static inline function threeSliceXfromSubTextureData(d:SubTextureData):Array<SubImageSprite> {
+		var half = Std.int(d.width / 2) - 1;
+		return [
+			new SubImageSprite('${d.name}-left', d.texture, d.x, d.y, half, d.height),
+			new SubImageSprite('${d.name}-mid', d.texture, d.x + half, d.y, 1, d.height),
+			new SubImageSprite('${d.name}-right', d.texture, d.x + half + 2, d.y, half, d.height),
+		];
+	}
+	
+	public static inline function threeSliceYfromSubTextureData(d:SubTextureData):Array<SubImageSprite> {
+		var half = Std.int(d.height / 2) - 1;
+		return [
+			new SubImageSprite('${d.name}-top', d.texture, d.x, d.y, d.width, half),
+			new SubImageSprite('${d.name}-mid', d.texture, d.x, d.y + half, d.width, 1),
+			new SubImageSprite('${d.name}-bottom', d.texture, d.x, d.y + half + 2, d.width, half),
+		];
+	}
 }
 
 

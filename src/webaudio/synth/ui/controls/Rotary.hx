@@ -1,12 +1,21 @@
 package webaudio.synth.ui.controls;
 
+import audio.parameter.mapping.MapFactory;
+import audio.parameter.mapping.Mapping;
 import audio.parameter.ParameterObserver;
 import audio.parameter.Parameter;
 import flambe.display.Sprite;
+import flambe.display.SubImageSprite;
+import flambe.display.TextSprite;
+import flambe.Entity;
+import flambe.input.Key;
 import flambe.input.PointerEvent;
 import flambe.math.FMath;
 import flambe.System;
 import flambe.util.SignalConnection;
+import math.FloatRange;
+import webaudio.Main;
+import webaudio.synth.ui.Fonts;
 
 import flambe.Component;
 
@@ -14,19 +23,29 @@ import flambe.Component;
  * ...
  * @author Mike Almond - https://github.com/mikedotalmond - https://github.com/MadeByPi
  */
-class Rotary extends Component implements ParameterObserver {
+
+class Rotary extends NumericControl {
 	
-	var radius:Float;
-	var minAngle:Float;
-	var maxAngle:Float;
+	public var radius	:Float;
+	public var minAngle	:Float;
+	public var maxAngle	:Float;
 	
-	var cx:Float;
-	var cy:Float;
+	var centreX			:Float;
+	var centreY			:Float;
+	var label			:TextSprite;
 	
-	public function new(minAngle:Float, maxAngle:Float, radius:Float) {
-		this.minAngle 	= minAngle;
-		this.maxAngle 	= maxAngle;
-		this.radius 	= radius;
+	/**
+	 *
+	 * @param	controlName
+	 * @param	minAngle
+	 * @param	maxAngle
+	 * @param	radius
+	 */
+	public function new(defaultValue:Float, parameterMapping:Mapping, minAngle:Float, maxAngle:Float, radius:Float) {
+		super('rotary', defaultValue, parameterMapping);
+		this.minAngle = minAngle;
+		this.maxAngle = maxAngle;
+		this.radius = radius;
 	}
 	
 	override public function onAdded() {
@@ -35,70 +54,82 @@ class Rotary extends Component implements ParameterObserver {
 		
 		// align knob...
 		display.centerAnchor();
-		cx = display.anchorX._;
-		cy = display.anchorY._;
+		centreX = display.anchorX._;
+		centreY = display.anchorY._;
 		
-		// align knob nipple... and disable mouse/touch on it...
+		// knob nipple setup..
 		owner.firstChild.get(Sprite)
 			.centerAnchor()
 			.disablePixelSnapping()
 			.disablePointer();
 		
-		var moveConnection:SignalConnection = null;
-		var uiRoot = System.root.get(Sprite); // the bg FillSprite
+		// label
+		label = owner.firstChild.next.get(TextSprite);
+		if (Std.is(label, TextSprite)) {
+			label.centerAnchor();
+			label.y._ = centreY + display.getNaturalHeight() / 2 + 7;
+		} else {
+			label = null;
+		}
 		
-		var dy = .0;
-		display.pointerDown.connect(function(e:PointerEvent) {
-			trace('down');
-			
-			if (moveConnection != null) moveConnection.dispose();
-			
-			dy = e.viewY;
-			
-			moveConnection = uiRoot.pointerMove.connect(function(e:PointerEvent) {
-				
-				var dt = dy - e.viewY;
-				dy = e.viewY;
-				
-				setPosition(_position + (dt * .005));
-			});
-			
-			// listen once for pointer-up
-			uiRoot.pointerUp.connect(function(e:PointerEvent) {
-				trace('up');
-				if (moveConnection != null) {
-					moveConnection.dispose();
-					moveConnection = null;
-				}
-			}).once();
-		});
-		
-		
-		setPosition(0);
+		super.onAdded();
 	}
 	
-	var _position:Float;//0-1
-	public function setPosition(value:Float) {
+	
+	// triggered whenever the value Parameter changes
+	override function updateDisplay() {
+		
+		setKnobPosition(value.getValue(true));
+		
+		if (label != null) {
+			label.text = '${NumericControl.roundValueForDisplay(value.getValue(), 3)}';
+			label.centerAnchor();
+			label.x._ = centreX;
+		}
+	}
+	
+	
+	/**
+	 * @param	value (normalised position value)
+	 */
+	inline function setKnobPosition(value:Float) {
 		
 		if (value > 1) value = 1;
 		if (value < 0) value = 0;
-		_position = value;
 		
 		var range 	= Math.abs(maxAngle - minAngle);
 		var angle 	= minAngle + value * range;
 		
-		var px 		= cx + Math.cos(angle-FMath.PI / 2) * radius;
-		var py 		= cy + Math.sin(angle-FMath.PI / 2) * radius;
+		var px 		= centreX + Math.cos(angle - FMath.PI / 2) * radius;
+		var py 		= centreY + Math.sin(angle - FMath.PI / 2) * radius;
 		
 		owner.firstChild.get(Sprite).setXY(px, py);
 	}
 	
-	override public function onRemoved() {
-		
-	}
 	
-	/* INTERFACE audio.parameter.IParameterObserver */
-	public function onParameterChange(parameter:Parameter) {
+	
+	
+	/**
+	 *
+	 * @param	parameterMapping
+	 * @param	defaultValue
+	 * @param	minAngle
+	 * @param	maxAngle
+	 * @param	radius
+	 * @return
+	 */
+	public static function create(parameterMapping:Mapping, defaultValue:Float, minAngle:Float, maxAngle:Float, small:Bool=false, showLabel:Bool=true):Entity {
 		
+		var textures = Main.instance.textureAtlas;
+		var ent = new Entity();
+		
+		ent	.add(SubImageSprite.fromSubTextureData(textures.get('knob_${small?"25":"50"}%')))
+			.addChild(new Entity().add(SubImageSprite.fromSubTextureData(textures.get('knob-nipple_50%'))));
+			
+		if (showLabel) ent.addChild(new Entity().add(Fonts.getField(Fonts.Prime13, '0.00', 0x212133)));
+		
+		ent.add(new Rotary(defaultValue, parameterMapping, minAngle, maxAngle, small ? 5.25 : 12));
+		
+		return ent;
 	}
 }
