@@ -199,9 +199,18 @@ import audio.time.Timecode.TimecodeData;
 		
 		var slicedX;
 		var slicedY;
+		var sliced9;
 		
 		System.root.addChild(new Entity().add(slicedX = new ThreeSliceX('nubbin-button-bg_50%')));
 		System.root.addChild(new Entity().add(slicedY = new ThreeSliceY('nubbin-button-bg_50%')));
+		System.root.addChild(new Entity().add(sliced9 = new NineSlice('nubbin-button-bg_50%')));
+		//System.root.addChild(new Entity().add(sliced9 = new NineSlice('panel-bg', 32, 32)));
+		
+		sliced9.width = 256;
+		sliced9.height = 256;
+		
+		sliced9.x = 100;
+		sliced9.y = 200;
 		
 		slicedX.x = 256;
 		slicedX.y = 96;
@@ -380,127 +389,4 @@ import audio.time.Timecode.TimecodeData;
 	
 	public static var instance(default,null):Main;
 	public static var audioContext(default,null):AudioContext;
-}
-
-
-
-class NineSlice extends Component {
-	
-	
-}
-
-class ThreeSliceX extends Component {
-	
-	public var x(get, set):Float;
-	public var y(get, set):Float;
-	public var width(get, set):Float;
-	
-	public var minWidth(get, never):Float;
-	function get_minWidth():Float return edgesWidth + 1;
-	
-	var parts		:Array<SubImageSprite>;
-	var edgesWidth	:Float;
-	
-	public function new(textureName:String) {
-		parts 		= SubImageSprite.threeSliceXfromSubTextureData(Main.instance.textureAtlas.get(textureName));
-		edgesWidth 	= parts[0].getNaturalWidth() + parts[2].getNaturalWidth();
-		_width 		= minWidth;
-	}
-	
-	override public function onAdded() {
-		owner.addChild(new Entity().add(parts[0]));
-		owner.addChild(new Entity().add(parts[1]));
-		owner.addChild(new Entity().add(parts[2]));
-	}
-	
-	
-	var _width:Float = 0;
-	function get_width() return _width;
-	function set_width(value) {
-		
-		var w 			= (value < minWidth) ? minWidth : value;
-		var midScale 	= w - edgesWidth;
-		
-		parts[1].scaleX._ = midScale;
-		parts[2].x._ = parts[1].x._ + parts[1].scaleX._;
-		
-		return _width = w;
-	}
-	
-	
-	var _x:Float = 0;
-	function get_x() return _x;
-	function set_x(value) {
-		parts[0].x._ = value;
-		parts[1].x._ = value + parts[0].getNaturalWidth();
-		parts[2].x._ = parts[1].x._ + parts[1].scaleX._;
-		return _x = value;
-	}
-	
-	var _y:Float = 0;
-	function get_y() return _y;
-	function set_y(value) {
-		return _y 		=
-		parts[0].y._ 	=
-		parts[1].y._ 	=
-		parts[2].y._ 	= value;
-	}
-}
-
-
-class ThreeSliceY extends Component {
-	public var x(get, set):Float;
-	public var y(get, set):Float;
-	public var height(get, set):Float;
-	
-	public var minHeight(get, never):Float;
-	function get_minHeight():Float return edgesHeight + 1;
-	
-	var parts		:Array<SubImageSprite>;
-	var edgesHeight	:Float;
-	
-	public function new(textureName:String) {
-		parts 		= SubImageSprite.threeSliceYfromSubTextureData(Main.instance.textureAtlas.get(textureName));
-		edgesHeight	= parts[0].getNaturalHeight() + parts[2].getNaturalHeight();
-		_height		= minHeight;
-	}
-	
-	override public function onAdded() {
-		owner.addChild(new Entity().add(parts[0]));
-		owner.addChild(new Entity().add(parts[1]));
-		owner.addChild(new Entity().add(parts[2]));
-	}
-	
-	
-	var _height:Float = 0;
-	function get_height() return _height;
-	function set_height(value) {
-		
-		var h 			= (value < minHeight) ? minHeight : value;
-		var midScale 	= h - edgesHeight;
-		
-		parts[1].scaleY._ = midScale;
-		parts[2].y._ = parts[1].y._ + parts[1].scaleY._;
-		
-		return _height = h;
-	}
-	
-	
-	var _y:Float = 0;
-	function get_y() return _y;
-	function set_y(value) {
-		parts[0].y._ = value;
-		parts[1].y._ = value + parts[0].getNaturalHeight();
-		parts[2].y._ = parts[1].y._ + parts[1].scaleY._;
-		return _y = value;
-	}
-	
-	var _x:Float = 0;
-	function get_x() return _x;
-	function set_x(value) {
-		return _x 		=
-		parts[0].x._ 	=
-		parts[1].x._ 	=
-		parts[2].x._ 	= value;
-	}
 }
