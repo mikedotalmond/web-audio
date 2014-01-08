@@ -172,46 +172,48 @@ import audio.time.Timecode.TimecodeData;
 		// initialise font/text stuff
 		Fonts.setup(pack);
 		
-        // Add a solid background colour
-        var background = new FillSprite(0x202020, System.stage.width, System.stage.height);
-        System.root.add(background);
-		
-		// setup (starling) texture atlas
+		// setup textures
 		var xml			= Xml.parse(pack.getFile('sprites.xml').toString());
 		var texture 	= pack.getTexture('sprites');
 		textureAtlas 	= StarlingSpriteSheet.parse(xml, texture);
 		
-		//var test2 		= SubImageSprite.fromSubTextureData(textureAtlas.get('whiteKey'));
-		//var test2 		= SubImageSprite.fromSubTextureData(textureAtlas.get('blackKey'));
-	
+        // Add a solid background colour
+        //var background = new FillSprite(0x202020, System.stage.width, System.stage.height);
+        //System.root.add(background);
+		var background;
+		System.root.add((background = new NineSlice('panel-bg_50%')));
+		background.width  = System.stage.width;
+		background.height = System.stage.height;
+		background.x = background.y = 0;
+		background.setTint(.15, .15, .15);
+		
+		/*var sliced9;
+		System.root.addChild(new Entity().add(sliced9 = new NineSlice('panel-bg', 36, 36)));
+		sliced9.width  = System.stage.width - 16;
+		sliced9.height = 128;
+		sliced9.x = 8;
+		sliced9.y = 256 + 16;*/
+		
 		
 		// panel ui test...
 		var panel;
 		var knob = Rotary.create(MapFactory.getMapping(MapType.FLOAT, 0, 1), 0.5, -FMath.PI / 1.25, FMath.PI / 1.25);
 		
 		System.root.addChild(
-			(panel = new Entity().add(SubImageSprite.fromSubTextureData(textureAtlas.get('panel-bg_50%'))))
-			.addChild(knob)
+			(panel = new Entity().add(SubImageSprite.fromSubTextureData(textureAtlas.get('panel-bg_50%')))).addChild(knob)
 		);
 		
-		//panel.get(Sprite).x._ = 64;
-		//panel.get(Sprite).y._ = 64;
+		panel.get(Sprite).x._ = 64;
+		panel.get(Sprite).y._ = 64;
 		
+		knob.get(Sprite).x._ = 35;
+		knob.get(Sprite).y._ = 35;
+		
+		/*
 		var slicedX;
 		var slicedY;
-		var sliced9;
-		
 		System.root.addChild(new Entity().add(slicedX = new ThreeSliceX('nubbin-button-bg_50%')));
 		System.root.addChild(new Entity().add(slicedY = new ThreeSliceY('nubbin-button-bg_50%')));
-		System.root.addChild(new Entity().add(sliced9 = new NineSlice('nubbin-button-bg_50%')));
-		//System.root.addChild(new Entity().add(sliced9 = new NineSlice('panel-bg', 32, 32)));
-		
-		sliced9.width = 256;
-		sliced9.height = 256;
-		
-		sliced9.x = 100;
-		sliced9.y = 200;
-		
 		slicedX.x = 256;
 		slicedX.y = 96;
 		slicedX.width = 384;
@@ -219,9 +221,8 @@ import audio.time.Timecode.TimecodeData;
 		slicedY.x = 96;
 		slicedY.y = 96;
 		slicedY.height = 256;
+		*/
 		
-		knob.get(Sprite).x._ = 35;
-		knob.get(Sprite).y._ = 35;
 	}
 	
 	

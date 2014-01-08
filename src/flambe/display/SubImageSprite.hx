@@ -49,6 +49,8 @@ import webaudio.Main;
     override public function getNaturalWidth () return tWidth;
     override public function getNaturalHeight () return tHeight;
 	
+	
+	
 	public static inline function fromSubTextureData(d:SubTextureData):SubImageSprite {
 		return new SubImageSprite(d.name, d.texture, d.x, d.y, d.width, d.height);
 	}
@@ -73,7 +75,13 @@ import webaudio.Main;
 		];
 	}
 	
-	
+	/**
+	 * Generates slices needed for 9-slice scaling, takes a single x and y offset to define the top/bottom and left/right inset
+	 * @param	d
+	 * @param	xOffset
+	 * @param	yOffset
+	 * @return
+	 */
 	public static function nineSliceFromSubTextureData(d:SubTextureData, xOffset:Int, yOffset:Int):Array<SubImageSprite> {
 		
 		var xMid = Std.int(d.width / 2);
@@ -95,27 +103,36 @@ import webaudio.Main;
 	}
 }
 
-
+/**
+ * A basic 9-Slice implementation
+ */
 class NineSlice extends Component {
 	
-
 	public var x(get, set):Float;
 	public var y(get, set):Float;
 	public var width(get, set):Float;
 	public var height(get, set):Float;
 	
+	public var tintR(get, set):Float;
+	public var tintG(get, set):Float;
+	public var tintB(get, set):Float;
+	
 	var parts		:Array<SubImageSprite>;
+	
 	var minWidth	:Float;
 	var minHeight	:Float;
 	var xOffset		:Float;
 	var yOffset		:Float;
 	
-	public function new(textureName:String, xOffset:Int = -1, yOffset:Int = -1) {
+	/**
+	 *
+	 **/
+	public function new(textureName:String, xOffset:Int = 0, yOffset:Int = 0) {
 		
 		var textureData = Main.instance.textureAtlas.get(textureName);
 		
-		if (xOffset == -1) xOffset = Std.int(textureData.width / 2);
-		if (yOffset == -1) yOffset = Std.int(textureData.height / 2);
+		if (xOffset < 1) xOffset = Std.int(textureData.width / 2);
+		if (yOffset < 1) yOffset = Std.int(textureData.height / 2);
 		
 		parts 		= SubImageSprite.nineSliceFromSubTextureData(textureData, xOffset, yOffset);
 		minWidth 	= xOffset + xOffset + 1;
@@ -127,9 +144,16 @@ class NineSlice extends Component {
 		x = y = 0;
 	}
 	
+	
 	override public function onAdded() {
 		for (part in parts) owner.addChild(new Entity().add(part));
 	}
+	
+	
+	public function setTint(r,g,b) {
+		for (part in parts) part.setTint(r, g, b);
+	}
+	
 	
 	var _width:Float = 0;
 	function get_width() return _width;
@@ -195,6 +219,25 @@ class NineSlice extends Component {
 		
 		return _y = value;
 	}
+	
+	
+	function get_tintR() return parts[0].tintR._;
+	function set_tintR(value:Float) {
+		for (part in parts) part.tintR._ = value;
+		return value;
+	}
+	
+	function get_tintG() return parts[0].tintG._;
+	function set_tintG(value:Float) {
+		for (part in parts) part.tintG._ = value;
+		return value;
+	}
+	
+	function get_tintB() return parts[0].tintB._;
+	function set_tintB(value:Float) {
+		for (part in parts) part.tintB._ = value;
+		return value;
+	}
 }
 
 
@@ -256,6 +299,7 @@ class ThreeSliceX extends Component {
 
 
 class ThreeSliceY extends Component {
+	
 	public var x(get, set):Float;
 	public var y(get, set):Float;
 	public var height(get, set):Float;
