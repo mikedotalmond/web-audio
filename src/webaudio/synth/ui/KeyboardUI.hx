@@ -1,5 +1,11 @@
 package webaudio.synth.ui;
 
+import flambe.Component;
+import flambe.display.Sprite;
+import flambe.display.SubImageSprite;
+import flambe.display.SubImageSprite.SubTextureData;
+import flambe.Entity;
+import flambe.System;
 import flambe.util.Signal1;
 import haxe.Http;
 import haxe.Template;
@@ -17,13 +23,18 @@ import webaudio.utils.KeyboardNotes;
  * ...
  * @author Mike Almond - https://github.com/mikedotalmond
  */
-class KeyboardUI {
+class KeyboardUI extends Component {
+	
+	var whiteKeyData	:SubTextureData;
+	var blackKeyData	:SubTextureData;
+	
+	var naturals		:Entity;
+	var sharps			:Entity;
 	
 	var keyboardNotes	:KeyboardNotes;
 	var pointerDown		:Bool;
 	
-	var keyboardKeys	:NodeList;
-	var noteIndexToKey	:Map<Int, Element>;
+	var noteIndexToKey	:Map<Int, Sprite>;
 	var ocataves		:Int;
 	
 	public var keyDown(default, null):Signal1<Int>;
@@ -33,57 +44,64 @@ class KeyboardUI {
 	public function keyIsDown() return heldKey != -1;
 	
 	
-	public function new(keyboardNotes:KeyboardNotes) {
+	public function new(keyboardNotes:KeyboardNotes, textureAtlas:Map<String,SubTextureData>) {
+		
 		this.keyboardNotes = keyboardNotes;
+		
 		keyDown = new Signal1<Int>();
 		keyUp 	= new Signal1<Int>();
-		ocataves = 2;
-	}
-	
-	public function getKeyboardData(octaveShift:Int = 2, octaveCount:Int=2):Dynamic {
 		
-		ocataves = octaveCount;
-		
-		return {
-			visible:true,
-			keys:getUIKeyNoteData(octaveShift, octaveCount)
-		};
+		whiteKeyData = textureAtlas.get('whiteKey'); 
+		blackKeyData = textureAtlas.get('blackKey');
 	}
 	
 	
-	public function setup(keyboardKeys:NodeList) {
+	override public function onAdded() {
 		
-		this.keyboardKeys 	= keyboardKeys;
-		noteIndexToKey 		= new Map<Int,Element>();
+		var keyData		= getKeysData(2, 4);
 		
-		var n 			= keyboardKeys.length;
-		var keyWidth 	= 	(ocataves == 1) ? 123:
-							(ocataves == 2) ? 60 : 
-							(ocataves == 3) ? 39.5 : 30;
-							
-		var keyHeight	= 	(ocataves == 1) ? 200:
-							(ocataves == 2) ? 180 : 
-							(ocataves == 3) ? 150 : 128;
-							
-		var marginRight	=	(ocataves == 1) ? 5 :
-							(ocataves == 2) ? 4 : 
-							(ocataves == 3) ? 3 : 2;
+		noteIndexToKey 	= new Map<Int,Sprite>();
 		
-		for (key in keyboardKeys) {
-			key.addEventListener("mousedown", onKeyMouse);
-			key.addEventListener("mouseup", onKeyMouse);
-			key.addEventListener("mouseout", onKeyMouse);
-			key.addEventListener("mouseover", onKeyMouse);
+		var keyWidth 	= 40;	
+		var keyHeight	= 164;
+		var marginRight	= 1;
+		var keyX 		= Std.int(System.stage.width / 2 - ((keyData.length * keyWidth + keyData.length * marginRight - 1) / 2));
+		var keyY 		= 540;
+		
+		owner.addChild(naturals = new Entity());
+		owner.addChild(sharps = new Entity());
+		
+		for (key in keyData) {
 			
-			var k:Element = cast key;
-			if (k.className.indexOf("natural") != -1) {
-				k.style.width = '${keyWidth}px';
-				k.style.height = '${keyHeight}px';
-				k.style.marginRight = '${marginRight}px';
+			var i = key.index;
+			
+			var spr:Sprite;
+			
+			spr = SubImageSprite.fromSubTextureData(whiteKeyData);
+			spr.x._ = keyX;
+			spr.y._ = keyY;
+			noteIndexToKey.set(i, spr);
+			naturals.addChild(new Entity().add(spr));
+			
+			if (key.hasSharp) {
+				spr = SubImageSprite.fromSubTextureData(blackKeyData);
+				spr.x._ = keyX + 26;
+				spr.y._ = keyY;
+				noteIndexToKey.set(i + 1, spr);
+				sharps.addChild(new Entity().add(spr));
 			}
 			
-			var k:Element = cast key;
-			noteIndexToKey.set(Std.parseInt(k.getAttribute('data-noteindex')), k);
+			keyX += (keyWidth + marginRight);
+			
+			//spr.pointerUp
+			//spr.pointerDown
+			//spr.pointerMove.connect();
+			
+			//key.addEventListener("mousedown", onKeyMouse);
+			//key.addEventListener("mouseup", onKeyMouse);
+			//key.addEventListener("mouseout", onKeyMouse);
+			//key.addEventListener("mouseover", onKeyMouse);
+			//
 		}
 		
 		heldKey = -1;
@@ -91,8 +109,14 @@ class KeyboardUI {
 	}
 	
 	
+	function getKeysData(octaveShift:Int = 2, octaveCount:Int=2):Array<UINote> {
+		ocataves = octaveCount;
+		return getUIKeyNoteData(octaveShift, octaveCount);
+	}
+	
+	
 	function onKeyMouse(e:MouseEvent) {
-		
+		/*
 		e.stopImmediatePropagation();
 		var node:Element = cast e.target;
 		var noteIndex = Std.parseInt(node.getAttribute('data-noteindex'));
@@ -121,7 +145,7 @@ class KeyboardUI {
 					
 					keyUp.emit(noteIndex);
 				}
-		}
+		}*/
 	}
 	
 	
@@ -135,11 +159,11 @@ class KeyboardUI {
 	}
 	
 	
-	function setKeyIsDown(key:Element, isDown:Bool) {
-		if (key != null) {
+	function setKeyIsDown(key:Sprite, isDown:Bool) {
+		/*if (key != null) {
 			var className = key.getAttribute('data-classname');
 			key.className = isDown ? 'key ${className} ${className}-hover' : 'key ${className}';
-		}
+		}*/
 	}
 	
 	

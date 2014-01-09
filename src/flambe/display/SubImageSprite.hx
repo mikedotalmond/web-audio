@@ -84,8 +84,8 @@ import webaudio.Main;
 	 */
 	public static function nineSliceFromSubTextureData(d:SubTextureData, xOffset:Int, yOffset:Int):Array<SubImageSprite> {
 		
-		var xMid = Std.int(d.width / 2);
-		var yMid = Std.int(d.height / 2);
+		var xMid = Std.int(d.width / 2 + .5);
+		var yMid = Std.int(d.height / 2 + .5);
 		
 		return [
 			new SubImageSprite('${d.name}-topMid', d.texture, 		d.x + xMid, d.y, 1, yOffset),

@@ -29,11 +29,6 @@ import webaudio.utils.KeyboardInput;
 import webaudio.utils.KeyboardNotes;
 
 import audio.parameter.Parameter;
-import audio.parameter.ParameterObserver;
-
-import audio.time.Clock;
-import audio.time.TimeSignature;
-import audio.time.Timecode.TimecodeData;
 
 
 /**
@@ -42,7 +37,7 @@ import audio.time.Timecode.TimecodeData;
  *
  * @author Mike Almond - https://github.com/mikedotalmond
  */
-@:final class Main implements ParameterObserver {
+@:final class Main {
 	
 	public var keyboardInput(default,null)	:KeyboardInput;
 	public var keyboardNotes(default, null)	:KeyboardNotes;
@@ -63,107 +58,9 @@ import audio.time.Timecode.TimecodeData;
 		
 		keyboardNotes 	= new KeyboardNotes(); // util
 		keyboardInput 	= new KeyboardInput(keyboardNotes);
-		//monoSynthUI		= new MonoSynthUI(keyboardNotes);
 		
 		initAudio();
 		initKeyboardInputs();
-		
-		//testClock();
-		//testComplex();
-		//testParameterMapping();
-	}
-	
-	function testParameterMapping() {
-		
-		var mapb = MapFactory.getMapping(MapType.BOOL);
-		var mapi = MapFactory.getMapping(MapType.INT);
-		var mapf = MapFactory.getMapping(MapType.FLOAT,0,6);
-		var mapfe = MapFactory.getMapping(MapType.FLOAT_EXPONENTIAL,0,6);
-		
-		trace(mapb.map(1)==1); //true
-		trace(mapb.map(0)==1); //false
-		trace(mapb.map(.5)==1); //false
-		trace(mapb.map(.51)==1); //true
-		trace(mapb.map(.499)==1); //false
-		
-		trace(mapi.map(.5)); //1
-		trace(mapi.map(5.5)); //6
-		
-		trace(mapf.map(.5));//3
-		trace(mapf.map(5.5));//33
-		
-		trace(mapfe.map(.5));//1.6457513110645903
-		trace(mapfe.map(1)); //6
-		trace(mapfe.map(1) == 6); //true
-		trace(mapfe.mapInverse(6) == 1);//true
-		
-		var testParameter = new Parameter("test parameter", .5, MapFactory.getMapping(MapType.FLOAT_EXPONENTIAL,-1,1));
-		var testParameter2 = new Parameter("test parameter 2", 0, MapFactory.getMapping(MapType.FLOAT,-1,1));
-		//monoSynthUI.ready.connect(uiReady).once();
-		
-		testParameter.addObserver(this);
-		//testParameter.addObserver(monoSynth);
-		testParameter2.addObserver(this, true);
-		//testParameter2.addObserver(monoSynth, true);
-		
-		testParameter.setValue(.25);//change
-		testParameter.setValue(-.5); //change
-		testParameter.setValue(-.5); //no-change
-		testParameter.setValue(-.5, true);//change
-	}
-	
-	public function onParameterChange(parameter:Parameter) {
-		trace('[Main] onParameterChange');
-		trace('${parameter.name} - value:${parameter.getValue()}, normalised:${parameter.getValue(true)}');
-	}
-	
-	
-	
-	/* Test the operators */
-	function testComplex() {
-		
-		var test	:Complex = new Complex(.5, .25);
-		var test2	:Complex = new Complex(1, -.5);
-		
-		trace(test2.phase);
-		trace(test2.magnitude);
-		trace(test2.squaredMagnitude);
-		trace(test2);
-		
-		var test3 = test - test2;
-		var test4 = test / test2;
-		var test5 = test * test2;
-		
-		trace(test5);
-		var test6 = test / Complex.zero();
-	}
-	
-	
-	function testClock() {
-		var clock = new Clock();
-		System.root.addChild(
-			new Entity()
-			.add(clock)
-			//.add(new Clock(133, new TimeSignature(3, 4)))
-			//.add(new Clock(133, new TimeSignature(16, 8)))
-		);
-		
-		clock.timecode.beatChange.connect(function(t:TimecodeData) {
-			trace('${clock.timecode}');
-		});
-		
-		//clock.tick.connect(function(t:TimecodeData) {
-			//trace(t);
-		//});
-		
-		//clock.timeSignature.set(3,4);
-		//clock.timeSignature.set(4,4);
-		//clock.timeSignature.set(5,4);
-		//clock.timeSignature.set(16,8);
-		//clock.bpm = 134.5;
-		//clock.goto(61.897);
-		//clock.start();
-		//clock.start(5.15);
 	}
 	
 	
@@ -177,63 +74,20 @@ import audio.time.Timecode.TimecodeData;
 		var texture 	= pack.getTexture('sprites');
 		textureAtlas 	= StarlingSpriteSheet.parse(xml, texture);
 		
-        // Add a solid background colour
-        //var background = new FillSprite(0x202020, System.stage.width, System.stage.height);
-        //System.root.add(background);
-		var background;
-		System.root.add((background = new NineSlice('panel-bg_50%')));
-		background.width  = System.stage.width;
-		background.height = System.stage.height;
-		background.x = background.y = 0;
-		background.setTint(.15, .15, .15);
-		
-		/*var sliced9;
-		System.root.addChild(new Entity().add(sliced9 = new NineSlice('panel-bg', 36, 36)));
-		sliced9.width  = System.stage.width - 16;
-		sliced9.height = 128;
-		sliced9.x = 8;
-		sliced9.y = 256 + 16;*/
-		
-		
-		// panel ui test...
-		var panel;
-		var knob = Rotary.create(MapFactory.getMapping(MapType.FLOAT, 0, 1), 0.5, -FMath.PI / 1.25, FMath.PI / 1.25);
-		
-		System.root.addChild(
-			(panel = new Entity().add(SubImageSprite.fromSubTextureData(textureAtlas.get('panel-bg_50%')))).addChild(knob)
-		);
-		
-		panel.get(Sprite).x._ = 64;
-		panel.get(Sprite).y._ = 64;
-		
-		knob.get(Sprite).x._ = 35;
-		knob.get(Sprite).y._ = 35;
-		
-		/*
-		var slicedX;
-		var slicedY;
-		System.root.addChild(new Entity().add(slicedX = new ThreeSliceX('nubbin-button-bg_50%')));
-		System.root.addChild(new Entity().add(slicedY = new ThreeSliceY('nubbin-button-bg_50%')));
-		slicedX.x = 256;
-		slicedX.y = 96;
-		slicedX.width = 384;
-		
-		slicedY.x = 96;
-		slicedY.y = 96;
-		slicedY.height = 256;
-		*/
-		
+		monoSynthUI	= new MonoSynthUI(textureAtlas, keyboardNotes);
+		monoSynthUI.ready.connect(uiReady).once();
+		System.root.add(monoSynthUI);
 	}
 	
 	
 	function uiReady() {
-		for (module in monoSynthUI.modules) {
+		/*for (module in monoSynthUI.modules) {
 			module.sliderChange.connect(onModuleSliderChange);
-		}
+		}*/
 	}
 	
 	
-	function onModuleSliderChange(id:String, value:Float) {
+	/*function onModuleSliderChange(id:String, value:Float) {
 		trace('${id}: ${value}');
 		var now = audioContext.currentTime;
 		var m = monoSynth;
@@ -265,11 +119,7 @@ import audio.time.Timecode.TimecodeData;
 				case 'out-gain': m.setOutputGain(remapExpo(value));
 			}
 		}
-	}
-	
-	static inline function remapExpo(value) {
-		return (Math.exp(value) - 1) / 2.718281828459045 / 0.6321205588285577;
-	}
+	}*/
 	
 	function initAudio() {
 		
