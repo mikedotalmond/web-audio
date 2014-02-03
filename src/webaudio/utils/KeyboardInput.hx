@@ -1,9 +1,13 @@
 package webaudio.utils;
 
+import flambe.input.Key;
+import flambe.input.KeyboardEvent;
+import flambe.platform.KeyCodes;
+import flambe.System;
 import flambe.util.Signal0;
 import flambe.util.Signal1;
 import js.Browser;
-import js.html.KeyboardEvent;
+import webaudio.Main;
 
 /**
  * ...
@@ -36,7 +40,7 @@ class KeyboardInput {
 	public inline function lastNote():Int 	return noteCount() > 0 ? heldNotes[noteCount()-1] : -1;
 	
 	/**
-	 * 
+	 *
 	 * @param	keyNotes
 	 */
 	public function new(keyNotes:KeyboardNotes) {
@@ -50,15 +54,11 @@ class KeyboardInput {
 		keyUp 		= new Signal1<Int>();
 		
 		keyToNote 	= keyNotes.keycodeToNoteIndex;
-		
-		Browser.document.addEventListener("keydown", handleKeyDown);
-		Browser.document.addEventListener("keyup", handleKeyUp);
 	}
 	
-	
-	function handleKeyDown(e:KeyboardEvent) {
-		if (keyToNote.exists(e.keyCode)) {
-			var noteIndex = keyToNote.get(e.keyCode);
+	public function handleKeyDown(code:Int) {
+		if (keyToNote.exists(code)) {
+			var noteIndex = keyToNote.get(code);
 			var i = Lambda.indexOf(heldNotes, noteIndex);
 			if (i == -1) { // not already down?
 				noteOn.emit(noteIndex);
@@ -68,12 +68,10 @@ class KeyboardInput {
 		}
 	}
 	
-	
-	function handleKeyUp(e:KeyboardEvent) {
-		
+	public function handleKeyUp(code:Int) {
 		var n = heldNotes.length;
 		if (n > 0) { // a note is down
-			var i = Lambda.indexOf(heldNotes, keyToNote.get(e.keyCode));
+			var i = Lambda.indexOf(heldNotes, keyToNote.get(code));
 			if (i != -1) { // key released was one of the held keys..?
 				
 				var off  = heldNotes.splice(i, 1)[0];
@@ -84,7 +82,6 @@ class KeyboardInput {
 				// TODO:refactor this monophonic noteOn/Off logic elsewhere - just work with keys up/down here (and the keys-ui), and let something else (NotecCntrol) decide whether a noteOn/off occurs
 				if (heldNotes.length == 0) noteOff.emit(); // no notes down?
 				else noteOn.emit(heldNotes[heldNotes.length - 1]); // retrigger last pressed key
-				
 			}
 		}
 	}
@@ -97,7 +94,5 @@ class KeyboardInput {
 		keyUp = null;
 		noteOn = null;
 		noteOff = null;
-		Browser.document.removeEventListener("keydown", handleKeyDown);
-		Browser.document.removeEventListener("keyup", handleKeyUp);
 	}
 }

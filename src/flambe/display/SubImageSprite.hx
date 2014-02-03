@@ -26,6 +26,8 @@ import webaudio.Main;
 	public var texture	:Texture;
 	public var textureId:String;
 	
+	public var userData:Int = -1;
+	
 	/**
 	 *
 	 * @param	texture

@@ -11,7 +11,10 @@ import flambe.display.Sprite;
 import flambe.display.SubImageSprite;
 import flambe.display.TextSprite;
 import flambe.Entity;
+import flambe.input.Key;
+import flambe.input.KeyboardEvent;
 import flambe.math.FMath;
+import flambe.platform.KeyCodes;
 import flambe.System;
 import flambe.platform.html.WebAudioSound;
 import math.Complex;
@@ -60,7 +63,6 @@ import audio.parameter.Parameter;
 		keyboardInput 	= new KeyboardInput(keyboardNotes);
 		
 		initAudio();
-		initKeyboardInputs();
 	}
 	
 	
@@ -71,6 +73,7 @@ import audio.parameter.Parameter;
 		
 		// initialise font/text stuff
 		Fonts.setup(pack);
+		
 		
 		// setup textures
 		var xml			= Xml.parse(pack.getFile('sprites.xml').toString());
@@ -84,6 +87,16 @@ import audio.parameter.Parameter;
 	
 	
 	function uiReady() {
+		
+		initKeyboardInputs();
+		
+		System.keyboard.up.connect(systemKeyUp);
+		System.keyboard.down.connect(systemKeyDown);
+		
+		System.pointer.down.connect(function(arg) {
+			//System.stage.requestFullscreen();
+		}).once();
+		
 		/*for (module in monoSynthUI.modules) {
 			module.sliderChange.connect(onModuleSliderChange);
 		}*/
@@ -145,11 +158,8 @@ import audio.parameter.Parameter;
 			monoSynth.noteOn(audioContext.currentTime, f, .8, !monoSynth.noteIsOn);
 		};
 		
-		keyboardInput.noteOn.connect(handleNoteOn);
-		keyboardInput.noteOff.connect(handleNoteOff);
 		
-		
-		/*// bind to ui keyboard signals
+		///*// bind to the UI Keyboard (mouse/touch) inputs...
 		monoSynthUI.keyboard.keyDown.connect(handleNoteOn);
 		monoSynthUI.keyboard.keyUp.connect(function(i) {
 			if (keyboardInput.hasNotes()) { // key up on ui keyboard, check for any (HID) keyboard keys
@@ -159,7 +169,9 @@ import audio.parameter.Parameter;
 			}
 		});//*/
 		
-		/*// bind to hardware keyboard signals
+		
+		
+		///*// bind to the HID Keyboard inputs...
 		keyboardInput.noteOn.connect(handleNoteOn);
 		keyboardInput.noteOff.connect(function() {
 			if (monoSynthUI.keyboard.keyIsDown()) { // still got a ui key pressed?
@@ -169,11 +181,31 @@ import audio.parameter.Parameter;
 			}
 		});
 		
-		// HID keyboard inputs, update ui-keys...
+		///*// HID keyboard inputs, update ui-keys...
 		keyboardInput.keyDown.connect(monoSynthUI.keyboard.setNoteState.bind(_, true));
 		keyboardInput.keyUp.connect(monoSynthUI.keyboard.setNoteState.bind(_, false));
 		//*/
 	}
+	
+	
+	function systemKeyDown(e:KeyboardEvent) {
+		
+		var code = KeyCodes.toKeyCode(e.key);
+		
+		switch(e.key) {
+			case Key.Escape, Key.Menu, Key.Search:
+				if (System.stage.fullscreen._) System.stage.requestFullscreen(false);
+			
+			default : keyboardInput.handleKeyDown(code);
+		}
+	}
+	
+	function systemKeyUp(e:KeyboardEvent) {
+		var code = KeyCodes.toKeyCode(e.key);
+		keyboardInput.handleKeyUp(code);
+	}
+	
+	
 	
 
 	/**

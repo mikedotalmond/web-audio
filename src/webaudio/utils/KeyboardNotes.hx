@@ -5,6 +5,7 @@
  * @author Mike Almond
  */
 
+import flambe.platform.KeyCodes;
 import webaudio.utils.NoteFrequencyUtil;
 
 class KeyboardNotes {
@@ -47,10 +48,10 @@ class KeyboardNotes {
 		keycodeToNoteIndex.set(KeyCodes.NUMBER_9, noteFreq.noteNameToIndex('C#2'));
 		keycodeToNoteIndex.set(KeyCodes.O, noteFreq.noteNameToIndex('D2'));
 		keycodeToNoteIndex.set(KeyCodes.NUMBER_0, noteFreq.noteNameToIndex('D#2'));
-		keycodeToNoteIndex.set(KeyCodes.P, noteFreq.noteNameToIndex('E2'));		
-		keycodeToNoteIndex.set(KeyCodes.LEFTBRACKET, noteFreq.noteNameToIndex('F2'));		
-		keycodeToNoteIndex.set(KeyCodes.EQUAL, noteFreq.noteNameToIndex('F#2'));		
-		keycodeToNoteIndex.set(KeyCodes.RIGHTBRACKET, noteFreq.noteNameToIndex('G2'));
+		keycodeToNoteIndex.set(KeyCodes.P, noteFreq.noteNameToIndex('E2'));
+		keycodeToNoteIndex.set(KeyCodes.LEFT_BRACKET, noteFreq.noteNameToIndex('F2'));
+		keycodeToNoteIndex.set(KeyCodes.EQUALS, noteFreq.noteNameToIndex('F#2'));
+		keycodeToNoteIndex.set(KeyCodes.RIGHT_BRACKET, noteFreq.noteNameToIndex('G2'));
 		
 		keycodeToNoteFreq.set(KeyCodes.Z, keycodeToNoteIndex.get(KeyCodes.Z));
 		keycodeToNoteFreq.set(KeyCodes.S, keycodeToNoteIndex.get(KeyCodes.S));
@@ -80,10 +81,10 @@ class KeyboardNotes {
 		keycodeToNoteFreq.set(KeyCodes.NUMBER_9, keycodeToNoteIndex.get(KeyCodes.NUMBER_9));
 		keycodeToNoteFreq.set(KeyCodes.O, keycodeToNoteIndex.get(KeyCodes.O));
 		keycodeToNoteFreq.set(KeyCodes.NUMBER_0, keycodeToNoteIndex.get(KeyCodes.NUMBER_0));
-		keycodeToNoteFreq.set(KeyCodes.P, keycodeToNoteIndex.get(KeyCodes.P));		
-		keycodeToNoteFreq.set(KeyCodes.LEFTBRACKET, keycodeToNoteIndex.get(KeyCodes.LEFTBRACKET));		
-		keycodeToNoteFreq.set(KeyCodes.EQUAL, keycodeToNoteIndex.get(KeyCodes.EQUAL));
-		keycodeToNoteFreq.set(KeyCodes.RIGHTBRACKET, keycodeToNoteIndex.get(KeyCodes.RIGHTBRACKET));		
+		keycodeToNoteFreq.set(KeyCodes.P, keycodeToNoteIndex.get(KeyCodes.P));
+		keycodeToNoteFreq.set(KeyCodes.LEFT_BRACKET, keycodeToNoteIndex.get(KeyCodes.LEFT_BRACKET));
+		keycodeToNoteFreq.set(KeyCodes.EQUALS, keycodeToNoteIndex.get(KeyCodes.EQUALS));
+		keycodeToNoteFreq.set(KeyCodes.RIGHT_BRACKET, keycodeToNoteIndex.get(KeyCodes.RIGHT_BRACKET));
 	}
 	
 	public function dispose() {

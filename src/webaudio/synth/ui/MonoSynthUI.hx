@@ -49,8 +49,20 @@ class MonoSynthUI extends Component {
 		
 		//modules = ModuleUI.setup();
 		
+		resize();
+		
+		System.stage.resize.connect(resize);
+		
 		ready.emit();
 	}
+	
+	
+	function resize() {
+		var w 	= System.stage.width;
+		var h 	= System.stage.height;
+		var fs 	= System.stage.fullscreen;
+	}
+	
 	
 	function setupKeyboard() {
 		keyboard = new KeyboardUI(keyboardNotes, textureAtlas);
