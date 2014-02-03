@@ -64,20 +64,25 @@ class NumericControl extends Component implements ParameterObserver {
 	
 	
 	function pointerMove(e:PointerEvent) {
+		// hmm. something has changed (in Chrome at least) - mouse-down fires off a mosue-move immediately afterward, without moving...
 		
-		lastTime 		= 0;
-		pointerHasMoved	= true;
+		if (e.viewX != pX || e.viewY != pY) {
 		
-		var dX = pX - e.viewX;
-		var dY = pY - e.viewY;
-		pX = e.viewX; pY = e.viewY;
-		
-		var accuracy = System.keyboard.isDown(Key.Control);
-		
-		dX *= (accuracy ? .001 : .01);
-		dY *= (accuracy ? .001 : .01);
-		
-		dragDelta(dX, dY);
+			var dX = pX - e.viewX;
+			var dY = pY - e.viewY;
+			
+			pX = e.viewX; pY = e.viewY;
+			
+			pointerHasMoved = true;
+			lastTime 		= 0;
+			
+			var accuracy = System.keyboard.isDown(Key.Control);
+			
+			dX *= (accuracy ? .001 : .01);
+			dY *= (accuracy ? .001 : .01);
+			
+			dragDelta(dX, dY);
+		}
 	}
 	
 	

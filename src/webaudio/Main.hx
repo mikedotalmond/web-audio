@@ -66,6 +66,9 @@ import audio.parameter.Parameter;
 	
     function assetsReady (pack:AssetPack) {
 		
+		// Add a solid background colour
+        System.root.addChild(new Entity().add(new FillSprite(0x666666, System.stage.width, System.stage.height).disablePointer()));
+		
 		// initialise font/text stuff
 		Fonts.setup(pack);
 		

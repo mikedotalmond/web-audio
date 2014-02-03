@@ -59,10 +59,6 @@ class MonoSynthUI extends Component {
 	
 	function setupBackground(){
 	
-	  // Add a solid background colour
-        //var background =
-        System.root.add(new FillSprite(0x666666, System.stage.width, System.stage.height).disablePointer());
-
 		var background;
 		owner.add((background = new NineSlice('panel-bg_50%')));
 		background.width  = 1240;
