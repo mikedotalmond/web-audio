@@ -149,7 +149,6 @@ class KeyboardUI extends Component {
 		return noteIndexToKey.get(noteIndex);
 	}
 	
-	
 	public function setNoteState(index:Int, isDown:Bool) {
 		setKeyIsDown(cast getKeyForNote(index), isDown);
 	}
@@ -158,7 +157,7 @@ class KeyboardUI extends Component {
 	function setKeyIsDown(key:Sprite, isDown:Bool) {
 		trace('setKeyIsDown:${isDown} - ${(cast key).userData}');
 		
-		key.tintR._ = isDown?2:1;
+		key.setTint(isDown?2:1, isDown?.666:1, isDown?.666:1);
 		
 		/*if (key != null) {
 			var className = key.getAttribute('data-classname');

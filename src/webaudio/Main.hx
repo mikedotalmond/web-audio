@@ -13,10 +13,12 @@ import flambe.display.TextSprite;
 import flambe.Entity;
 import flambe.input.Key;
 import flambe.input.KeyboardEvent;
+import flambe.input.PointerEvent;
 import flambe.math.FMath;
 import flambe.platform.KeyCodes;
 import flambe.System;
 import flambe.platform.html.WebAudioSound;
+import haxe.ds.Vector.Vector;
 import math.Complex;
 import webaudio.synth.ui.controls.Rotary;
 import webaudio.synth.ui.Fonts;
@@ -42,7 +44,7 @@ import audio.parameter.Parameter;
  */
 @:final class Main {
 	
-	public var keyboardInput(default,null)	:KeyboardInput;
+	public var keyboardInputs(default,null)	:KeyboardInput;
 	public var keyboardNotes(default, null)	:KeyboardNotes;
 	
 	public var textureAtlas	(default, null)	:Map<String,SubTextureData>;
@@ -60,9 +62,7 @@ import audio.parameter.Parameter;
 		trace('MonoSynth');
 		
 		keyboardNotes 	= new KeyboardNotes(); // util
-		keyboardInput 	= new KeyboardInput(keyboardNotes);
-		
-		initAudio();
+		keyboardInputs 	= new KeyboardInput(keyboardNotes);
 	}
 	
 	
@@ -86,140 +86,76 @@ import audio.parameter.Parameter;
 	}
 	
 	
+	var activeKeys:Vector<Bool>;
+	inline function keyIsDown(code:Int):Bool return activeKeys[code];
+	
 	function uiReady() {
 		
+		if (System.keyboard.supported) {
+			
+			activeKeys = new Vector<Bool>(256);
+			for (i in 0...activeKeys.length) activeKeys[i] = false;
+			
+			System.keyboard.up.connect(function(e:KeyboardEvent) {
+				var code = KeyCodes.toKeyCode(e.key);
+				activeKeys[code] = false;
+				keyboardInputs.onQwertyKeyUp(code);
+			});
+			
+			System.keyboard.down.connect(function(e:KeyboardEvent) {
+				var code = KeyCodes.toKeyCode(e.key);
+				activeKeys[code] = true;
+				
+				// don't trigger keyboard ui-keys if ctrl||alt are down
+				if (!(keyIsDown(KeyCodes.CONTROL) || keyIsDown(KeyCodes.ALT))) {
+					keyboardInputs.onQwertyKeyDown(code);
+				}
+			});
+		}
+		
+		if (System.touch.supported && System.touch.maxPoints > 1) {
+			// multitouch
+			// System.touch.points
+		}
+		
 		initKeyboardInputs();
-		
-		System.keyboard.up.connect(systemKeyUp);
-		System.keyboard.down.connect(systemKeyDown);
-		
-		System.pointer.down.connect(function(arg) {
-			//System.stage.requestFullscreen();
-		}).once();
-		
-		/*for (module in monoSynthUI.modules) {
-			module.sliderChange.connect(onModuleSliderChange);
-		}*/
+		initAudio();
 	}
 	
-	
-	/*function onModuleSliderChange(id:String, value:Float) {
-		trace('${id}: ${value}');
-		var now = audioContext.currentTime;
-		var m = monoSynth;
+	function initKeyboardInputs() {
 		
-		if (id.indexOf('osc-') == 0) {
-			switch(id) {
-				case 'osc-shape': m.oscillatorType = Std.int(value);
-				case 'osc-slide': m.osc_portamentoTime = value;
-			}
-		} else if (id.indexOf('filter-') == 0) {
-			switch(id) {
-				case 'filter-type': cast(m.biquad).type = Std.int(value);
-				case 'filter-freq': m.filterFrequency = remapExpo(value);
-				case 'filter-res': m.filterQ = value;
-				case 'filter-gain': m.filterGain = remapExpo(value);
-				case 'filter-env-range': m.filterEnvRange = remapExpo(value);
-				case 'filter-env-attack': m.filterEnvAttack = value;
-				case 'filter-env-release': m.filterEnvRelease = value;
-			}
-		} else if (id.indexOf('adsr-') == 0) {
-			switch(id) {
-				case 'adsr-attack': m.adsr_attackTime = value;
-				case 'adsr-decay': m.adsr_decayTime = value;
-				case 'adsr-sustain': m.adsr_sustain = value;
-				case 'adsr-release': m.adsr_releaseTime = value;
-			}
-		} else if (id.indexOf('out-') == 0) {
-			switch(id) {
-				case 'out-gain': m.setOutputGain(remapExpo(value));
-			}
-		}
-	}*/
+		var handleNoteOn = function(i) {
+			var f = keyboardNotes.noteFreq.noteIndexToFrequency(i);
+			monoSynth.noteOn(audioContext.currentTime, f, .8, !monoSynth.noteIsOn);
+			monoSynthUI.keyboard.setNoteState(i, true);
+		};
+		
+		var handleNoteOff = function(i) {
+			
+			monoSynthUI.keyboard.setNoteState(i, false);
+			
+			// retrigger note on if any keys/notes are held
+			if (keyboardInputs.noteCount > 0) handleNoteOn(keyboardInputs.lastNote);
+			else monoSynth.noteOff(audioContext.currentTime);
+		};
+		
+		keyboardInputs.noteOn.connect(handleNoteOn);
+		keyboardInputs.noteOff.connect(handleNoteOff);
+	}
 	
+
 	function initAudio() {
 		
 		crusher 		= new Crusher(audioContext, null, WebAudioSound.gain);
 		crusher.bits	= 4;
 		
-		initMonoSynth(crusher.node);
-		//initMonoSynth(audioContext.destination);
-	}
-	
-	function initKeyboardInputs() {
+		var destination = crusher.node; //audioContext.destination
 		
-		// Monophonic key / note control setup
-		var handleNoteOff = function() {
-			monoSynth.noteOff(audioContext.currentTime);
-		}
-		
-		var handleNoteOn = function(i) {
-			var f = keyboardNotes.noteFreq.noteIndexToFrequency(i);
-			monoSynth.noteOn(audioContext.currentTime, f, .8, !monoSynth.noteIsOn);
-		};
-		
-		
-		///*// bind to the UI Keyboard (mouse/touch) inputs...
-		monoSynthUI.keyboard.keyDown.connect(handleNoteOn);
-		monoSynthUI.keyboard.keyUp.connect(function(i) {
-			if (keyboardInput.hasNotes()) { // key up on ui keyboard, check for any (HID) keyboard keys
-				handleNoteOn(keyboardInput.lastNote()); // retrigger last pressed key
-			} else {
-				handleNoteOff(); // nothing held? note off.
-			}
-		});//*/
-		
-		
-		
-		///*// bind to the HID Keyboard inputs...
-		keyboardInput.noteOn.connect(handleNoteOn);
-		keyboardInput.noteOff.connect(function() {
-			if (monoSynthUI.keyboard.keyIsDown()) { // still got a ui key pressed?
-				handleNoteOn(monoSynthUI.keyboard.heldKey);  // retrigger the held key
-			} else {
-				handleNoteOff(); // no keys down? note off
-			}
-		});
-		
-		///*// HID keyboard inputs, update ui-keys...
-		keyboardInput.keyDown.connect(monoSynthUI.keyboard.setNoteState.bind(_, true));
-		keyboardInput.keyUp.connect(monoSynthUI.keyboard.setNoteState.bind(_, false));
-		//*/
-	}
-	
-	
-	function systemKeyDown(e:KeyboardEvent) {
-		
-		var code = KeyCodes.toKeyCode(e.key);
-		
-		switch(e.key) {
-			case Key.Escape, Key.Menu, Key.Search:
-				if (System.stage.fullscreen._) System.stage.requestFullscreen(false);
-			
-			default : keyboardInput.handleKeyDown(code);
-		}
-	}
-	
-	function systemKeyUp(e:KeyboardEvent) {
-		var code = KeyCodes.toKeyCode(e.key);
-		keyboardInput.handleKeyUp(code);
-	}
-	
-	
-	
-
-	/**
-	 * set up a little monosynth with keyboard input
-	 */
-	function initMonoSynth(destination) {
-		
+		// set up monosynth test
 		monoSynth = new MonoSynth(destination);
-		//monoSynth.oscillatorType = Oscillator.TRIANGLE;
-		monoSynth.oscillatorType = Oscillator.SAWTOOTH;
-		//monoSynth.oscillatorType = Oscillator.SQUARE;
+		monoSynth.oscillatorType = Oscillator.SAWTOOTH; // TRIANGLE; SQUARE
 		
-		monoSynth.osc_portamentoTime = .05;
-		//monoSynth.osc_portamentoTime = 1;
+		monoSynth.osc_portamentoTime = .05; //1.0
 		monoSynth.adsr_attackTime = .05;
 		monoSynth.adsr_decayTime = 1;
 		monoSynth.adsr_sustain = 0.5;
@@ -230,6 +166,7 @@ import audio.parameter.Parameter;
 	}
 	
 	
+	
 	function dispose() {
 		
 		crusher = null;
@@ -237,8 +174,8 @@ import audio.parameter.Parameter;
 		monoSynth.dispose();
 		monoSynth = null;
 		
-		keyboardInput.dispose();
-		keyboardInput = null;
+		keyboardInputs.dispose();
+		keyboardInputs = null;
 	}
 	
 

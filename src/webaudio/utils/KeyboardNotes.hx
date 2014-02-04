@@ -1,7 +1,8 @@
 ﻿package webaudio.utils;
 
 /**
- * ...
+ * Map keys on a QWERTY keyboard to musical keyboard notes and frequencies
+ *
  * @author Mike Almond
  */
 
