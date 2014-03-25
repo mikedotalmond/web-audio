@@ -3,7 +3,7 @@ package webaudio.synth.ui;
 import flambe.Component;
 import flambe.display.Sprite;
 import flambe.display.SubImageSprite;
-import flambe.display.SubImageSprite.SubTextureData;
+import flambe.display.SpriteSheet;
 import flambe.Entity;
 import flambe.input.PointerEvent;
 import flambe.System;
@@ -82,8 +82,9 @@ class KeyboardUI extends Component {
 			spr = SubImageSprite.fromSubTextureData(whiteKeyData);
 			spr.x._ = keyX;
 			spr.y._ = keyY;
+			
 			noteIndexToKey.set(i, spr);
-			spr.userData = i;
+			
 			naturals.addChild(new Entity().add(spr));
 			
 			if (key.hasSharp) {
@@ -91,7 +92,6 @@ class KeyboardUI extends Component {
 				spr.x._ = keyX + 26;
 				spr.y._ = keyY;
 				noteIndexToKey.set(i + 1, spr);
-				spr.userData = i + 1;
 				sharps.addChild(new Entity().add(spr));
 			}
 			
@@ -155,14 +155,8 @@ class KeyboardUI extends Component {
 	
 	
 	function setKeyIsDown(key:Sprite, isDown:Bool) {
-		trace('setKeyIsDown:${isDown} - ${(cast key).userData}');
 		
 		key.setTint(isDown?2:1, isDown?.666:1, isDown?.666:1);
-		
-		/*if (key != null) {
-			var className = key.getAttribute('data-classname');
-			key.className = isDown ? 'key ${className} ${className}-hover' : 'key ${className}';
-		}*/
 	}
 	
 	

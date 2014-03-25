@@ -3,9 +3,9 @@ package webaudio.synth.ui;
 import audio.parameter.mapping.MapFactory;
 import flambe.Component;
 import flambe.display.FillSprite;
+import flambe.display.NineSlice;
 import flambe.display.Sprite;
 import flambe.display.SubImageSprite;
-import flambe.display.SubImageSprite.NineSlice;
 import flambe.Entity;
 import flambe.math.FMath;
 import flambe.System;
@@ -16,10 +16,12 @@ import js.Browser;
 import js.html.DOMParser;
 import js.html.Element;
 import js.html.NodeList;
+import webaudio.Main;
 import webaudio.synth.ui.controls.Rotary;
 import webaudio.synth.ui.KeyboardUI.UINote;
 
 import webaudio.utils.KeyboardNotes;
+import flambe.display.SpriteSheet;
 
 /**
  * ...
@@ -70,9 +72,8 @@ class MonoSynthUI extends Component {
 	}
 	
 	function setupBackground(){
-	
 		var background;
-		owner.add((background = new NineSlice('panel-bg_50%')));
+		owner.add(background = NineSlice.fromSubTextureData(Main.instance.textureAtlas.get('panel-bg_50%')));
 		background.width  = 1240;
 		background.height = 680;
 		background.x = 0;
