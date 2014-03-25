@@ -1,13 +1,6 @@
 package webaudio.utils;
 
-import flambe.input.Key;
-import flambe.input.KeyboardEvent;
-import flambe.platform.KeyCodes;
-import flambe.System;
-import flambe.util.Signal0;
 import flambe.util.Signal1;
-import js.Browser;
-import webaudio.Main;
 
 /**
  * @author Mike Almond - https://github.com/mikedotalmond

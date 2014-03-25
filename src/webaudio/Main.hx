@@ -4,7 +4,6 @@ import flambe.asset.AssetPack;
 import flambe.asset.Manifest;
 import flambe.display.FillSprite;
 import flambe.display.SpriteSheet;
-import flambe.display.SubImageSprite;
 import flambe.Entity;
 import flambe.input.KeyboardEvent;
 import flambe.platform.html.WebAudioSound;
@@ -20,7 +19,6 @@ import webaudio.synth.ui.Fonts;
 import webaudio.synth.ui.MonoSynthUI;
 import webaudio.utils.KeyboardInput;
 import webaudio.utils.KeyboardNotes;
-import flambe.display.SpriteSheet;
 
 
 

@@ -2,26 +2,18 @@ package webaudio.synth.ui;
 
 import audio.parameter.mapping.MapFactory;
 import flambe.Component;
-import flambe.display.FillSprite;
 import flambe.display.NineSlice;
 import flambe.display.Sprite;
+import flambe.display.SpriteSheet;
 import flambe.display.SubImageSprite;
 import flambe.Entity;
 import flambe.math.FMath;
 import flambe.System;
 import flambe.util.Signal0;
-import haxe.Http;
-import haxe.Template;
-import js.Browser;
-import js.html.DOMParser;
-import js.html.Element;
-import js.html.NodeList;
 import webaudio.Main;
 import webaudio.synth.ui.controls.Rotary;
-import webaudio.synth.ui.KeyboardUI.UINote;
-
 import webaudio.utils.KeyboardNotes;
-import flambe.display.SpriteSheet;
+
 
 /**
  * ...

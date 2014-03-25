@@ -1,7 +1,7 @@
 package flambe.display;
 
 import flambe.Component;
-import flambe.display.SpriteSheet.SubTextureData;
+import flambe.display.SpriteSheet;
 
 /**
  * ...

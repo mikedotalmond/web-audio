@@ -1,20 +1,14 @@
 package flambe.display;
 
-/**
- * SubImageSprite and a parser for Starling TextureAtlas format
- *
- * StarlingSpriteSheet.parse(atlasXML, texture) -> Map<String,SubImageSprite>
- */
 
-import flambe.Component;
 import flambe.display.Graphics;
 import flambe.display.Sprite;
 import flambe.display.SpriteSheet;
 import flambe.display.Texture;
-import flambe.Entity;
 
-import webaudio.Main;
-
+/**
+ * SubImageSprite
+ */
 class SubImageSprite extends Sprite {
 	
 	var tX		:Float;
