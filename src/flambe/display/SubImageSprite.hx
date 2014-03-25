@@ -46,7 +46,7 @@ import webaudio.Main;
 		tHeight			= height;
     }
 	
-    override public function draw (g :Graphics) g.drawSubImage(texture, 0, 0, tX, tY, tWidth, tHeight);
+    override public function draw (g :Graphics) g.drawSubTexture(texture, 0, 0, tX, tY, tWidth, tHeight);
 	
     override public function getNaturalWidth () return tWidth;
     override public function getNaturalHeight () return tHeight;

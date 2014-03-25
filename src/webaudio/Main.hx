@@ -1,39 +1,28 @@
 package webaudio;
 
-import audio.parameter.mapping.MapFactory;
-import audio.parameter.mapping.Mapping;
 import flambe.asset.AssetPack;
 import flambe.asset.Manifest;
-import flambe.Component;
 import flambe.display.FillSprite;
-import flambe.display.Font;
-import flambe.display.Sprite;
-import flambe.display.SubImageSprite;
-import flambe.display.TextSprite;
+import flambe.display.SubImageSprite.StarlingSpriteSheet;
+import flambe.display.SubImageSprite.SubTextureData;
 import flambe.Entity;
-import flambe.input.Key;
 import flambe.input.KeyboardEvent;
-import flambe.input.PointerEvent;
-import flambe.math.FMath;
+import flambe.platform.html.WebAudioSound;
 import flambe.platform.KeyCodes;
 import flambe.System;
-import flambe.platform.html.WebAudioSound;
 import haxe.ds.Vector.Vector;
-import math.Complex;
-import webaudio.synth.ui.controls.Rotary;
-import webaudio.synth.ui.Fonts;
-
 import js.Browser;
 import js.html.audio.AudioContext;
-
 import webaudio.synth.MonoSynth;
 import webaudio.synth.Oscillator;
 import webaudio.synth.processor.Crusher;
+import webaudio.synth.ui.Fonts;
 import webaudio.synth.ui.MonoSynthUI;
 import webaudio.utils.KeyboardInput;
 import webaudio.utils.KeyboardNotes;
 
-import audio.parameter.Parameter;
+
+
 
 
 /**
@@ -194,9 +183,8 @@ import audio.parameter.Parameter;
 			instance 		= new Main();
 			
 			// Load up the compiled pack in the assets directory named "bootstrap"
-			var manifest = Manifest.build('bootstrap');
-			var loader = System.loadAssetPack(manifest);
-			loader.get(instance.assetsReady);
+			var manifest = Manifest.fromAssets('bootstrap');
+			var loader = System.loadAssetPack(manifest).success.connect(instance.assetsReady);
 			
 			Browser.window.onbeforeunload = function(e) {
 				trace('unLoad');
