@@ -77,7 +77,7 @@ class MonoSynthUI extends Component {
 		background.setTint(.15, .15, .15);
 		
 		/*var sliced9;
-		System.root.addChild(new Entity().add(sliced9 = new NineSlice('panel-bg', 36, 36)));
+		owner.addChild(new Entity().add(sliced9 = new NineSlice('panel-bg', 36, 36)));
 		sliced9.width  = System.stage.width - 16;
 		sliced9.height = 128;
 		sliced9.x = 8;
@@ -102,8 +102,8 @@ class MonoSynthUI extends Component {
 		var slicedY;
 		var t = textureAtlas.get('nubbin-button-bg_50%');
 		
-		System.root.addChild(new Entity().add(slicedX = ThreeSliceX.fromSubTexture(t)));
-		System.root.addChild(new Entity().add(slicedY = ThreeSliceY.fromSubTexture(t)));
+		owner.addChild(new Entity().add(slicedX = ThreeSliceX.fromSubTexture(t)));
+		owner.addChild(new Entity().add(slicedY = ThreeSliceY.fromSubTexture(t)));
 		
 		slicedX.x = 256;
 		slicedX.y = 96;

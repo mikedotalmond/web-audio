@@ -3,6 +3,7 @@ package webaudio;
 import flambe.asset.AssetPack;
 import flambe.asset.Manifest;
 import flambe.display.FillSprite;
+import flambe.display.ImageSprite;
 import flambe.display.SpriteSheet;
 import flambe.display.SubTexture;
 import flambe.Entity;
@@ -38,11 +39,9 @@ import webaudio.utils.KeyboardNotes;
 	public var textureAtlas	(default, null)	:Map<String,SubTexture>;
 	
 	
-	var monoSynth		:MonoSynth;
-	
-	var crusher			:Crusher;
-	
-	var monoSynthUI		:MonoSynthUI;
+	var monoSynth		:MonoSynth 		= null;
+	var crusher			:Crusher 		= null;
+	var monoSynthUI		:MonoSynthUI 	= null;
 	
 	
 	function new() {
@@ -62,7 +61,6 @@ import webaudio.utils.KeyboardNotes;
 		// initialise font/text stuff
 		Fonts.setup(pack);
 		
-		
 		// setup textures
 		var xml			= Xml.parse(pack.getFile('sprites.xml').toString());
 		var texture 	= pack.getTexture('sprites');
@@ -70,7 +68,13 @@ import webaudio.utils.KeyboardNotes;
 		
 		monoSynthUI	= new MonoSynthUI(textureAtlas, keyboardNotes);
 		monoSynthUI.ready.connect(uiReady).once();
-		System.root.add(monoSynthUI);
+		System.root.addChild(new Entity().add(monoSynthUI));
+		
+		
+		//var testData 	= pack.getFile('test/sprites2.json').toString();
+		//var testAtlas	= JSSpriteSheet.parse(testData, pack.getTexture('test/sprites2'));
+		//var img 		= new ImageSprite(testAtlas.get("bo"));
+		//System.root.addChild(new Entity().add(img));
 	}
 	
 	
@@ -159,11 +163,15 @@ import webaudio.utils.KeyboardNotes;
 		
 		crusher = null;
 		
-		monoSynth.dispose();
-		monoSynth = null;
+		if (monoSynth != null) {
+			monoSynth.dispose();
+			monoSynth = null;
+		}
 		
-		keyboardInputs.dispose();
-		keyboardInputs = null;
+		if (keyboardInputs != null) {
+			keyboardInputs.dispose();
+			keyboardInputs = null;
+		}
 	}
 	
 
