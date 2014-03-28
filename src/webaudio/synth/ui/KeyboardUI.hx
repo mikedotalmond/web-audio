@@ -2,8 +2,9 @@ package webaudio.synth.ui;
 
 import flambe.Component;
 import flambe.display.Sprite;
-import flambe.display.SubImageSprite;
+import flambe.display.ImageSprite;
 import flambe.display.SpriteSheet;
+import flambe.display.SubTexture;
 import flambe.Entity;
 import flambe.input.PointerEvent;
 import flambe.System;
@@ -27,8 +28,8 @@ import webaudio.utils.KeyboardNotes;
  */
 class KeyboardUI extends Component {
 	
-	var whiteKeyData	:SubTextureData;
-	var blackKeyData	:SubTextureData;
+	var whiteKeyTexture	:SubTexture;
+	var blackKeyTexture	:SubTexture;
 	
 	var naturals		:Entity;
 	var sharps			:Entity;
@@ -46,15 +47,15 @@ class KeyboardUI extends Component {
 	public function keyIsDown() return heldKey != -1;
 	
 	
-	public function new(keyboardNotes:KeyboardNotes, textureAtlas:Map<String,SubTextureData>) {
+	public function new(keyboardNotes:KeyboardNotes, textureAtlas:Map<String,SubTexture>) {
 		
 		this.keyboardNotes = keyboardNotes;
 		
 		keyDown = new Signal1<Int>();
 		keyUp 	= new Signal1<Int>();
 		
-		whiteKeyData = textureAtlas.get('whiteKey');
-		blackKeyData = textureAtlas.get('blackKey');
+		whiteKeyTexture = textureAtlas.get('whiteKey');
+		blackKeyTexture = textureAtlas.get('blackKey');
 	}
 	
 	
@@ -77,9 +78,9 @@ class KeyboardUI extends Component {
 			
 			var i = key.index;
 			
-			var spr:SubImageSprite;
+			var spr:ImageSprite;
 			
-			spr = SubImageSprite.fromSubTextureData(whiteKeyData);
+			spr = new ImageSprite(whiteKeyTexture);
 			spr.x._ = keyX;
 			spr.y._ = keyY;
 			
@@ -88,7 +89,7 @@ class KeyboardUI extends Component {
 			naturals.addChild(new Entity().add(spr));
 			
 			if (key.hasSharp) {
-				spr = SubImageSprite.fromSubTextureData(blackKeyData);
+				spr = new ImageSprite(blackKeyTexture);
 				spr.x._ = keyX + 26;
 				spr.y._ = keyY;
 				noteIndexToKey.set(i + 1, spr);

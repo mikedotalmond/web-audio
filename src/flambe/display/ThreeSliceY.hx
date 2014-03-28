@@ -27,13 +27,14 @@ class ThreeSliceY extends Component {
 	 * @param	?edgeHeight
 	 * @return
 	 */
-	public static function fromSubTextureData(data:SubTextureData, ?edgeHeight:Int=-1):ThreeSliceY {
-		var half = Math.round(data.height / 2);
+	public static function fromSubTexture(t:SubTexture, ?edgeHeight:Int=-1):ThreeSliceY {
+		var half = Math.round(t.height / 2);
 		if (edgeHeight == -1) edgeHeight = half - 1;
+		var parentTexture = t.parent;
 		return new ThreeSliceY([
-			new SubImageSprite(data.texture, data.x, data.y, data.width, edgeHeight), //top
-			new SubImageSprite(data.texture, data.x, data.y + half - 1, data.width, 1), //mid
-			new SubImageSprite(data.texture, data.x, data.y + data.height - edgeHeight, data.width, edgeHeight), //bottom
+			new ImageSprite(parentTexture.subTexture(t.x, t.y, t.width, edgeHeight)), //top
+			new ImageSprite(parentTexture.subTexture(t.x, t.y + half - 1, t.width, 1)), //mid
+			new ImageSprite(parentTexture.subTexture(t.x, t.y + t.height - edgeHeight, t.width, edgeHeight)) //bottom
 		]);
 	}
 	

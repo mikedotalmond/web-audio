@@ -5,7 +5,10 @@ import flambe.Component;
 import flambe.display.NineSlice;
 import flambe.display.Sprite;
 import flambe.display.SpriteSheet;
-import flambe.display.SubImageSprite;
+import flambe.display.ImageSprite;
+import flambe.display.SubTexture;
+import flambe.display.ThreeSliceX;
+import flambe.display.ThreeSliceY;
 import flambe.Entity;
 import flambe.math.FMath;
 import flambe.System;
@@ -25,10 +28,10 @@ class MonoSynthUI extends Component {
 	public var keyboard	(default,null):KeyboardUI;
 	public var ready	(default,null):Signal0;
 	
-	var textureAtlas:Map<String,SubTextureData>;
-	var keyboardNotes:KeyboardNotes;
+	var textureAtlas	:Map<String,SubTexture>;
+	var keyboardNotes	:KeyboardNotes;
 	
-	public function new(textureAtlas:Map<String,SubTextureData>, keyboardNotes:KeyboardNotes) {
+	public function new(textureAtlas:Map<String,SubTexture>, keyboardNotes:KeyboardNotes) {
 		this.textureAtlas = textureAtlas;
 		this.keyboardNotes = keyboardNotes;
 		ready = new Signal0();
@@ -52,9 +55,9 @@ class MonoSynthUI extends Component {
 	
 	
 	function resize() {
-		var w 	= System.stage.width;
-		var h 	= System.stage.height;
-		var fs 	= System.stage.fullscreen;
+		//var w 	= System.stage.width;
+		//var h 	= System.stage.height;
+		//var fs 	= System.stage.fullscreen;
 	}
 	
 	
@@ -65,7 +68,8 @@ class MonoSynthUI extends Component {
 	
 	function setupBackground(){
 		var background;
-		owner.add(background = NineSlice.fromSubTextureData(Main.instance.textureAtlas.get('panel-bg_50%')));
+		owner.add(background = NineSlice.fromSubTexture(textureAtlas.get('panel-bg_50%')));
+		
 		background.width  = 1240;
 		background.height = 680;
 		background.x = 0;
@@ -79,13 +83,12 @@ class MonoSynthUI extends Component {
 		sliced9.x = 8;
 		sliced9.y = 256 + 16;*/
 		
-		
 		// panel ui test...
 		var panel;
 		var knob = Rotary.create(MapFactory.getMapping(MapType.FLOAT, 0, 1), 0.5, -FMath.PI / 1.25, FMath.PI / 1.25);
 		
 		owner.addChild(
-			(panel = new Entity().add(SubImageSprite.fromSubTextureData(textureAtlas.get('panel-bg_50%')))).addChild(knob)
+			(panel = new Entity().add(new ImageSprite(textureAtlas.get('panel-bg_50%')))).addChild(knob)
 		);
 		
 		panel.get(Sprite).x._ = 64;
@@ -97,8 +100,11 @@ class MonoSynthUI extends Component {
 		/*
 		var slicedX;
 		var slicedY;
-		System.root.addChild(new Entity().add(slicedX = new ThreeSliceX('nubbin-button-bg_50%')));
-		System.root.addChild(new Entity().add(slicedY = new ThreeSliceY('nubbin-button-bg_50%')));
+		var t = textureAtlas.get('nubbin-button-bg_50%');
+		
+		System.root.addChild(new Entity().add(slicedX = ThreeSliceX.fromSubTexture(t)));
+		System.root.addChild(new Entity().add(slicedY = ThreeSliceY.fromSubTexture(t)));
+		
 		slicedX.x = 256;
 		slicedX.y = 96;
 		slicedX.width = 384;
@@ -106,6 +112,6 @@ class MonoSynthUI extends Component {
 		slicedY.x = 96;
 		slicedY.y = 96;
 		slicedY.height = 256;
-		*/
+		//*/
 	}
 }

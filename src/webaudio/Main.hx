@@ -4,6 +4,7 @@ import flambe.asset.AssetPack;
 import flambe.asset.Manifest;
 import flambe.display.FillSprite;
 import flambe.display.SpriteSheet;
+import flambe.display.SubTexture;
 import flambe.Entity;
 import flambe.input.KeyboardEvent;
 import flambe.platform.html.WebAudioSound;
@@ -34,7 +35,7 @@ import webaudio.utils.KeyboardNotes;
 	public var keyboardInputs(default,null)	:KeyboardInput;
 	public var keyboardNotes(default, null)	:KeyboardNotes;
 	
-	public var textureAtlas	(default, null)	:Map<String,SubTextureData>;
+	public var textureAtlas	(default, null)	:Map<String,SubTexture>;
 	
 	
 	var monoSynth		:MonoSynth;

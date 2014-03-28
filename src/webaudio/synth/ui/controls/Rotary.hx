@@ -5,7 +5,7 @@ import audio.parameter.mapping.Mapping;
 import audio.parameter.ParameterObserver;
 import audio.parameter.Parameter;
 import flambe.display.Sprite;
-import flambe.display.SubImageSprite;
+import flambe.display.ImageSprite;
 import flambe.display.TextSprite;
 import flambe.Entity;
 import flambe.input.Key;
@@ -123,8 +123,8 @@ class Rotary extends NumericControl {
 		var textures = Main.instance.textureAtlas;
 		var ent = new Entity();
 		
-		ent	.add(SubImageSprite.fromSubTextureData(textures.get('knob_${small?"25":"50"}%')))
-			.addChild(new Entity().add(SubImageSprite.fromSubTextureData(textures.get('knob-nipple_50%'))));
+		ent	.add(new ImageSprite(textures.get('knob_${small?"25":"50"}%')))
+			.addChild(new Entity().add(new ImageSprite(textures.get('knob-nipple_50%'))));
 			
 		if (showLabel) ent.addChild(new Entity().add(Fonts.getField(Fonts.Prime13, '0.00', 0x212133)));
 		

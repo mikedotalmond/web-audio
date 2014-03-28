@@ -37,26 +37,28 @@ class NineSlice extends Component {
 	 * @param	yOffset
 	 * @return
 	 */
-	public static function fromSubTextureData(data:SubTextureData, xOffset:Int=0, yOffset:Int=0):NineSlice {
+	public static function fromSubTexture(t:SubTexture, xOffset:Int=0, yOffset:Int=0):NineSlice {
+			
+		if (xOffset < 1) xOffset = Math.round(t.width / 2);
+		if (yOffset < 1) yOffset = Math.round(t.height / 2);
 		
-		if (xOffset < 1) xOffset = Math.round(data.width / 2);
-		if (yOffset < 1) yOffset = Math.round(data.height / 2);
+		var xMid = Math.round(t.width / 2);
+		var yMid = Math.round(t.height / 2);
 		
-		var xMid = Math.round(data.width / 2);
-		var yMid = Math.round(data.height / 2);
+		var parentTexture = t.parent;
 		
 		return new NineSlice([
-			new SubImageSprite(data.texture, 	data.x + xMid, data.y, 1, yOffset), //topMid
-			new SubImageSprite(data.texture, 	data.x + xMid, data.y + yMid, 1, 1), //midMid
-			new SubImageSprite(data.texture,	data.x + xMid, data.y + data.height - yOffset, 1, yOffset),//bottomMid
+			new ImageSprite(parentTexture.subTexture(t.x + xMid, t.y, 1, yOffset)), //topMid
+			new ImageSprite(parentTexture.subTexture(t.x + xMid, t.y + yMid, 1, 1)), //midMid
+			new ImageSprite(parentTexture.subTexture(t.x + xMid, t.y + t.height - yOffset, 1, yOffset)),//bottomMid
 			
-			new SubImageSprite(data.texture, 	data.x + data.width - xOffset, data.y, xOffset, yOffset), // rightTop
-			new SubImageSprite(data.texture, 	data.x + data.width - xOffset, data.y + yMid, xOffset, 1),// rightMid
-			new SubImageSprite(data.texture,data.x + data.width - xOffset, data.y + data.height - yOffset, xOffset, yOffset),// rightBottom
+			new ImageSprite(parentTexture.subTexture(t.x + t.width - xOffset, t.y, xOffset, yOffset)), // rightTop
+			new ImageSprite(parentTexture.subTexture(t.x + t.width - xOffset, t.y + yMid, xOffset, 1)),// rightMid
+			new ImageSprite(parentTexture.subTexture(t.x + t.width - xOffset, t.y + t.height - yOffset, xOffset, yOffset)),// rightBottom
 			
-			new SubImageSprite(data.texture, 	data.x, data.y, xOffset, yOffset),//lefTop
-			new SubImageSprite(data.texture, 	data.x, data.y + yMid, xOffset, 1),//leftMid
-			new SubImageSprite(data.texture,	data.x, data.y + data.height - yOffset, xOffset, yOffset),//leftBottom
+			new ImageSprite(parentTexture.subTexture(t.x, t.y, xOffset, yOffset)),//lefTop
+			new ImageSprite(parentTexture.subTexture(t.x, t.y + yMid, xOffset, 1)),//leftMid
+			new ImageSprite(parentTexture.subTexture(t.x, t.y + t.height - yOffset, xOffset, yOffset)),//leftBottom
 		]);
 	}
 	
