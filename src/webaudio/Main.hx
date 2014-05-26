@@ -3,8 +3,7 @@ package webaudio;
 import flambe.asset.AssetPack;
 import flambe.asset.Manifest;
 import flambe.display.FillSprite;
-import flambe.display.ImageSprite;
-import flambe.display.SpriteSheet;
+import flambe.display.SpriteSheet.StarlingSpriteSheet;
 import flambe.display.SubTexture;
 import flambe.Entity;
 import flambe.input.KeyboardEvent;
@@ -21,6 +20,7 @@ import webaudio.synth.ui.Fonts;
 import webaudio.synth.ui.MonoSynthUI;
 import webaudio.utils.KeyboardInput;
 import webaudio.utils.KeyboardNotes;
+
 
 
 
@@ -138,10 +138,11 @@ import webaudio.utils.KeyboardNotes;
 
 	function initAudio() {
 		
-		crusher 		= new Crusher(audioContext, null, WebAudioSound.gain);
-		crusher.bits	= 4;
+		//crusher 		= new Crusher(audioContext, null, WebAudioSound.gain);
+		//crusher.bits	= 8;
 		
-		var destination = crusher.node; //audioContext.destination
+		//var destination = crusher.node; //audioContext.destination
+		var destination = audioContext.destination;
 		
 		// set up monosynth test
 		monoSynth = new MonoSynth(destination);
