@@ -49,7 +49,7 @@ extern class BiquadFilterNode extends AudioNode
 	var gain(default,null) : AudioParam;
 
 	/** Setter throws DOMException. */
-	var type : Int;
+	var type : Dynamic;
 
 	function getFrequencyResponse( frequencyHz : js.html.Float32Array, magResponse : js.html.Float32Array, phaseResponse : js.html.Float32Array ) : Void;
 

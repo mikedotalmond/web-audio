@@ -43,7 +43,7 @@ extern enum OscillatorTypeShim {
 		// init shim -- fix up current differences in chrome/firefox
 		var Node:Dynamic = Reflect.getProperty(js.Browser.window, "OscillatorNode");
 		if (Node != null) {
-			if (Reflect.hasField(Node, "SINE") && Std.is(Node.SINE, Int)) {
+			if (Reflect.hasField(Node, "SINE")) {
 				untyped __js__('window.OscillatorTypeShim = {SINE:Node.SINE, SQUARE:Node.SQUARE, TRIANGLE:Node.TRIANGLE, SAWTOOTH:Node.SAWTOOTH, CUSTOM:Node.CUSTOM}');
 			} else {
 				untyped __js__('window.OscillatorTypeShim = {SINE:"sine", SQUARE:"square", TRIANGLE:"triangle", SAWTOOTH:"sawtooth", CUSTOM:"custom"}');
@@ -54,7 +54,6 @@ extern enum OscillatorTypeShim {
 
 
 abstract Oscillator(OscillatorNode) from OscillatorNode to OscillatorNode {
-	
 	
 	/**
 	 *
@@ -69,6 +68,9 @@ abstract Oscillator(OscillatorNode) from OscillatorNode to OscillatorNode {
 		if (destination != null) this.connect(destination);
 	}
 
+	inline public function setType(type:Int) {
+		this.type = OscillatorType.get(type);
+	}
 	
 	/**
 	 * set freq at a defined time

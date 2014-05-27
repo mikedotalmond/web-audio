@@ -48,12 +48,12 @@ class MonoSynth implements ParameterObserver { //
 	var currentOscillatorNode(get_currentOscillatorNode, never):OscillatorNode;
 	inline function get_currentOscillatorNode():OscillatorNode { return osc.get(oscillatorType); }
 	
-	var oscType:Int = null;
+	var oscType:Int = 0;
 	public var oscillatorType(get_oscillatorType, set_oscillatorType):Int;
 	inline function get_oscillatorType() { return oscType; }
 	function set_oscillatorType(type:Int) {
 		noteOff(0);
-		if (oscType != null) currentOscillatorNode.disconnect(0);
+		currentOscillatorNode.disconnect(0);
 		oscType = type;
 		currentOscillatorNode.connect(biquad, 0);
 		return oscType;
@@ -88,9 +88,9 @@ class MonoSynth implements ParameterObserver { //
 		osc.set(OscillatorType.SAWTOOTH, new Oscillator(context, null, OscillatorType.SAWTOOTH));
 		osc.set(OscillatorType.TRIANGLE, new Oscillator(context, null, OscillatorType.TRIANGLE));
 		
-		biquad					= new Biquad(BiquadFilterNode.LOWPASS, filterFrequency, filterQ, context);
-		adsr 					= new ADSR(context, biquad, outputGain);
-		oscillatorType 			= OscillatorType.SINE;
+		biquad			= new Biquad(FilterType.LOWPASS, filterFrequency, filterQ, context);
+		adsr 			= new ADSR(context, biquad, outputGain);
+		oscillatorType 	= OscillatorType.SINE;
 	}
 	
 	
