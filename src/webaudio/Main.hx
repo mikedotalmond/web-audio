@@ -146,7 +146,7 @@ import webaudio.utils.KeyboardNotes;
 		
 		// set up monosynth test
 		monoSynth = new MonoSynth(destination);
-		monoSynth.oscillatorType = Oscillator.SAWTOOTH; // TRIANGLE; SQUARE
+		monoSynth.oscillatorType = OscillatorType.SAWTOOTH; // TRIANGLE; SQUARE
 		
 		monoSynth.osc_portamentoTime = .05; //1.0
 		monoSynth.adsr_attackTime = .05;
@@ -182,7 +182,7 @@ import webaudio.utils.KeyboardNotes;
 	 * Entry point...
 	 */
 	static function main() {
-		
+			
 		System.init();
 		
 		if (WebAudioSound.supported) {

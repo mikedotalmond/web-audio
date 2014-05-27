@@ -20,8 +20,8 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
-// This file is generated, do not edit!
 package js.html.audio;
+
 
 @:native("OscillatorNode")
 extern class OscillatorNode extends AudioSourceNode
@@ -50,8 +50,7 @@ extern class OscillatorNode extends AudioSourceNode
 
 	var playbackState(default,null) : Int;
 
-	/** Setter throws DOMException. */
-	var type : Int;
+	var type : Dynamic;
 
 	function setWaveTable( waveTable : WaveTable ) : Void;
 

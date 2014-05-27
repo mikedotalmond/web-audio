@@ -2,13 +2,15 @@ package webaudio.synth;
 
 import audio.parameter.ParameterObserver;
 import audio.parameter.Parameter;
+import haxe.ds.ObjectMap;
 import js.html.audio.AudioNode;
 import js.html.audio.AudioParam;
 import js.html.audio.BiquadFilterNode;
 import js.html.audio.GainNode;
 import js.html.audio.OscillatorNode;
+import webaudio.synth.Oscillator.OscillatorType;
 
-import webaudio.synth.ADSR.BiquadEnvelope;
+import webaudio.synth.Biquad;
 
 /**
  * A fairly basic monosynth
@@ -22,11 +24,11 @@ import webaudio.synth.ADSR.BiquadEnvelope;
 
 class MonoSynth implements ParameterObserver { //
 	
-	var osc							:Array<Oscillator>;
+	var osc:Map<Int, Oscillator>;
 	
 	public var adsr(default, null):ADSR;
 	public var outputGain(default, null):GainNode;
-	public var biquad(default, null):BiquadEnvelope;
+	public var biquad(default, null):Biquad;
 	
 	public var adsr_attackTime		:Float = .1;
 	public var adsr_decayTime		:Float = 0.2;
@@ -41,22 +43,19 @@ class MonoSynth implements ParameterObserver { //
 	
 	
 	var currentOscillator(get_currentOscillator, never):Oscillator;
-	inline function get_currentOscillator():Oscillator { return osc[oscillatorType]; }
+	inline function get_currentOscillator():Oscillator { return osc.get(oscillatorType); }
 	
 	var currentOscillatorNode(get_currentOscillatorNode, never):OscillatorNode;
-	inline function get_currentOscillatorNode():OscillatorNode { return osc[oscillatorType]; }
+	inline function get_currentOscillatorNode():OscillatorNode { return osc.get(oscillatorType); }
 	
-	var oscType:Int = 0;
+	var oscType:Int = null;
 	public var oscillatorType(get_oscillatorType, set_oscillatorType):Int;
 	inline function get_oscillatorType() { return oscType; }
 	function set_oscillatorType(type:Int) {
-		switch (type) {
-			case Oscillator.SINE, Oscillator.SQUARE, Oscillator.TRIANGLE, Oscillator.SAWTOOTH:
-				noteOff(0);
-				currentOscillatorNode.disconnect(0);
-				oscType = type;
-				currentOscillatorNode.connect(biquad, 0);
-		}
+		noteOff(0);
+		if (oscType != null) currentOscillatorNode.disconnect(0);
+		oscType = type;
+		currentOscillatorNode.connect(biquad, 0);
 		return oscType;
 	}
 	
@@ -83,15 +82,15 @@ class MonoSynth implements ParameterObserver { //
 		outputGain.gain.value = 1;
 		outputGain.connect(destination);
 		
-		osc 					= [];
-		osc[Oscillator.SINE] 	= new Oscillator(context, null, Oscillator.SINE);
-		osc[Oscillator.SQUARE]	= new Oscillator(context, null, Oscillator.SQUARE);
-		osc[Oscillator.TRIANGLE]= new Oscillator(context, null, Oscillator.TRIANGLE);
-		osc[Oscillator.SAWTOOTH]= new Oscillator(context, null, Oscillator.SAWTOOTH);
+		osc = new Map<Int, Oscillator>();
+		osc.set(OscillatorType.SINE, new Oscillator(context, null, OscillatorType.SINE));
+		osc.set(OscillatorType.SQUARE, new Oscillator(context, null, OscillatorType.SQUARE));
+		osc.set(OscillatorType.SAWTOOTH, new Oscillator(context, null, OscillatorType.SAWTOOTH));
+		osc.set(OscillatorType.TRIANGLE, new Oscillator(context, null, OscillatorType.TRIANGLE));
 		
-		biquad					= new BiquadEnvelope(BiquadFilterNode.LOWPASS, filterFrequency, filterQ, context);
+		biquad					= new Biquad(BiquadFilterNode.LOWPASS, filterFrequency, filterQ, context);
 		adsr 					= new ADSR(context, biquad, outputGain);
-		oscillatorType 			= Oscillator.SINE;
+		oscillatorType 			= OscillatorType.SINE;
 	}
 	
 	
