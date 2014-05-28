@@ -1,12 +1,20 @@
 package webaudio;
 
+import flambe.animation.Ease;
 import flambe.asset.AssetPack;
 import flambe.asset.Manifest;
+import flambe.camera.behaviours.LimitBoundsBehaviour;
+import flambe.camera.behaviours.MouseControlBehaviour;
+import flambe.camera.behaviours.ZoomLimitBehaviour;
+import flambe.camera.Camera;
+import flambe.camera.view.CameraBackgroundFill;
 import flambe.display.FillSprite;
+import flambe.display.Sprite;
 import flambe.display.SpriteSheet.StarlingSpriteSheet;
 import flambe.display.SubTexture;
 import flambe.Entity;
 import flambe.input.KeyboardEvent;
+import flambe.math.Rectangle;
 import flambe.platform.html.WebAudioSound;
 import flambe.platform.KeyCodes;
 import flambe.System;
@@ -45,40 +53,84 @@ import webaudio.utils.KeyboardNotes;
 	
 	
 	function new() {
-		
 		trace('MonoSynth');
-		
 		keyboardNotes 	= new KeyboardNotes(); // util
 		keyboardInputs 	= new KeyboardInput(keyboardNotes);
-	}
+	}	
 	
 	
     function assetsReady (pack:AssetPack) {
 		
-		// Add a solid background colour
-        System.root.addChild(new Entity().add(new FillSprite(0x666666, System.stage.width, System.stage.height).disablePointer()));
-		
-		// initialise font/text stuff
 		Fonts.setup(pack);
 		
-		// setup textures
 		var xml			= Xml.parse(pack.getFile('sprites.xml').toString());
 		var texture 	= pack.getTexture('sprites');
 		textureAtlas 	= StarlingSpriteSheet.parse(xml, texture);
 		
+		stageWidth 		= System.stage.width;
+		stageHeight 	= System.stage.height;
+		
+		var scene:Entity;
+		var ui:Entity;
+		var uiContainer:Sprite;
+		var sceneContainer:Sprite;
+		var camera:Camera;
+		var mouseControlBehaviour:MouseControlBehaviour;
+		var zoomLimitBehaviour:ZoomLimitBehaviour;
+		var sceneBackgroundLayer:Entity;
+		var sceneContentLayer:Entity;
+		var sceneUILayer:Entity;
+		
+		System.root.addChild(scene = new Entity()); // scene, with camera
+		System.root.addChild(ui = new Entity()); // non-game, no camera, on top of everything (HUD)
+		
+		ui.add(uiContainer = new Sprite());
+		
+		stageWidth  = System.stage.width;
+		stageHeight = System.stage.height;
+		
+		// world display
+		sceneContainer 	= new Sprite();
+		camera 			= new Camera();
+		
+		scene
+			// root container + camera
+			.add(sceneContainer).add(camera)			
+			// in-camera 	bg/scenery
+			.addChild(sceneBackgroundLayer = new Entity())			
+			// in-camera	nape-world for physics-y things
+			.addChild(sceneContentLayer = new Entity())			
+			//  in-camera	fg/ui
+			.addChild(sceneUILayer = new Entity());			
+		
+		//setupCamera
+		mouseControlBehaviour = new MouseControlBehaviour(camera);
+		camera.behaviours.push(mouseControlBehaviour);
+		mouseControlBehaviour.enabled = true;
+		
+		zoomLimitBehaviour = new ZoomLimitBehaviour(camera, .25, 1);
+		camera.behaviours.push(zoomLimitBehaviour);
+		zoomLimitBehaviour.enabled = true;
+		
+		camera.controller.zoom._ = 1;
+		
+		scene.addChild(new Entity().add(new CameraBackgroundFill(0x666666, camera)), false);
+		
+		System.stage.resize.connect(onResize); 	
+		
+		
+		// setup synth ui
 		monoSynthUI	= new MonoSynthUI(textureAtlas, keyboardNotes);
 		monoSynthUI.ready.connect(uiReady).once();
-		System.root.addChild(new Entity().add(monoSynthUI));
+		scene.addChild(new Entity().add(monoSynthUI));
 		
-		
-		//var testData 	= pack.getFile('test/sprites2.json').toString();
-		//var testAtlas	= JSSpriteSheet.parse(testData, pack.getTexture('test/sprites2'));
-		//var img 		= new ImageSprite(testAtlas.get("bo"));
-		//System.root.addChild(new Entity().add(img));
 	}
 	
 	
+	
 	var activeKeys:Vector<Bool>;
+	var stageWidth:Int;
+	var stageHeight:Int;
 	inline function keyIsDown(code:Int):Bool return activeKeys[code];
 	
 	function uiReady() {
@@ -113,6 +165,7 @@ import webaudio.utils.KeyboardNotes;
 		initKeyboardInputs();
 		initAudio();
 	}
+	
 	
 	function initKeyboardInputs() {
 		
@@ -159,6 +212,11 @@ import webaudio.utils.KeyboardNotes;
 	}
 	
 	
+	function onResize() {
+		stageWidth  = System.stage.width;
+		stageHeight = System.stage.height;
+	}
+	
 	
 	function dispose() {
 		
@@ -194,9 +252,7 @@ import webaudio.utils.KeyboardNotes;
 			audioContext 	= cast WebAudioSound.ctx;
 			instance 		= new Main();
 			
-			// Load up the compiled pack in the assets directory named "bootstrap"
-			var manifest = Manifest.fromAssets('bootstrap');
-			var loader = System.loadAssetPack(manifest).success.connect(instance.assetsReady);
+			System.loadAssetPack(Manifest.fromAssets('bootstrap')).get(instance.assetsReady);
 			
 			Browser.window.onbeforeunload = function(e) {
 				trace('unLoad');

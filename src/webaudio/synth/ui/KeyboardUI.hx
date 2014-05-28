@@ -78,8 +78,8 @@ class KeyboardUI extends Component {
 		var keyWidth 	= 40;
 		var keyHeight	= 164;
 		var marginRight	= 1;
-		var keyX 		= Std.int(System.stage.width / 2 - ((keyData.length * keyWidth + keyData.length * marginRight - 1) / 2));
-		var keyY 		= 540;
+		var keyX 		= 32;
+		var keyY 		= 520;
 		
 		owner.addChild(naturals = new Entity());
 		owner.addChild(sharps = new Entity());

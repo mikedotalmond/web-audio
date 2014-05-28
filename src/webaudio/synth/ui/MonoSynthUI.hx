@@ -22,7 +22,7 @@ import webaudio.utils.KeyboardNotes;
  * ...
  * @author Mike Almond - https://github.com/mikedotalmond
  */
-class MonoSynthUI extends Component {
+class MonoSynthUI extends Sprite {
 	
 	//public var modules	(default,null):Array<ModuleUI>;
 	public var keyboard	(default,null):KeyboardUI;
@@ -30,8 +30,10 @@ class MonoSynthUI extends Component {
 	
 	var textureAtlas	:Map<String,SubTexture>;
 	var keyboardNotes	:KeyboardNotes;
+	var container:Entity;
 	
 	public function new(textureAtlas:Map<String,SubTexture>, keyboardNotes:KeyboardNotes) {
+		super();
 		this.textureAtlas = textureAtlas;
 		this.keyboardNotes = keyboardNotes;
 		ready = new Signal0();
@@ -63,31 +65,31 @@ class MonoSynthUI extends Component {
 	
 	function setupKeyboard() {
 		keyboard = new KeyboardUI(keyboardNotes, textureAtlas);
-		owner.addChild(new Entity().add(keyboard));
+		container.addChild(new Entity().add(keyboard));
 	}
 	
+	
 	function setupBackground(){
+		
+		container = new Entity();
+		owner.addChild(container);
+		
 		var background;
-		owner.add(background = NineSlice.fromSubTexture(textureAtlas.get('panel-bg_50%')));
 		
-		background.width  = 1240;
+		container.addChild(new Entity().add(background = NineSlice.fromSubTexture(textureAtlas.get('panel-bg_50%'))));
+		
+		x._ = -607;
+		y._ = -340;
+		
+		background.width  = 1214;
 		background.height = 680;
-		background.x = 0;
-		background.y = 0;
 		background.setTint(.15, .15, .15);
-		
-		/*var sliced9;
-		owner.addChild(new Entity().add(sliced9 = new NineSlice('panel-bg', 36, 36)));
-		sliced9.width  = System.stage.width - 16;
-		sliced9.height = 128;
-		sliced9.x = 8;
-		sliced9.y = 256 + 16;*/
 		
 		// panel ui test...
 		var panel;
 		var knob = Rotary.create(MapFactory.getMapping(MapType.FLOAT, 0, 1), 0.5, -FMath.PI / 1.25, FMath.PI / 1.25);
 		
-		owner.addChild(
+		container.addChild(
 			(panel = new Entity().add(new ImageSprite(textureAtlas.get('panel-bg_50%')))).addChild(knob)
 		);
 		
@@ -102,8 +104,8 @@ class MonoSynthUI extends Component {
 		var slicedY;
 		var t = textureAtlas.get('nubbin-button-bg_50%');
 		
-		owner.addChild(new Entity().add(slicedX = ThreeSliceX.fromSubTexture(t)));
-		owner.addChild(new Entity().add(slicedY = ThreeSliceY.fromSubTexture(t)));
+		container.addChild(new Entity().add(slicedX = ThreeSliceX.fromSubTexture(t)));
+		container.addChild(new Entity().add(slicedY = ThreeSliceY.fromSubTexture(t)));
 		
 		slicedX.x = 256;
 		slicedX.y = 96;
