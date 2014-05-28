@@ -22,6 +22,16 @@ import js.html.NodeList;
 
 import webaudio.utils.KeyboardNotes;
 
+class KeySprite extends ImageSprite {
+	public var isSharp(default, null):Bool;
+	public var noteIndex(default, null):Int;
+	public function new(texture:SubTexture, noteIndex:Int, isSharp:Bool) {
+		this.noteIndex = noteIndex;
+		this.isSharp = isSharp;
+		super(texture);
+	}
+}
+
 /**
  * ...
  * @author Mike Almond - https://github.com/mikedotalmond
@@ -37,7 +47,7 @@ class KeyboardUI extends Component {
 	var keyboardNotes	:KeyboardNotes;
 	var pointerDown		:Bool;
 	
-	var noteIndexToKey	:Map<Int, Sprite>;
+	var noteIndexToKey	:Map<Int, KeySprite>;
 	var ocataves		:Int;
 	
 	public var keyDown(default, null):Signal1<Int>;
@@ -63,7 +73,7 @@ class KeyboardUI extends Component {
 		
 		var keyData		= getKeysData(2, 4);
 		
-		noteIndexToKey 	= new Map<Int,Sprite>();
+		noteIndexToKey 	= new Map<Int,KeySprite>();
 		
 		var keyWidth 	= 40;
 		var keyHeight	= 164;
@@ -78,9 +88,9 @@ class KeyboardUI extends Component {
 			
 			var i = key.index;
 			
-			var spr:ImageSprite;
+			var spr:KeySprite;
 			
-			spr = new ImageSprite(whiteKeyTexture);
+			spr 	= new KeySprite(whiteKeyTexture, i, false);
 			spr.x._ = keyX;
 			spr.y._ = keyY;
 			
@@ -89,7 +99,7 @@ class KeyboardUI extends Component {
 			naturals.addChild(new Entity().add(spr));
 			
 			if (key.hasSharp) {
-				spr = new ImageSprite(blackKeyTexture);
+				spr 	= new KeySprite(blackKeyTexture, i + 1, true);
 				spr.x._ = keyX + 26;
 				spr.y._ = keyY;
 				noteIndexToKey.set(i + 1, spr);
@@ -146,7 +156,7 @@ class KeyboardUI extends Component {
 	}
 	
 	
-	inline function getKeyForNote(noteIndex:Int):Sprite {
+	inline function getKeyForNote(noteIndex:Int):KeySprite {
 		return noteIndexToKey.get(noteIndex);
 	}
 	
@@ -155,9 +165,9 @@ class KeyboardUI extends Component {
 	}
 	
 	
-	function setKeyIsDown(key:Sprite, isDown:Bool) {
-		
-		key.setTint(isDown?2:1, isDown?.666:1, isDown?.666:1);
+	function setKeyIsDown(key:KeySprite, isDown:Bool) {
+		if(key.isSharp) key.setTint(isDown?1.666:1, isDown?1.666:1, isDown?1.666:1);
+		else			key.setTint(isDown?.666:1, isDown?.666:1, isDown?.666:1);
 	}
 	
 	

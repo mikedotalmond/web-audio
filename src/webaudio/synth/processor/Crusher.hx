@@ -62,7 +62,7 @@ class Crusher {
 		
 		// bit-crusher + sample-rate reduction (simple, skip samples... no interpolation)
 		
-		var samplesPerCycle = Std.int((44100 / 22050) + 0.5);
+		var samplesPerCycle = Std.int((44100 / 22050));
 		
 		var ditherLevel:Float = .25;
 		var dL:Float = .5;

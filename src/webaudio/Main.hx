@@ -146,10 +146,10 @@ import webaudio.utils.KeyboardNotes;
 		
 		// set up monosynth test
 		monoSynth = new MonoSynth(destination);
-		monoSynth.oscillatorType = OscillatorType.SAWTOOTH; // TRIANGLE; SQUARE
+		monoSynth.oscillatorType = OscillatorType.SQUARE; // TRIANGLE; SQUARE
 		
 		monoSynth.osc_portamentoTime = .05; //1.0
-		monoSynth.adsr_attackTime = .05;
+		monoSynth.adsr_attackTime = 1.05;
 		monoSynth.adsr_decayTime = 1;
 		monoSynth.adsr_sustain = 0.5;
 		monoSynth.adsr_releaseTime = .2;
