@@ -18,7 +18,12 @@
 </head>
 <body>
 
-	<div id="content"></div>
+	<div id="content">
+		<div id="noWebAudio" class="no-display">
+			<h1>Ack! Nothing to hear... here.</h1>
+			<h2>You'll need to use a <del>newer</del> <ins>better</ins> browser - one that supports the Web Audio API.</h2>
+		</div>
+	</div>
 		
 	<script src="flambe.js"></script>
 	<script> flambe.embed(["targets/main-html.js"], "content");</script>

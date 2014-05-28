@@ -182,10 +182,14 @@ import webaudio.utils.KeyboardNotes;
 	 * Entry point...
 	 */
 	static function main() {
-			
+		
 		System.init();
 		
+		var noAudio = Browser.document.getElementById("noWebAudio");
+		
 		if (WebAudioSound.supported) {
+			
+			noAudio.parentNode.removeChild(noAudio);
 			
 			audioContext 	= cast WebAudioSound.ctx;
 			instance 		= new Main();
@@ -202,6 +206,7 @@ import webaudio.utils.KeyboardNotes;
 			};
 			
 		} else {
+			noAudio.className = ""; // show it
 			throw('Could not create AudioContext. Sorry, but it looks like your browser does not support the Web-Audio APIs ;(');
 		}
 	}
