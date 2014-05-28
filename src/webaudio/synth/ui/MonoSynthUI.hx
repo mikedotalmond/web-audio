@@ -30,7 +30,6 @@ class MonoSynthUI extends Sprite {
 	
 	var textureAtlas	:Map<String,SubTexture>;
 	var keyboardNotes	:KeyboardNotes;
-	var container:Entity;
 	
 	public function new(textureAtlas:Map<String,SubTexture>, keyboardNotes:KeyboardNotes) {
 		super();
@@ -65,18 +64,15 @@ class MonoSynthUI extends Sprite {
 	
 	function setupKeyboard() {
 		keyboard = new KeyboardUI(keyboardNotes, textureAtlas);
-		container.addChild(new Entity().add(keyboard));
+		owner.addChild(new Entity().add(keyboard));
 	}
 	
 	
 	function setupBackground(){
 		
-		container = new Entity();
-		owner.addChild(container);
-		
 		var background;
 		
-		container.addChild(new Entity().add(background = NineSlice.fromSubTexture(textureAtlas.get('panel-bg_50%'))));
+		owner.addChild(new Entity().add(background = NineSlice.fromSubTexture(textureAtlas.get('panel-bg_50%'))));
 		
 		x._ = -607;
 		y._ = -340;
@@ -89,7 +85,7 @@ class MonoSynthUI extends Sprite {
 		var panel;
 		var knob = Rotary.create(MapFactory.getMapping(MapType.FLOAT, 0, 1), 0.5, -FMath.PI / 1.25, FMath.PI / 1.25);
 		
-		container.addChild(
+		owner.addChild(
 			(panel = new Entity().add(new ImageSprite(textureAtlas.get('panel-bg_50%')))).addChild(knob)
 		);
 		
@@ -104,8 +100,8 @@ class MonoSynthUI extends Sprite {
 		var slicedY;
 		var t = textureAtlas.get('nubbin-button-bg_50%');
 		
-		container.addChild(new Entity().add(slicedX = ThreeSliceX.fromSubTexture(t)));
-		container.addChild(new Entity().add(slicedY = ThreeSliceY.fromSubTexture(t)));
+		owner.addChild(new Entity().add(slicedX = ThreeSliceX.fromSubTexture(t)));
+		owner.addChild(new Entity().add(slicedY = ThreeSliceY.fromSubTexture(t)));
 		
 		slicedX.x = 256;
 		slicedX.y = 96;

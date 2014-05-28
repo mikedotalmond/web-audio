@@ -51,6 +51,10 @@ import webaudio.utils.KeyboardNotes;
 	var crusher			:Crusher 		= null;
 	var monoSynthUI		:MonoSynthUI 	= null;
 	
+	var activeKeys:Vector<Bool>;
+	var stageWidth:Int;
+	var stageHeight:Int;
+	
 	
 	function new() {
 		trace('MonoSynth');
@@ -121,19 +125,14 @@ import webaudio.utils.KeyboardNotes;
 		
 		// setup synth ui
 		monoSynthUI	= new MonoSynthUI(textureAtlas, keyboardNotes);
-		monoSynthUI.ready.connect(uiReady).once();
-		scene.addChild(new Entity().add(monoSynthUI));
+		scene.addChild(new Entity().add(monoSynthUI));	
 		
+		initInputs();
+		initAudio();
 	}
 	
 	
-	
-	var activeKeys:Vector<Bool>;
-	var stageWidth:Int;
-	var stageHeight:Int;
-	inline function keyIsDown(code:Int):Bool return activeKeys[code];
-	
-	function uiReady() {
+	function initInputs() {
 		
 		if (System.keyboard.supported) {
 			
@@ -163,11 +162,11 @@ import webaudio.utils.KeyboardNotes;
 		}
 		
 		initKeyboardInputs();
-		initAudio();
+		
 	}
 	
 	
-	function initKeyboardInputs() {
+	inline function initKeyboardInputs() {
 		
 		var handleNoteOn = function(i) {
 			var f = keyboardNotes.noteFreq.noteIndexToFrequency(i);
@@ -199,10 +198,13 @@ import webaudio.utils.KeyboardNotes;
 		
 		// set up monosynth test
 		monoSynth = new MonoSynth(destination);
-		monoSynth.oscillatorType = OscillatorType.SQUARE; // TRIANGLE; SQUARE
+		monoSynth.oscillator0Type = OscillatorType.SAWTOOTH; // TRIANGLE; SQUARE
+		monoSynth.oscillator1Type = OscillatorType.SQUARE; // TRIANGLE; SQUARE
 		
-		monoSynth.osc_portamentoTime = .05; //1.0
-		monoSynth.adsr_attackTime = 1.05;
+		monoSynth.osc0_portamentoTime = .15; //1.0
+		monoSynth.osc1_portamentoTime = .15; //1.0
+		
+		monoSynth.adsr_attackTime = .05;
 		monoSynth.adsr_decayTime = 1;
 		monoSynth.adsr_sustain = 0.5;
 		monoSynth.adsr_releaseTime = .2;
@@ -212,28 +214,15 @@ import webaudio.utils.KeyboardNotes;
 	}
 	
 	
+	inline function keyIsDown(code:Int):Bool return activeKeys[code];
+	
+	
 	function onResize() {
 		stageWidth  = System.stage.width;
 		stageHeight = System.stage.height;
 	}
 	
 	
-	function dispose() {
-		
-		crusher = null;
-		
-		if (monoSynth != null) {
-			monoSynth.dispose();
-			monoSynth = null;
-		}
-		
-		if (keyboardInputs != null) {
-			keyboardInputs.dispose();
-			keyboardInputs = null;
-		}
-	}
-	
-
 
 	
 	/**
@@ -254,12 +243,6 @@ import webaudio.utils.KeyboardNotes;
 			
 			System.loadAssetPack(Manifest.fromAssets('bootstrap')).get(instance.assetsReady);
 			
-			Browser.window.onbeforeunload = function(e) {
-				trace('unLoad');
-				instance.dispose();
-				instance = null;
-				audioContext = null;
-			};
 			
 		} else {
 			noAudio.className = ""; // show it
