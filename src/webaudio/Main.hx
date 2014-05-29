@@ -126,7 +126,6 @@ import webaudio.utils.KeyboardNotes;
 		// setup synth ui
 		monoSynthUI	= new MonoSynthUI(textureAtlas, keyboardNotes);
 		scene.addChild(new Entity().add(monoSynthUI));	
-		
 		initInputs();
 		initAudio();
 	}
@@ -197,12 +196,14 @@ import webaudio.utils.KeyboardNotes;
 		var destination = audioContext.destination;
 		
 		// set up monosynth test
-		monoSynth = new MonoSynth(destination);
+		monoSynth = new MonoSynth(destination, keyboardNotes.noteFreq);
 		monoSynth.oscillator0Type = OscillatorType.SAWTOOTH; // TRIANGLE; SQUARE
 		monoSynth.oscillator1Type = OscillatorType.SQUARE; // TRIANGLE; SQUARE
 		
 		monoSynth.osc0_portamentoTime = .15; //1.0
 		monoSynth.osc1_portamentoTime = .15; //1.0
+		
+		monoSynth.osc0_detuneCents = 50;
 		
 		monoSynth.adsr_attackTime = .05;
 		monoSynth.adsr_decayTime = 1;

@@ -49,6 +49,11 @@ class NoteFrequencyUtil {
 		return Math.NaN;
 	}
 	
+	public function detuneFreq(freq:Float, cents:Int):Float {
+		if (cents < 0) return freq / Math.pow(2, -cents * centExp);
+		else if (cents > 0) return freq * Math.pow(2, cents * centExp);
+		return freq; 
+	}
 	
 	public function frequencyToNoteIndex(frequency:Float):Int {
 		return Std.int(frequencyToNote(frequency));

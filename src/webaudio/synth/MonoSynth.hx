@@ -9,6 +9,7 @@ import js.html.audio.BiquadFilterNode;
 import js.html.audio.GainNode;
 import js.html.audio.OscillatorNode;
 import webaudio.synth.Oscillator.OscillatorType;
+import webaudio.utils.NoteFrequencyUtil;
 
 import webaudio.synth.Biquad;
 
@@ -38,17 +39,16 @@ class MonoSynth implements ParameterObserver { //
 	public var adsr_sustain			:Float = .44;
 	
 	public var osc0_portamentoTime	:Float = 0;
-	//public var osc0_detuneTones		:Int = 0;
-	//public var osc0_detuneCents		:Float = 0;
+	public var osc0_detuneCents		:Int = 0;
 	
 	public var osc1_portamentoTime	:Float = 0;
-	//public var osc1_detuneTones		:Int = 0;
-	//public var osc1_detuneCents		:Float = 0;
+	public var osc1_detuneCents		:Int = 0;
 	
 	public var noteIsOn(default, null):Bool = false;
 	
 	var osc0Type:Int = 0;
 	var osc1Type:Int = 0;
+	var freqUtil:NoteFrequencyUtil;
 	
 	var oscillator0(get_oscillator0, never):Oscillator;
 	inline function get_oscillator0():Oscillator { return osc0.get(oscillator0Type); }
@@ -90,8 +90,9 @@ class MonoSynth implements ParameterObserver { //
 	 *
 	 * @param	destination AudioNode
 	 */
-	public function new(destination:AudioNode) {
-		
+	public function new(destination:AudioNode, freqUtil:NoteFrequencyUtil) {
+		this.freqUtil = freqUtil;
+	
 		var context = destination.context;
 		
 		outputGain = context.createGain();
@@ -126,10 +127,23 @@ class MonoSynth implements ParameterObserver { //
 		outputGain.gain.setValueAtTime(value, when);
 	}
 	
-	public function noteOn(when:Float, freq:Float, velocity:Float=1, retrigger:Bool=false) {
-		oscillator0.trigger(when, freq, osc0_portamentoTime, retrigger);
+	public function noteOn(when:Float, freq:Float, velocity:Float = 1, retrigger:Bool = false) {
+		if (osc0_detuneCents != 0) {
+			oscillator0.trigger(when, freqUtil.detuneFreq(freq, osc0_detuneCents), osc0_portamentoTime, retrigger);
+		} else {
+			oscillator0.trigger(when, freq, osc0_portamentoTime, retrigger);
+		}
+		
+		if (osc1_detuneCents != 0) {
+			oscillator1.trigger(when, freqUtil.detuneFreq(freq, osc1_detuneCents), osc1_portamentoTime, retrigger);
+		} else {
+			oscillator1.trigger(when, freq, osc1_portamentoTime, retrigger);
+		}
+		
+		
 		oscillator1.trigger(when, freq, osc1_portamentoTime, retrigger);
 		if (!noteIsOn || retrigger) {
+			//NoteFrequencyUtil
 			adsr.trigger(when, velocity, adsr_attackTime, adsr_decayTime, adsr_sustain, retrigger);
 			//if FEG active...
 			var start = filterFrequency * 6000;
