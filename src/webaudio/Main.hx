@@ -203,7 +203,7 @@ import webaudio.utils.KeyboardNotes;
 		monoSynth.osc0_portamentoTime = .15; //1.0
 		monoSynth.osc1_portamentoTime = .15; //1.0
 		
-		monoSynth.osc0_detuneCents = 50;
+		monoSynth.osc0_detuneCents = 300;
 		
 		monoSynth.adsr_attackTime = .05;
 		monoSynth.adsr_decayTime = 1;

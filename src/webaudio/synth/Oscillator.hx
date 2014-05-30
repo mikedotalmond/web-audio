@@ -40,12 +40,14 @@ extern enum OscillatorTypeShim {
 	}
 	
 	static function __init__() {
-		// init shim -- fix up current differences in chrome/firefox
+		// init shim -- fix for differences in current chrome/firefox versions
 		var Node:Dynamic = Reflect.getProperty(js.Browser.window, "OscillatorNode");
 		if (Node != null) {
 			if (Reflect.hasField(Node, "SINE")) {
+				// chrome/webkit
 				untyped __js__('window.OscillatorTypeShim = {SINE:Node.SINE, SQUARE:Node.SQUARE, TRIANGLE:Node.TRIANGLE, SAWTOOTH:Node.SAWTOOTH, CUSTOM:Node.CUSTOM}');
 			} else {
+				// firefox/geko
 				untyped __js__('window.OscillatorTypeShim = {SINE:"sine", SQUARE:"square", TRIANGLE:"triangle", SAWTOOTH:"sawtooth", CUSTOM:"custom"}');
 			}
 		}
@@ -60,7 +62,7 @@ abstract Oscillator(OscillatorNode) from OscillatorNode to OscillatorNode {
 	 * @param	context
 	 * @param	?destination
 	 */
-	inline public function new(context:AudioContext, ?destination:AudioNode, type:Int = 0) {
+	inline public function new(context:AudioContext, destination:AudioNode = null, type:Int = 0) {
 		this = context.createOscillator();
 		this.frequency.value = 440;
 		this.type = OscillatorType.get(type);

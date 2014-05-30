@@ -28,6 +28,11 @@ class MonoSynth implements ParameterObserver { //
 	var osc0:Map<Int, Oscillator>;
 	var osc1:Map<Int, Oscillator>;
 	
+	var osc0Type:Int = 0;
+	var osc1Type:Int = 0;
+	var freqUtil:NoteFrequencyUtil;
+	
+	
 	public var adsr(default, null):ADSR;
 	public var outputGain(default, null):GainNode;
 	
@@ -45,10 +50,6 @@ class MonoSynth implements ParameterObserver { //
 	public var osc1_detuneCents		:Int = 0;
 	
 	public var noteIsOn(default, null):Bool = false;
-	
-	var osc0Type:Int = 0;
-	var osc1Type:Int = 0;
-	var freqUtil:NoteFrequencyUtil;
 	
 	var oscillator0(get_oscillator0, never):Oscillator;
 	inline function get_oscillator0():Oscillator { return osc0.get(oscillator0Type); }
@@ -80,11 +81,14 @@ class MonoSynth implements ParameterObserver { //
 	public var filterType:Int = 0;
 	public var filterFrequency:Float=.001;
 	public var filterQ:Float=10;
-	public var filterGain:Float=1;
+	public var filterGain:Float = 1;
+	
+	public var filterEnvEnabled:Bool = true;
 	public var filterEnvRange:Float=1;
 	public var filterEnvAttack:Float=.1;
 	public var filterEnvRelease:Float=1;
 	
+	// TODO LFOs (pitch/filter-freq/amplitude)
 	
 	/**
 	 *
@@ -113,9 +117,8 @@ class MonoSynth implements ParameterObserver { //
 		osc1.set(OscillatorType.SAWTOOTH, new Oscillator(context, null, OscillatorType.SAWTOOTH));
 		osc1.set(OscillatorType.TRIANGLE, new Oscillator(context, null, OscillatorType.TRIANGLE));
 		
-		biquad			= new Biquad(FilterType.LOWPASS, filterFrequency, filterQ, context);
-		adsr 			= new ADSR(context, biquad, outputGain);
-	
+		biquad	= new Biquad(FilterType.LOWPASS, filterFrequency, filterQ, context);
+		adsr 	= new ADSR(context, biquad, outputGain);
 		oscillator0Type = OscillatorType.SINE;
 		oscillator1Type = OscillatorType.SINE;
 	}
@@ -146,9 +149,11 @@ class MonoSynth implements ParameterObserver { //
 			//NoteFrequencyUtil
 			adsr.trigger(when, velocity, adsr_attackTime, adsr_decayTime, adsr_sustain, retrigger);
 			//if FEG active...
-			var start = filterFrequency * 6000;
-			var dest  = start + filterEnvRange * 8000;
-			biquad.trigger(when, start, filterEnvAttack, dest, retrigger);
+			if (filterEnvEnabled) { 
+				var start = filterFrequency * 6000;
+				var dest  = start + filterEnvRange * 8000;
+				biquad.trigger(when, start, filterEnvAttack, dest, retrigger);
+			}
 		}
 		noteIsOn = true;
 	}
@@ -157,7 +162,7 @@ class MonoSynth implements ParameterObserver { //
 		if (noteIsOn) {
 			oscillator0.release(adsr.release(when, adsr_releaseTime));
 			oscillator1.release(adsr.release(when, adsr_releaseTime));
-			biquad.release(when, filterFrequency*6000, filterEnvRelease);
+			if (filterEnvEnabled) biquad.release(when, filterFrequency * 6000, filterEnvRelease);
 			noteIsOn = false;
 		}
 	}

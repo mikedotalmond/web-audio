@@ -34,7 +34,7 @@ extern class AudioParam
 
 	var name(default,null) : String;
 
-	var units(default,null) : Int;
+	//var units(default,null) : Int; // was removed from spec...
 
 	var value : Float;
 
