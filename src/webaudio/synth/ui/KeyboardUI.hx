@@ -71,7 +71,7 @@ class KeyboardUI extends Component {
 	
 	override public function onAdded() {
 		
-		var keyData		= getKeysData(2, 4);
+		var keyData		= getKeysData(keyboardNotes.startOctave, 4);
 		
 		noteIndexToKey 	= new Map<Int,KeySprite>();
 		
@@ -150,9 +150,9 @@ class KeyboardUI extends Component {
 	
 	
 	
-	function getKeysData(octaveShift:Int = 2, octaveCount:Int=2):Array<UINote> {
+	function getKeysData(startOctave:Int = 2, octaveCount:Int=2):Array<UINote> {
 		ocataves = octaveCount;
-		return getUIKeyNoteData(octaveShift, octaveCount);
+		return getUIKeyNoteData(startOctave, octaveCount);
 	}
 	
 	
@@ -166,8 +166,13 @@ class KeyboardUI extends Component {
 	
 	
 	function setKeyIsDown(key:KeySprite, isDown:Bool) {
-		if(key.isSharp) key.setTint(isDown?1.666:1, isDown?1.666:1, isDown?1.666:1);
-		else			key.setTint(isDown?.666:1, isDown?.666:1, isDown?.666:1);
+		if (key.isSharp) {
+			if (isDown) key.setTint(1.666, 1.666, 1.666);
+			else key.setTint(1, 1, 1, .16);
+		} else {
+			if (isDown) key.setTint(.666, .666, .666);
+			else key.setTint(1, 1, 1, .16);
+		}
 	}
 	
 	
@@ -177,9 +182,9 @@ class KeyboardUI extends Component {
 	 * @param	octaveCount - number of octaves to return
 	 * @return
 	 */
-	function getUIKeyNoteData(octaveShift:Int = 2, octaveCount:Int=2):Array<UINote> {
-		octaveShift = octaveShift < 0 ? 0 : (octaveShift > 4 ? 4 : octaveShift);
-		var i = keyboardNotes.noteFreq.noteNameToIndex("C-2") + (octaveShift * 12);
+	function getUIKeyNoteData(startOctave:Int = 0, octaveCount:Int=2):Array<UINote> {
+		//octaveShift = octaveShift < 0 ? 0 : (octaveShift > 4 ? 4 : octaveShift);
+		var i = keyboardNotes.noteFreq.noteNameToIndex('C${startOctave}');
 		
 		var out = [];
 		for (oct in 0...octaveCount) {

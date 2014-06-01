@@ -11,6 +11,7 @@ import flambe.display.ThreeSliceX;
 import flambe.display.ThreeSliceY;
 import flambe.Entity;
 import flambe.math.FMath;
+import flambe.math.Rectangle;
 import flambe.System;
 import flambe.util.Signal0;
 import webaudio.Main;
@@ -30,6 +31,8 @@ class MonoSynthUI extends Sprite {
 	
 	var textureAtlas	:Map<String,SubTexture>;
 	var keyboardNotes	:KeyboardNotes;
+	var keyboardContainer:Sprite;
+	var keyboardMask:Sprite;
 	
 	public function new(textureAtlas:Map<String,SubTexture>, keyboardNotes:KeyboardNotes) {
 		super();
@@ -64,7 +67,16 @@ class MonoSynthUI extends Sprite {
 	
 	function setupKeyboard() {
 		keyboard = new KeyboardUI(keyboardNotes, textureAtlas);
-		owner.addChild(new Entity().add(keyboard));
+		owner.addChild(
+			new Entity()
+				.add(keyboardMask = new Sprite())
+				.addChild(new Entity().add(keyboardContainer = new Sprite()).add(keyboard))
+			);
+		
+		keyboardMask.scissor = new Rectangle(32, 540, 1148, 164);
+		
+		//keyboardContainer.x.animateBy(100, 25);
+		// perhaps create more keys and animate them left/right to change available range...
 	}
 	
 	

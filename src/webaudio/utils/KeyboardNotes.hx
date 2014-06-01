@@ -11,48 +11,50 @@ import webaudio.utils.NoteFrequencyUtil;
 
 class KeyboardNotes {
 	
+	public var startOctave(default, null):Int;
 	public var noteFreq(default, null):NoteFrequencyUtil;
 	public var keycodeToNoteFreq(default, null):Map<Int,Float>;
 	public var keycodeToNoteIndex(default, null):Map<Int,Int>;
 		
-	public function new() {
+	public function new(startOctave:Int = 0) {
 		
+		this.startOctave	= startOctave;
 		noteFreq 			= new NoteFrequencyUtil();
 		keycodeToNoteFreq 	= new Map<Int,Float>();
 		keycodeToNoteIndex 	= new Map<Int,Int>();
 		
-		keycodeToNoteIndex.set(KeyCodes.Z, noteFreq.noteNameToIndex('C0'));
-		keycodeToNoteIndex.set(KeyCodes.S, noteFreq.noteNameToIndex('C#0'));
-		keycodeToNoteIndex.set(KeyCodes.X, noteFreq.noteNameToIndex('D0'));
-		keycodeToNoteIndex.set(KeyCodes.D, noteFreq.noteNameToIndex('D#0'));
-		keycodeToNoteIndex.set(KeyCodes.C, noteFreq.noteNameToIndex('E0'));
-		keycodeToNoteIndex.set(KeyCodes.V, noteFreq.noteNameToIndex('F0'));
-		keycodeToNoteIndex.set(KeyCodes.G, noteFreq.noteNameToIndex('F#0'));
-		keycodeToNoteIndex.set(KeyCodes.B, noteFreq.noteNameToIndex('G0'));
-		keycodeToNoteIndex.set(KeyCodes.H, noteFreq.noteNameToIndex('G#0'));
-		keycodeToNoteIndex.set(KeyCodes.N, noteFreq.noteNameToIndex('A0'));
-		keycodeToNoteIndex.set(KeyCodes.J, noteFreq.noteNameToIndex('A#0'));
-		keycodeToNoteIndex.set(KeyCodes.M, noteFreq.noteNameToIndex('B0'));
-		keycodeToNoteIndex.set(KeyCodes.Q, noteFreq.noteNameToIndex('C1'));
-		keycodeToNoteIndex.set(KeyCodes.NUMBER_2, noteFreq.noteNameToIndex('C#1'));
-		keycodeToNoteIndex.set(KeyCodes.W, noteFreq.noteNameToIndex('D1'));
-		keycodeToNoteIndex.set(KeyCodes.NUMBER_3, noteFreq.noteNameToIndex('D#1'));
-		keycodeToNoteIndex.set(KeyCodes.E, noteFreq.noteNameToIndex('E1'));
-		keycodeToNoteIndex.set(KeyCodes.R, noteFreq.noteNameToIndex('F1'));
-		keycodeToNoteIndex.set(KeyCodes.NUMBER_5, noteFreq.noteNameToIndex('F#1'));
-		keycodeToNoteIndex.set(KeyCodes.T, noteFreq.noteNameToIndex('G1'));
-		keycodeToNoteIndex.set(KeyCodes.NUMBER_6, noteFreq.noteNameToIndex('G#1'));
-		keycodeToNoteIndex.set(KeyCodes.Y, noteFreq.noteNameToIndex('A1'));
-		keycodeToNoteIndex.set(KeyCodes.NUMBER_7, noteFreq.noteNameToIndex('A#1'));
-		keycodeToNoteIndex.set(KeyCodes.U, noteFreq.noteNameToIndex('B1'));
-		keycodeToNoteIndex.set(KeyCodes.I, noteFreq.noteNameToIndex('C2'));
-		keycodeToNoteIndex.set(KeyCodes.NUMBER_9, noteFreq.noteNameToIndex('C#2'));
-		keycodeToNoteIndex.set(KeyCodes.O, noteFreq.noteNameToIndex('D2'));
-		keycodeToNoteIndex.set(KeyCodes.NUMBER_0, noteFreq.noteNameToIndex('D#2'));
-		keycodeToNoteIndex.set(KeyCodes.P, noteFreq.noteNameToIndex('E2'));
-		keycodeToNoteIndex.set(KeyCodes.LEFT_BRACKET, noteFreq.noteNameToIndex('F2'));
-		keycodeToNoteIndex.set(KeyCodes.EQUALS, noteFreq.noteNameToIndex('F#2'));
-		keycodeToNoteIndex.set(KeyCodes.RIGHT_BRACKET, noteFreq.noteNameToIndex('G2'));
+		keycodeToNoteIndex.set(KeyCodes.Z, noteFreq.noteNameToIndex('C${startOctave}'));
+		keycodeToNoteIndex.set(KeyCodes.S, noteFreq.noteNameToIndex('C#${startOctave}'));
+		keycodeToNoteIndex.set(KeyCodes.X, noteFreq.noteNameToIndex('D${startOctave}'));
+		keycodeToNoteIndex.set(KeyCodes.D, noteFreq.noteNameToIndex('D#${startOctave}'));
+		keycodeToNoteIndex.set(KeyCodes.C, noteFreq.noteNameToIndex('E${startOctave}'));
+		keycodeToNoteIndex.set(KeyCodes.V, noteFreq.noteNameToIndex('F${startOctave}'));
+		keycodeToNoteIndex.set(KeyCodes.G, noteFreq.noteNameToIndex('F#${startOctave}'));
+		keycodeToNoteIndex.set(KeyCodes.B, noteFreq.noteNameToIndex('G${startOctave}'));
+		keycodeToNoteIndex.set(KeyCodes.H, noteFreq.noteNameToIndex('G#${startOctave}'));
+		keycodeToNoteIndex.set(KeyCodes.N, noteFreq.noteNameToIndex('A${startOctave}'));
+		keycodeToNoteIndex.set(KeyCodes.J, noteFreq.noteNameToIndex('A#${startOctave}'));
+		keycodeToNoteIndex.set(KeyCodes.M, noteFreq.noteNameToIndex('B${startOctave}'));
+		keycodeToNoteIndex.set(KeyCodes.Q, noteFreq.noteNameToIndex('C${startOctave+1}'));
+		keycodeToNoteIndex.set(KeyCodes.NUMBER_2, noteFreq.noteNameToIndex('C#${startOctave+1}'));
+		keycodeToNoteIndex.set(KeyCodes.W, noteFreq.noteNameToIndex('D${startOctave+1}'));
+		keycodeToNoteIndex.set(KeyCodes.NUMBER_3, noteFreq.noteNameToIndex('D#${startOctave+1}'));
+		keycodeToNoteIndex.set(KeyCodes.E, noteFreq.noteNameToIndex('E${startOctave+1}'));
+		keycodeToNoteIndex.set(KeyCodes.R, noteFreq.noteNameToIndex('F${startOctave+1}'));
+		keycodeToNoteIndex.set(KeyCodes.NUMBER_5, noteFreq.noteNameToIndex('F#${startOctave+1}'));
+		keycodeToNoteIndex.set(KeyCodes.T, noteFreq.noteNameToIndex('G${startOctave+1}'));
+		keycodeToNoteIndex.set(KeyCodes.NUMBER_6, noteFreq.noteNameToIndex('G#${startOctave+1}'));
+		keycodeToNoteIndex.set(KeyCodes.Y, noteFreq.noteNameToIndex('A${startOctave+1}'));
+		keycodeToNoteIndex.set(KeyCodes.NUMBER_7, noteFreq.noteNameToIndex('A#${startOctave+1}'));
+		keycodeToNoteIndex.set(KeyCodes.U, noteFreq.noteNameToIndex('B${startOctave+1}'));
+		keycodeToNoteIndex.set(KeyCodes.I, noteFreq.noteNameToIndex('C${startOctave+2}'));
+		keycodeToNoteIndex.set(KeyCodes.NUMBER_9, noteFreq.noteNameToIndex('C#${startOctave+2}'));
+		keycodeToNoteIndex.set(KeyCodes.O, noteFreq.noteNameToIndex('D${startOctave+2}'));
+		keycodeToNoteIndex.set(KeyCodes.NUMBER_0, noteFreq.noteNameToIndex('D#${startOctave+2}'));
+		keycodeToNoteIndex.set(KeyCodes.P, noteFreq.noteNameToIndex('E${startOctave+2}'));
+		keycodeToNoteIndex.set(KeyCodes.LEFT_BRACKET, noteFreq.noteNameToIndex('F${startOctave+2}'));
+		keycodeToNoteIndex.set(KeyCodes.EQUALS, noteFreq.noteNameToIndex('F#${startOctave+2}'));
+		keycodeToNoteIndex.set(KeyCodes.RIGHT_BRACKET, noteFreq.noteNameToIndex('G${startOctave+2}'));
 		
 		keycodeToNoteFreq.set(KeyCodes.Z, keycodeToNoteIndex.get(KeyCodes.Z));
 		keycodeToNoteFreq.set(KeyCodes.S, keycodeToNoteIndex.get(KeyCodes.S));

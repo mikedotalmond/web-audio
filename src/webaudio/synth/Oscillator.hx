@@ -69,6 +69,9 @@ abstract Oscillator(OscillatorNode) from OscillatorNode to OscillatorNode {
 		this.start(0);
 		if (destination != null) this.connect(destination);
 	}
+	
+	public var node(get, never):OscillatorNode;
+	inline function get_node():OscillatorNode return this;
 
 	inline public function setType(type:Int) {
 		this.type = OscillatorType.get(type);

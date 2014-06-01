@@ -6,6 +6,7 @@ import haxe.ds.ObjectMap;
 import js.html.audio.AudioNode;
 import js.html.audio.AudioParam;
 import js.html.audio.BiquadFilterNode;
+import js.html.audio.DelayNode;
 import js.html.audio.GainNode;
 import js.html.audio.OscillatorNode;
 import webaudio.synth.Oscillator.OscillatorType;
@@ -62,7 +63,7 @@ class MonoSynth implements ParameterObserver { //
 	function set_oscillator0Type(type:Int) {
 		cast(oscillator0, OscillatorNode).disconnect(0);
 		osc0Type = type;
-		cast(oscillator0, OscillatorNode).connect(biquad, 0);
+		cast(oscillator0, OscillatorNode).connect(phaseDelay, 0);
 		return type;
 	}
 	
@@ -88,7 +89,17 @@ class MonoSynth implements ParameterObserver { //
 	public var filterEnvAttack:Float=.1;
 	public var filterEnvRelease:Float=1;
 	
-	// TODO LFOs (pitch/filter-freq/amplitude)
+	// Phase (using delaynode)
+	var phaseDelay:DelayNode;
+	var freq:Float = 440;
+	var _phase:Float = 0;
+	
+	public var phase(get, set):Float;
+	inline function get_phase():Float return _phase;
+	inline function set_phase(value:Float):Float {
+		phaseDelay.delayTime.value = (1 / freq) * value;
+		return _phase = value;
+	}
 	
 	/**
 	 *
@@ -104,7 +115,6 @@ class MonoSynth implements ParameterObserver { //
 		outputGain.gain.value = 1;
 		outputGain.connect(destination);
 		
-		
 		osc0 = new Map<Int, Oscillator>();
 		osc0.set(OscillatorType.SINE, new Oscillator(context, null, OscillatorType.SINE));
 		osc0.set(OscillatorType.SQUARE, new Oscillator(context, null, OscillatorType.SQUARE));
@@ -119,6 +129,13 @@ class MonoSynth implements ParameterObserver { //
 		
 		biquad	= new Biquad(FilterType.LOWPASS, filterFrequency, filterQ, context);
 		adsr 	= new ADSR(context, biquad, outputGain);
+		
+		phaseDelay = context.createDelay(1/freqUtil.noteIndexToFrequency(0));
+		phaseDelay.connect(biquad, 0);
+		
+		//var phaseDriver = new Oscillator(context, phaseDelay, 0);
+		//phaseDriver.node.frequency.value = .5;
+		
 		oscillator0Type = OscillatorType.SINE;
 		oscillator1Type = OscillatorType.SINE;
 	}
@@ -131,6 +148,20 @@ class MonoSynth implements ParameterObserver { //
 	}
 	
 	public function noteOn(when:Float, freq:Float, velocity:Float = 1, retrigger:Bool = false) {
+		
+		this.freq = freq;
+	
+		// make phase follow portamento
+		var p = (1 / freq) * _phase;
+		phaseDelay.delayTime.cancelScheduledValues(when);
+		if (osc0_portamentoTime > 0) {
+			phaseDelay.delayTime.setValueAtTime(phaseDelay.delayTime.value, when);
+			phaseDelay.delayTime.exponentialRampToValueAtTime(p, when + osc0_portamentoTime);
+		} else {
+			phaseDelay.delayTime.setValueAtTime(p, when);
+		}
+		
+		
 		if (osc0_detuneCents != 0) {
 			oscillator0.trigger(when, freqUtil.detuneFreq(freq, osc0_detuneCents), osc0_portamentoTime, retrigger);
 		} else {
@@ -143,8 +174,6 @@ class MonoSynth implements ParameterObserver { //
 			oscillator1.trigger(when, freq, osc1_portamentoTime, retrigger);
 		}
 		
-		
-		oscillator1.trigger(when, freq, osc1_portamentoTime, retrigger);
 		if (!noteIsOn || retrigger) {
 			//NoteFrequencyUtil
 			adsr.trigger(when, velocity, adsr_attackTime, adsr_decayTime, adsr_sustain, retrigger);
@@ -160,9 +189,14 @@ class MonoSynth implements ParameterObserver { //
 	
 	public function noteOff(when) {
 		if (noteIsOn) {
-			oscillator0.release(adsr.release(when, adsr_releaseTime));
-			oscillator1.release(adsr.release(when, adsr_releaseTime));
+			var r = adsr.release(when, adsr_releaseTime);
+			
+			oscillator0.release(r);
+			oscillator1.release(r);
+			phaseDelay.delayTime.cancelScheduledValues(r);
+			
 			if (filterEnvEnabled) biquad.release(when, filterFrequency * 6000, filterEnvRelease);
+			
 			noteIsOn = false;
 		}
 	}
