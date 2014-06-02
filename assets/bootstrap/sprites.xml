@@ -1,35 +1,28 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <TextureAtlas imagePath="sprites.png">
-	<SubTexture name="Icon_Sawtooth" x="257" y="308" width="25" height="23"/>
-	<SubTexture name="Icon_Sine" x="284" y="308" width="25" height="23"/>
-	<SubTexture name="Icon_Square" x="473" y="288" width="25" height="25"/>
-	<SubTexture name="Icon_Triangle" x="109" y="303" width="25" height="25"/>
-	<SubTexture name="blackKey" x="440" y="209" width="31" height="110"/>
-	<SubTexture name="knob-hash_25%" x="231" y="308" width="24" height="24"/>
-	<SubTexture name="knob-hash_50%" x="277" y="249" width="48" height="47"/>
-	<SubTexture name="knob-nipple" x="193" y="267" width="14" height="14"/>
-	<SubTexture name="knob-nipple_25%" x="503" y="18" width="4" height="4"/>
-	<SubTexture name="knob-nipple_50%" x="503" y="2" width="5" height="7" frameX="0" frameY="0" frameWidth="7" frameHeight="7"/>
-	<SubTexture name="knob_25%" x="473" y="209" width="29" height="29"/>
-	<SubTexture name="knob_50%" x="379" y="209" width="59" height="60"/>
-	<SubTexture name="nubbin-button-bg_25%" x="150" y="267" width="41" height="41"/>
-	<SubTexture name="nubbin-button-bg_50%" x="254" y="166" width="81" height="81"/>
+	<SubTexture name="Icon_Sawtooth" x="300" y="283" width="25" height="23"/>
+	<SubTexture name="Icon_Sine" x="2" y="285" width="25" height="23"/>
+	<SubTexture name="Icon_Square" x="190" y="279" width="25" height="25"/>
+	<SubTexture name="Icon_Triangle" x="219" y="279" width="25" height="25"/>
+	<SubTexture name="blackKey" x="363" y="168" width="31" height="110"/>
+	<SubTexture name="knob-hash_25%" x="352" y="282" width="24" height="24"/>
+	<SubTexture name="knob-hash_50%" x="300" y="232" width="48" height="47"/>
+	<SubTexture name="knob-nipple" x="465" y="245" width="14" height="14"/>
+	<SubTexture name="knob-nipple_25%" x="498" y="223" width="4" height="4"/>
+	<SubTexture name="knob-nipple_50%" x="498" y="212" width="7" height="7"/>
+	<SubTexture name="knob_25%" x="465" y="212" width="29" height="29"/>
+	<SubTexture name="knob_50%" x="300" y="168" width="59" height="60"/>
 	<SubTexture name="panel-bg" x="2" y="2" width="499" height="162"/>
-	<SubTexture name="panel-bg_25%" x="379" y="166" width="125" height="41"/>
-	<SubTexture name="panel-bg_50%" x="2" y="166" width="250" height="81"/>
-	<SubTexture name="panel-hole_50%" x="421" y="271" width="10" height="10"/>
-	<SubTexture name="panel-holes_25%" x="311" y="308" width="20" height="20"/>
-	<SubTexture name="panel-holes_50%" x="379" y="271" width="40" height="40"/>
-	<SubTexture name="panelHole_25%" x="503" y="11" width="5" height="5"/>
-	<SubTexture name="slider-thumb_25%" x="136" y="310" width="18" height="20"/>
-	<SubTexture name="slider-thumb_50%" x="193" y="295" width="36" height="40"/>
-	<SubTexture name="slider-track_25%" x="231" y="298" width="104" height="8"/>
-	<SubTexture name="slider-track_50%" x="2" y="249" width="208" height="16"/>
-	<SubTexture name="toggle-bg_25%" x="67" y="303" width="40" height="17"/>
-	<SubTexture name="toggle-bg_50%" x="67" y="267" width="81" height="34"/>
-	<SubTexture name="toggle-thumb-2_25%" x="473" y="240" width="32" height="22"/>
-	<SubTexture name="toggle-thumb-2_50%" x="2" y="267" width="63" height="44"/>
-	<SubTexture name="toggle-thumb_25%" x="473" y="264" width="32" height="22"/>
-	<SubTexture name="toggle-thumb_50%" x="212" y="249" width="63" height="44"/>
-	<SubTexture name="whiteKey" x="337" y="166" width="40" height="164"/>
+	<SubTexture name="panel-bg_50%" x="2" y="168" width="250" height="81"/>
+	<SubTexture name="slider-thumb_25%" x="483" y="245" width="18" height="20"/>
+	<SubTexture name="slider-thumb_50%" x="465" y="168" width="36" height="40"/>
+	<SubTexture name="slider-track_25%" x="2" y="273" width="104" height="8"/>
+	<SubTexture name="slider-track_50%" x="2" y="253" width="208" height="16"/>
+	<SubTexture name="toggle-bg_25%" x="146" y="273" width="40" height="17"/>
+	<SubTexture name="toggle-bg_50%" x="398" y="264" width="81" height="34"/>
+	<SubTexture name="toggle-thumb-2_25%" x="110" y="273" width="32" height="22"/>
+	<SubTexture name="toggle-thumb-2_50%" x="398" y="216" width="63" height="44"/>
+	<SubTexture name="toggle-thumb_25%" x="214" y="253" width="32" height="22"/>
+	<SubTexture name="toggle-thumb_50%" x="398" y="168" width="63" height="44"/>
+	<SubTexture name="whiteKey" x="256" y="168" width="40" height="164"/>
 </TextureAtlas>

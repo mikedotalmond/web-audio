@@ -48,6 +48,7 @@ class MonoSynthUI extends Sprite {
 		
 		setupKeyboard();
 		
+		//osc,filter,env(adsr),output
 		//modules = ModuleUI.setup();
 		
 		resize();
