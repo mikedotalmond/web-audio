@@ -1,31 +1,33 @@
 package webaudio;
 
-import flambe.animation.Ease;
 import flambe.asset.AssetPack;
 import flambe.asset.Manifest;
-import flambe.camera.behaviours.LimitBoundsBehaviour;
 import flambe.camera.behaviours.MouseControlBehaviour;
 import flambe.camera.behaviours.ZoomLimitBehaviour;
 import flambe.camera.Camera;
 import flambe.camera.view.CameraBackgroundFill;
-import flambe.display.FillSprite;
 import flambe.display.Sprite;
 import flambe.display.SpriteSheet.StarlingSpriteSheet;
 import flambe.display.SubTexture;
 import flambe.Entity;
 import flambe.input.KeyboardEvent;
-import flambe.math.Rectangle;
 import flambe.platform.html.WebAudioSound;
 import flambe.platform.KeyCodes;
 import flambe.System;
-import haxe.ds.Vector.Vector;
+import haxe.ds.Vector;
+import haxe.Timer;
+import webaudio.synth.Oscillator.OscillatorType;
+
 import js.Browser;
+
+import js.html.Blob;
 import js.html.audio.AudioContext;
+
 import webaudio.synth.MonoSynth;
-import webaudio.synth.Oscillator;
 import webaudio.synth.processor.Crusher;
 import webaudio.synth.ui.Fonts;
 import webaudio.synth.ui.MonoSynthUI;
+import webaudio.utils.AudioNodeRecorder;
 import webaudio.utils.KeyboardInput;
 import webaudio.utils.KeyboardNotes;
 
@@ -54,6 +56,7 @@ import webaudio.utils.KeyboardNotes;
 	var activeKeys:Vector<Bool>;
 	var stageWidth:Int;
 	var stageHeight:Int;
+	var recorder:AudioNodeRecorder;
 	
 	
 	function new() {
@@ -128,6 +131,21 @@ import webaudio.utils.KeyboardNotes;
 		scene.addChild(new Entity().add(monoSynthUI));	
 		initInputs();
 		initAudio();
+		
+		/*
+		recorder = new AudioNodeRecorder(monoSynth.output);
+		recorder.wavEncoded.connect(onWavEncoded);
+		recorder.start();
+		Timer.delay(function() {
+			recorder.stop();
+			recorder.encodeWAV();
+		}, 5000);
+		*/
+	}
+	
+	function onWavEncoded(b:Blob) {
+		AudioNodeRecorder.forceDownload(b);
+		recorder.clear();
 	}
 	
 	

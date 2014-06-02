@@ -35,7 +35,7 @@ class MonoSynth implements ParameterObserver { //
 	
 	
 	public var adsr(default, null):ADSR;
-	public var outputGain(default, null):GainNode;
+	public var output(default, null):GainNode;
 	
 	public var biquad(default, null):Biquad;
 	
@@ -110,10 +110,10 @@ class MonoSynth implements ParameterObserver { //
 	
 		var context = destination.context;
 		
-		outputGain = context.createGain();
+		output = context.createGain();
 		
-		outputGain.gain.value = 1;
-		outputGain.connect(destination);
+		output.gain.value = 1;
+		output.connect(destination);
 		
 		osc0 = new Map<Int, Oscillator>();
 		osc0.set(OscillatorType.SINE, new Oscillator(context, null, OscillatorType.SINE));
@@ -128,7 +128,7 @@ class MonoSynth implements ParameterObserver { //
 		osc1.set(OscillatorType.TRIANGLE, new Oscillator(context, null, OscillatorType.TRIANGLE));
 		
 		biquad	= new Biquad(FilterType.LOWPASS, filterFrequency, filterQ, context);
-		adsr 	= new ADSR(context, biquad, outputGain);
+		adsr 	= new ADSR(context, biquad, output);
 		
 		phaseDelay = context.createDelay(1/freqUtil.noteIndexToFrequency(0));
 		phaseDelay.connect(biquad, 0);
@@ -141,10 +141,10 @@ class MonoSynth implements ParameterObserver { //
 	}
 	
 	
-	public function getOutputGain() return outputGain.gain.value;
+	public function getOutputGain() return output.gain.value;
 	public function setOutputGain(value:Float, when:Float=0) {
-		outputGain.gain.cancelScheduledValues(when);
-		outputGain.gain.setValueAtTime(value, when);
+		output.gain.cancelScheduledValues(when);
+		output.gain.setValueAtTime(value, when);
 	}
 	
 	public function noteOn(when:Float, freq:Float, velocity:Float = 1, retrigger:Bool = false) {
@@ -206,7 +206,7 @@ class MonoSynth implements ParameterObserver { //
 		osc1 = null;
 		osc0 = null;
 		biquad = null;
-		outputGain = null;
+		output = null;
 	}
 	
 	/* INTERFACE audio.parameter.IParameterObserver */
