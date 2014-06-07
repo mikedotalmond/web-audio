@@ -1,6 +1,7 @@
 package webaudio.synth.ui;
 
 import audio.parameter.mapping.MapFactory;
+import flambe.animation.Ease;
 import flambe.Component;
 import flambe.display.NineSlice;
 import flambe.display.Sprite;
@@ -74,9 +75,11 @@ class MonoSynthUI extends Sprite {
 				.addChild(new Entity().add(keyboardContainer = new Sprite()).add(keyboard))
 			);
 		
-		keyboardMask.scissor = new Rectangle(32, 540, 1148, 164);
 		
-		//keyboardContainer.x.animateBy(100, 25);
+		keyboardMask.x._ 		= 64;
+		keyboardMask.y._ 		= 520;
+		keyboardMask.scissor 	= new Rectangle(0, 0, 1148, 164);
+		
 		// perhaps create more keys and animate them left/right to change available range...
 	}
 	
@@ -87,10 +90,10 @@ class MonoSynthUI extends Sprite {
 		
 		owner.addChild(new Entity().add(background = NineSlice.fromSubTexture(textureAtlas.get('panel-bg_50%'))));
 		
-		x._ = -607;
+		x._ = -(1240 / 2);//-607;
 		y._ = -340;
 		
-		background.width  = 1214;
+		background.width  = 1240;// 1214;
 		background.height = 680;
 		background.setTint(.15, .15, .15);
 		

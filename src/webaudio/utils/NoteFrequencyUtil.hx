@@ -1,4 +1,5 @@
 ﻿package webaudio.utils;
+import js.html.Float32Array;
 
 /**
 * ...
@@ -16,17 +17,18 @@ class NoteFrequencyUtil {
 	static var pitchNames	:Array<String>;
 	static var altPitchNames:Array<String>;
 	
-	var noteFrequencies		:Array<Float>;
+	var noteFrequencies		:Float32Array;
 	var noteNames			:Array<String>;
 	var invTuningBase		:Float;
 	
 	public function new() {
+		
 		if (pitchNames == null) {
 			pitchNames = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
-			altPitchNames = [null, 'Db#', null, 'Eb', null, null, 'Gb', null, 'Ab', null, 'Bb', null];
+			altPitchNames = [null, 'Db', null, 'Eb', null, null, 'Gb', null, 'Ab', null, 'Bb', null];
 		}
 		
-		noteFrequencies	= [];
+		noteFrequencies	= new Float32Array(128);
 		noteNames = [];
 
 		_octaveMiddleC = 3;
@@ -40,7 +42,17 @@ class NoteFrequencyUtil {
 		}
 	}
 	
-	public function noteIndexToFrequency(index:Int, cents:Int = 0):Float {
+	/**
+	 * 
+	 * @param	index [0-127]
+	 * @return
+	 */
+	public inline function noteIndexToFrequency(index:Int):Float {
+		if (index >= 0 && index < 128) return noteFrequencies[index];
+		return Math.NaN;
+	}
+	
+	public function noteIndexToFrequencyWithDetune(index:Int, cents:Int = 0):Float {
 		if (index >= 0 && index < 128) {
 			if (cents == 0) return noteFrequencies[index];				
 			else if (cents < 0) return noteFrequencies[index] / Math.pow(2, -cents * centExp);
@@ -55,11 +67,16 @@ class NoteFrequencyUtil {
 		return freq; 
 	}
 	
-	public function frequencyToNoteIndex(frequency:Float):Int {
+	public inline function frequencyToNoteIndex(frequency:Float):Int {
 		return Std.int(frequencyToNote(frequency));
 	}
 	
-	public function noteIndexToName(index:Int):String {
+	/**
+	 * 
+	 * @param	index [0-127]
+	 * @return
+	 */
+	public inline function noteIndexToName(index:Int):String {
 		if (index>=0 && index < 128) return noteNames[index];
 		return null;
 	}

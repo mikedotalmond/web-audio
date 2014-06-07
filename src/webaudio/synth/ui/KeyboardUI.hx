@@ -38,6 +38,8 @@ class KeySprite extends ImageSprite {
  */
 class KeyboardUI extends Component {
 	
+	var container		:Sprite;
+	
 	var whiteKeyTexture	:SubTexture;
 	var blackKeyTexture	:SubTexture;
 	
@@ -71,6 +73,8 @@ class KeyboardUI extends Component {
 	
 	override public function onAdded() {
 		
+		container 		= owner.get(Sprite);
+		
 		var keyData		= getKeysData(keyboardNotes.startOctave, 4);
 		
 		noteIndexToKey 	= new Map<Int,KeySprite>();
@@ -78,8 +82,8 @@ class KeyboardUI extends Component {
 		var keyWidth 	= 40;
 		var keyHeight	= 164;
 		var marginRight	= 1;
-		var keyX 		= 32;
-		var keyY 		= 520;
+		var keyX 		= 0;
+		var keyY 		= 0;
 		
 		owner.addChild(naturals = new Entity());
 		owner.addChild(sharps = new Entity());

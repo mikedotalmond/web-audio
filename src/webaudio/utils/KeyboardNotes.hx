@@ -7,6 +7,7 @@
  */
 
 import flambe.platform.KeyCodes;
+import js.html.Float32Array;
 import webaudio.utils.NoteFrequencyUtil;
 
 class KeyboardNotes {
@@ -20,6 +21,7 @@ class KeyboardNotes {
 		
 		this.startOctave	= startOctave;
 		noteFreq 			= new NoteFrequencyUtil();
+		
 		keycodeToNoteFreq 	= new Map<Int,Float>();
 		keycodeToNoteIndex 	= new Map<Int,Int>();
 		
