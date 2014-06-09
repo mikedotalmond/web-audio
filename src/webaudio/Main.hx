@@ -1,11 +1,13 @@
 package webaudio;
 
+import flambe.animation.Ease;
 import flambe.asset.AssetPack;
 import flambe.asset.Manifest;
 import flambe.camera.behaviours.MouseControlBehaviour;
 import flambe.camera.behaviours.ZoomLimitBehaviour;
 import flambe.camera.Camera;
 import flambe.camera.view.CameraBackgroundFill;
+import flambe.display.FillSprite;
 import flambe.display.Sprite;
 import flambe.display.SpriteSheet.StarlingSpriteSheet;
 import flambe.display.SubTexture;
@@ -14,6 +16,7 @@ import flambe.input.KeyboardEvent;
 import flambe.platform.html.WebAudioSound;
 import flambe.platform.KeyCodes;
 import flambe.System;
+import flambe.util.Promise;
 import haxe.ds.Vector;
 import haxe.Timer;
 import webaudio.synth.Oscillator.OscillatorType;
@@ -57,8 +60,7 @@ import webaudio.utils.KeyboardNotes;
 	var stageWidth:Int;
 	var stageHeight:Int;
 	var recorder:AudioNodeRecorder;
-	
-	
+		
 	function new() {
 		trace('MonoSynth');
 		keyboardNotes 	= new KeyboardNotes(2); // util
@@ -78,7 +80,7 @@ import webaudio.utils.KeyboardNotes;
 		stageHeight 	= System.stage.height;
 		
 		var scene:Entity;
-		var ui:Entity;
+		var ui	:Entity;
 		var uiContainer:Sprite;
 		var sceneContainer:Sprite;
 		var camera:Camera;
@@ -242,33 +244,66 @@ import webaudio.utils.KeyboardNotes;
 	}
 	
 	
-
-	
-	/**
-	 * Entry point...
-	 */
-	static function main() {
+	/* Entry point */
+    static function main () {
 		
-		System.init();
+        System.init();
 		
 		var noAudio = Browser.document.getElementById("noWebAudio");
 		
 		if (WebAudioSound.supported) {
 			
 			noAudio.parentNode.removeChild(noAudio);
+			audioContext = cast WebAudioSound.ctx;
 			
-			audioContext 	= cast WebAudioSound.ctx;
-			instance 		= new Main();
+			instance = new Main();
 			
-			System.loadAssetPack(Manifest.fromAssets('bootstrap')).get(instance.assetsReady);
-			
+			PreloadMain.init('bootstrap', instance.assetsReady, 0x5A6978);
 			
 		} else {
 			noAudio.className = ""; // show it
 			throw('Could not create AudioContext. Sorry, but it looks like your browser does not support the Web-Audio APIs ;(');
-		}
-	}
+		}		
+    }
 	
-	public static var instance(default,null):Main;
-	public static var audioContext(default,null):AudioContext;
+	
+	static public var instance(default, null)	:Main;
+	static public var audioContext(default,null):AudioContext;	
+}
+
+
+
+/**
+ * Loadbar / Helper
+ */
+@:final class PreloadMain {	
+	
+	public static function init(packName:String, complete:AssetPack->Void, loadBarColour:Int=0) {
+		
+		var bar:FillSprite = new FillSprite(loadBarColour, 1, System.stage.height);
+		System.root.add(bar);
+		
+		var loader:Promise<AssetPack> = System.loadAssetPack(Manifest.fromAssets(packName));
+		
+		loader.progressChanged.connect(function() {
+			var v = loader.progress / loader.total;
+			bar.width.animateTo(v * System.stage.width, .25, Ease.quadOut);
+			bar.height._ = System.stage.height;
+		});
+		
+		loader.success.connect(function(ass) {
+			trace('success!');
+			bar.width.animateTo(System.stage.width, .25, Ease.quadOut);
+			Timer.delay(function() {
+				complete(ass);
+				bar.dispose();
+			}, 250);
+		}).once();
+		
+		loader.error.connect(function(err) {
+			bar.color = 0xff0000;
+			complete(null);
+			throw err;
+		});
+	}
 }
