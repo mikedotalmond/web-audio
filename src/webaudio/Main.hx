@@ -217,7 +217,7 @@ import webaudio.utils.KeyboardNotes;
 		
 		// set up monosynth test
 		monoSynth = new MonoSynth(destination, keyboardNotes.noteFreq);
-		monoSynth.oscillator0Type = OscillatorType.SQUARE; // TRIANGLE; SQUARE
+		monoSynth.oscillator0Type = OscillatorType.SAWTOOTH; // TRIANGLE; SQUARE
 		monoSynth.oscillator1Type = OscillatorType.SQUARE; // TRIANGLE; SQUARE
 		monoSynth.phase = .333;
 		monoSynth.osc0_portamentoTime = .15; //1.0

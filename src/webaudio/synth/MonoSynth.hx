@@ -10,6 +10,8 @@ import js.html.audio.DelayNode;
 import js.html.audio.GainNode;
 import js.html.audio.OscillatorNode;
 import webaudio.synth.Oscillator.OscillatorType;
+import webaudio.synth.processor.Waveshaper;
+import webaudio.synth.processor.Waveshaper;
 import webaudio.utils.NoteFrequencyUtil;
 
 import webaudio.synth.Biquad;
@@ -94,12 +96,14 @@ class MonoSynth implements ParameterObserver { //
 	var freq:Float = 440;
 	var _phase:Float = 0;
 	
+	
 	public var phase(get, set):Float;
 	inline function get_phase():Float return _phase;
 	inline function set_phase(value:Float):Float {
 		phaseDelay.delayTime.value = (1 / freq) * value;
 		return _phase = value;
 	}
+	
 	
 	/**
 	 *
@@ -111,7 +115,6 @@ class MonoSynth implements ParameterObserver { //
 		var context = destination.context;
 		
 		output = context.createGain();
-		
 		output.gain.value = 1;
 		output.connect(destination);
 		
@@ -130,8 +133,16 @@ class MonoSynth implements ParameterObserver { //
 		biquad	= new Biquad(FilterType.LOWPASS, filterFrequency, filterQ, context);
 		adsr 	= new ADSR(context, biquad, output);
 		
-		phaseDelay = context.createDelay(1/freqUtil.noteIndexToFrequency(0));
+		// osc0 output is routed though this delay
+		phaseDelay = context.createDelay(1 / freqUtil.noteIndexToFrequency(0));
 		phaseDelay.connect(biquad, 0);
+		
+		
+		//[ OSC-0 + [Phase-Delay] || OSC-1 ] -> BiQuad -> ADSR -> WaveShaper -> Output Gain
+		//adsr.node.gain.value = 10;
+		
+		var distortion = new WaveShaper(context, adsr, output);
+		distortion.setDistortion(.66);
 		
 		//var phaseDriver = new Oscillator(context, phaseDelay, 0);
 		//phaseDriver.node.frequency.value = .5;
@@ -146,6 +157,7 @@ class MonoSynth implements ParameterObserver { //
 		output.gain.cancelScheduledValues(when);
 		output.gain.setValueAtTime(value, when);
 	}
+	
 	
 	public function noteOn(when:Float, freq:Float, velocity:Float = 1, retrigger:Bool = false) {
 		
@@ -187,6 +199,7 @@ class MonoSynth implements ParameterObserver { //
 		noteIsOn = true;
 	}
 	
+	
 	public function noteOff(when) {
 		if (noteIsOn) {
 			var r = adsr.release(when, adsr_releaseTime);
@@ -201,6 +214,7 @@ class MonoSynth implements ParameterObserver { //
 		}
 	}
 	
+	
 	public function dispose() {
 		adsr = null;
 		osc1 = null;
@@ -208,6 +222,7 @@ class MonoSynth implements ParameterObserver { //
 		biquad = null;
 		output = null;
 	}
+	
 	
 	/* INTERFACE audio.parameter.IParameterObserver */
 	public function onParameterChange(parameter:Parameter) {

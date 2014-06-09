@@ -27,5 +27,6 @@ package js.html.audio;
 extern class WaveShaperNode extends AudioNode
 {
 	var curve : js.html.Float32Array;
+	var oversample : String;
 
 }

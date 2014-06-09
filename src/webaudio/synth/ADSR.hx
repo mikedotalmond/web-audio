@@ -13,7 +13,10 @@ import js.html.audio.GainNode;
  * @author Mike Almond - https://github.com/mikedotalmond
  */
 abstract ADSR(GainNode) from GainNode to GainNode {
-		
+	
+	public var node(get, never):GainNode;
+	inline function get_node():GainNode return cast this;
+	
 	/**
 	 * 
 	 * @param	context
@@ -27,8 +30,6 @@ abstract ADSR(GainNode) from GainNode to GainNode {
 		if (input != null) input.connect(this);
 		if (destination != null) this.connect(destination);
 	}
-	
-	
 	/**
 	 * @param	when = time (audio context) to trigger at
 	 * @param	level = 1.0
@@ -49,6 +50,7 @@ abstract ADSR(GainNode) from GainNode to GainNode {
 		//Decay->Sustain
 		if (sustainLevel != 1.0) this.gain.setTargetAtTime(level * sustainLevel, when + attackTime, rExp(decayTime));
 	}
+	
 	
 	/**
 	 * 
