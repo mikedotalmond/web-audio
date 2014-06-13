@@ -225,13 +225,18 @@ import webaudio.utils.KeyboardNotes;
 		
 		monoSynth.osc0_detuneCents = 0;
 		
-		monoSynth.adsr_attackTime = .05;
-		monoSynth.adsr_decayTime = 1;
-		monoSynth.adsr_sustain = 0.5;
-		monoSynth.adsr_releaseTime = .2;
+		monoSynth.adsr_attackTime = .025;
+		monoSynth.adsr_decayTime = .1;
+		monoSynth.adsr_sustain = 0.8;
+		monoSynth.adsr_releaseTime = .08;
 		
-		monoSynth.filterFrequency = 1;
+		monoSynth.filterFrequency = .9;
+		monoSynth.filterEnvAttack = .1;
 		//monoSynth.filter_q
+		
+		monoSynth.delay.delayTime.value = .05;
+		monoSynth.delayLevel.gain.value = .3;
+		monoSynth.delayFeedback.gain.value = .8;
 	}
 	
 	
