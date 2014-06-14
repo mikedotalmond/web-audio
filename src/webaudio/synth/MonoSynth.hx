@@ -21,7 +21,8 @@ import webaudio.synth.Biquad;
  * A fairly basic monosynth
  *
  * Audio routing:
- *	* Osc -> FEG(AR-BiQuad) -> AEG(ADSR-GainNode) -> OutGain -> Desitnation
+ * OSC-0 + OSC-1[Phase Delay] -> ADSR -> BiQuad -> WaveShaper -> Delay[level+feedback] -> Output Gain
+	
  *
  *
  * @author Mike Almond - https://github.com/mikedotalmond *
@@ -67,11 +68,14 @@ class MonoSynth implements ParameterObserver { //
 	var osc1Type:Int = 0;
 	var freqUtil:NoteFrequencyUtil;
 	
+	// osc 0/1 phase offset (using delaynode)
+	var phaseDelay:DelayNode;
+	var _phase:Float = 0;
 	
+	var noteFreq:Float = 440;
+	var context:AudioContext;
 	
-	/**
-	 * filter
-	 */
+	/** filter */
 	public var filterType:Int = 0;
 	public var filterFrequency:Float=.001;
 	public var filterQ:Float=10;
@@ -82,12 +86,6 @@ class MonoSynth implements ParameterObserver { //
 	public var filterEnvAttack:Float=.1;
 	public var filterEnvRelease:Float=1;
 	
-	// Phase (using delaynode)
-	var phaseDelay:DelayNode;
-	var freq:Float = 440;
-	var _phase:Float = 0;
-	var context:AudioContext;
-	
 	
 	/**
 	 *
@@ -97,7 +95,7 @@ class MonoSynth implements ParameterObserver { //
 		this.freqUtil = freqUtil;
 		
 		//[ OSC-0 + OSC-1[Phase Delay] -> ADSR -> BiQuad -> WaveShaper -> Delay[level+feedback] -> Output Gain
-	
+		
 		context = destination.context;
 		
 		output = context.createGain();
@@ -118,12 +116,12 @@ class MonoSynth implements ParameterObserver { //
 	
 	function setupDelay():Void {
 		
-		delayLevel 		= context.createGain();
-		delay 			= context.createDelay(1);
-		delayFeedback	= context.createGain();		
+		delayLevel = context.createGain();
+		delay = context.createDelay(1);
+		delayFeedback = context.createGain();		
 		
-		delayLevel.gain.value 		= .5;
-		delayFeedback.gain.value 	= .5;
+		delayLevel.gain.value = .5;
+		delayFeedback.gain.value = .5;
 		
 		delayLevel.connect(delay);
 		delay.connect(delayFeedback);
@@ -133,12 +131,13 @@ class MonoSynth implements ParameterObserver { //
 	
 	function setupWaveshaper():Void {
 		waveshaper 	= new WaveShaper(context);
-		waveshaper.setDistortion(.25);
+		waveshaper.setDistortion( .325);
 		waveshaper.node.connect(delayLevel);
 		waveshaper.node.connect(output);
 	}
 	
 	function setupOscillators():Void {
+		
 		osc0 = new Map<Int, Oscillator>();
 		osc0.set(OscillatorType.SINE, new Oscillator(context, null, OscillatorType.SINE));
 		osc0.set(OscillatorType.SQUARE, new Oscillator(context, null, OscillatorType.SQUARE));
@@ -160,12 +159,8 @@ class MonoSynth implements ParameterObserver { //
 	}
 	
 	
-	
-	
-	
-	
-	
 	public function getOutputGain() return output.gain.value;
+	
 	public function setOutputGain(value:Float, when:Float=0) {
 		output.gain.cancelScheduledValues(when);
 		output.gain.setValueAtTime(value, when);
@@ -174,12 +169,12 @@ class MonoSynth implements ParameterObserver { //
 	
 	public function noteOn(when:Float, freq:Float, velocity:Float = 1, retrigger:Bool = false) {
 		
-		this.freq = freq;
+		noteFreq = freq;
 	
-		// make phase follow portamento
 		var p = (1 / freq) * _phase;
 		phaseDelay.delayTime.cancelScheduledValues(when);
 		if (osc0_portamentoTime > 0) {
+			// make phase-change match portamento
 			phaseDelay.delayTime.setValueAtTime(phaseDelay.delayTime.value, when);
 			phaseDelay.delayTime.exponentialRampToValueAtTime(p, when + osc0_portamentoTime);
 		} else {
@@ -251,7 +246,7 @@ class MonoSynth implements ParameterObserver { //
 	
 	inline function get_phase():Float return _phase;
 	inline function set_phase(value:Float):Float {
-		phaseDelay.delayTime.value = (1 / freq) * value;
+		phaseDelay.delayTime.value = (1 / noteFreq) * value;
 		return _phase = value;
 	}
 	
