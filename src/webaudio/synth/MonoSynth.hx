@@ -104,6 +104,8 @@ class MonoSynth implements ParameterObserver { //
 		adsr = new ADSR(context, null, biquad);
 		
 		setupOscillators();
+		
+		// todo: pitch bend, osc pan, amplitude modulation, ouput levels analyser
 	}
 	
 	
