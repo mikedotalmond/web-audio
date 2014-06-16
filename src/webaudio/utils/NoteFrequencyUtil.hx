@@ -61,7 +61,7 @@ class NoteFrequencyUtil {
 		return Math.NaN;
 	}
 	
-	public function detuneFreq(freq:Float, cents:Int):Float {
+	public function detuneFreq(freq:Float, cents:Float):Float {
 		if (cents < 0) return freq / Math.pow(2, -cents * centExp);
 		else if (cents > 0) return freq * Math.pow(2, cents * centExp);
 		return freq; 

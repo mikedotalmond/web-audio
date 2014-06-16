@@ -26,6 +26,8 @@ abstract ScriptProcessor(ScriptProcessorNode) from ScriptProcessorNode to Script
 
 class Crusher {
 	
+	static inline function lerp(a:Float, b:Float, f:Float):Float return b + (a - b) * f;
+	
 	var exp:Float;
 	var iexp:Float;
 	var sampleCount:Int = 0;
@@ -33,67 +35,92 @@ class Crusher {
 	var tempRight:Float = 0;
 	
 	var _bits:Float;
-	public var bits(get_bits, set_bits):Float;
-	function get_bits():Float { return _bits; }
+	var _rateReduction:Float;
+	var context:AudioContext;
+	var sampleRate:Float;
+	var samplesPerCycle:Float;
+	
+	public var bits(get, set):Float;
+	public var rateReduction(get, set):Float;
+	
+	public var node(default, null):ScriptProcessor;
+	
+	
+	public function new(context:AudioContext,?input:AudioNode=null, ?destination:AudioNode=null) {
+		this.context = context;
+		sampleRate = context.sampleRate;
+		
+		bits = 24;
+		rateReduction = 1;
+		
+		node = new ScriptProcessor(context, input, destination);
+		(cast node).onaudioprocess = crusherImpl;
+	}
+	
+	
+	function crusherImpl(e:AudioProcessingEvent) {
+		
+		var inL		= e.inputBuffer.getChannelData(0);
+		var inR		= e.inputBuffer.getChannelData(1);
+		var outL	= e.outputBuffer.getChannelData(0);
+		var outR	= e.outputBuffer.getChannelData(1);
+		var n 		= inL.length;
+		var e 		= exp;
+		var ie 		= iexp;
+		
+		// bit-crusher + samplerate reduction
+		
+		var ditherLevel:Float = .1;
+		var dL:Float = 0;
+		var dR:Float = 0;
+	
+		var l:Float = 0, r:Float = 0;
+		
+		for (i in 0...n) {
+		
+			sampleCount++;
+			
+			if (sampleCount >= samplesPerCycle) {
+				
+				var dS = (sampleCount - samplesPerCycle) / samplesPerCycle;
+				
+				sampleCount = 0;
+				
+				dL = ditherLevel * (Math.random()-.5);
+				dR = ditherLevel * (Math.random()-.5);
+				
+				var tx, ty;
+				
+				tx = ie * Std.int(e * inL[i] + dL);
+				tempLeft = lerp(tempLeft, tx, dS);
+				
+				ty = ie * Std.int(e * inR[i] + dR);
+				tempRight = lerp(tempRight, ty, dS);
+			}
+			
+			l = tempLeft;
+			r = tempRight;
+			
+			outL[i] = l;
+			outR[i] = r;
+		}
+	} 
+	
+	
+	function get_bits():Float return _bits;
 	function set_bits(value:Float):Float {
+		value = value < 1 ? 1 : (value > 24 ? 24 : value);
 		if (_bits != value) {
 			exp = Math.pow(2, value);
 			iexp = (1 / exp);
 		}
 		return _bits = value;
 	}
-
-	public var node(default, null):ScriptProcessor;
 	
-	public function new(context:AudioContext,?input:AudioNode=null, ?destination:AudioNode=null) {
-		bits = 8;
-		node = new ScriptProcessor(context, input, destination);
-		(cast node).onaudioprocess = crusherImpl;
-	}
 	
-	function crusherImpl(e:AudioProcessingEvent) {
-		var inL		= e.inputBuffer.getChannelData(0);
-		var inR		= e.inputBuffer.getChannelData(1);
-		var outL	= e.outputBuffer.getChannelData(0);
-		var outR	= e.outputBuffer.getChannelData(1);
-		var n 		= outR.length;
-		var e 		= exp;
-		var ie 		= iexp;
-		
-		// bit-crusher + sample-rate reduction (simple, skip samples... no interpolation)
-		
-		var samplesPerCycle = Std.int((44100 / 22050));
-		
-		var ditherLevel:Float = .25;
-		var dL:Float = .5;
-		var dR:Float = .5;
-	
-		var l:Float = 0, r:Float = 0;
-		
-		for (i in 0...n) {
-		
-			if (sampleCount >= samplesPerCycle) {
-				sampleCount = 0;
-				
-				if (ditherLevel > 0) { //create the random dither +/- 0.5
-					dL = 0.5 - (ditherLevel * Math.random());
-					dR = 0.5 - (ditherLevel * Math.random());
-				} else {
-					dL = dR = 0.5;
-				}
-				
-				l = tempLeft  = ie * Std.int(e * inL[i] + dL);
-				r = tempRight = ie * Std.int(e * inR[i] + dR);
-			
-			} else {
-				l = tempLeft;
-				r = tempRight;
-			}
-			
-			outL[i] = l;
-			outR[i] = r;
-			
-			sampleCount++;
-		}
+	function get_rateReduction():Float return _rateReduction;
+	function set_rateReduction(value:Float):Float {
+		value = value < 1 ? 1 : (value > 16 ? 16 : value);
+		return samplesPerCycle = _rateReduction = value;
 	}
 }

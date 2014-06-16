@@ -228,12 +228,15 @@ import webaudio.utils.KeyboardNotes;
 		// set up monosynth test
 		monoSynth = new MonoSynth(destination, keyboardNotes.noteFreq);
 		monoSynth.osc0.type = OscillatorType.SQUARE; // TRIANGLE; SQUARE
-		monoSynth.osc1.type = OscillatorType.SAWTOOTH; // TRIANGLE; SQUARE
-		monoSynth.phase = .123;
+		monoSynth.osc1.type = OscillatorType.SQUARE; // TRIANGLE; SQUARE
+		monoSynth.phase = .2;
 		monoSynth.osc0_portamentoTime = .15; //1.0
 		monoSynth.osc1_portamentoTime = .15; //1.0
 		
 		monoSynth.osc0_detuneCents = 0;
+		
+		monoSynth.osc0_randomCents = 40;
+		monoSynth.osc1_randomCents = 40;
 		
 		monoSynth.adsr_attackTime = .025;
 		monoSynth.adsr_decayTime = .1;
@@ -246,7 +249,7 @@ import webaudio.utils.KeyboardNotes;
 		monoSynth.filterQ = 1;
 		
 		monoSynth.delay.time.value = .45;
-		monoSynth.delay.level.value = .8;
+		monoSynth.delay.level.value = .4;
 		monoSynth.delay.feedback.value = .17;
 	}
 	

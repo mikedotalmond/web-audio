@@ -55,6 +55,8 @@ class MonoSynth implements ParameterObserver { //
 	public var adsr_releaseTime		:Float = .25;
 	public var adsr_sustain			:Float = .44;
 	
+	public var osc0_randomCents		:Float = 0;
+	public var osc1_randomCents		:Float = 0;
 	public var osc0_portamentoTime	:Float = 0;
 	public var osc0_detuneCents		:Int = 0;
 	public var osc1_portamentoTime	:Float = 0;
@@ -124,10 +126,10 @@ class MonoSynth implements ParameterObserver { //
 	function setupDistortion():Void {
 		
 		distortionGroup = new DistortionGroup(context);
-		distortionGroup.pregain.gain.value = 2.0;
+		distortionGroup.pregain.gain.value = 1.0;
 		
-		distortionGroup.waveshaper.setDistortion( .325);
-		distortionGroup.crusher.bits = 10;
+		//distortionGroup.waveshaper.setDistortion(.5);
+		//distortionGroup.crusher.bits = 12;
 		
 		distortionGroup.output.connect(delay.input); // send to delay
 		distortionGroup.output.connect(outputGain);  // master output
@@ -157,8 +159,19 @@ class MonoSynth implements ParameterObserver { //
 		
 		noteFreq = freq;
 		
-		var p = (1 / freq) * _phase;
+		var osc0Freq = freq;
+		var osc1Freq = freq;
+		
+		if (osc0_detuneCents != 0) osc0Freq = freqUtil.detuneFreq(osc0Freq, osc0_detuneCents);
+		if (osc1_detuneCents != 0) osc1Freq = freqUtil.detuneFreq(osc1Freq, osc1_detuneCents);
+		
+		if (osc0_randomCents > 0) osc0Freq = freqUtil.detuneFreq(osc0Freq, osc0_randomCents * (Math.random() - .5));
+		if (osc1_randomCents > 0) osc1Freq = freqUtil.detuneFreq(osc1Freq, osc1_randomCents * (Math.random() - .5));
+		
+		
+		var p = (1 / osc0Freq) * _phase;
 		phaseDelay.delayTime.cancelScheduledValues(when);
+		
 		if (osc0_portamentoTime > 0) {
 			// make phase-change match portamento
 			phaseDelay.delayTime.setValueAtTime(phaseDelay.delayTime.value, when);
@@ -168,17 +181,8 @@ class MonoSynth implements ParameterObserver { //
 		}
 		
 		
-		if (osc0_detuneCents != 0) {
-			osc0.oscillator.trigger(when, freqUtil.detuneFreq(freq, osc0_detuneCents), osc0_portamentoTime, retrigger);
-		} else {
-			osc0.oscillator.trigger(when, freq, osc0_portamentoTime, retrigger);
-		}
-		
-		if (osc1_detuneCents != 0) {
-			osc1.oscillator.trigger(when, freqUtil.detuneFreq(freq, osc1_detuneCents), osc1_portamentoTime, retrigger);
-		} else {
-			osc1.oscillator.trigger(when, freq, osc1_portamentoTime, retrigger);
-		}
+		osc0.oscillator.trigger(when, osc0Freq, osc0_portamentoTime, retrigger);
+		osc1.oscillator.trigger(when, osc1Freq, osc1_portamentoTime, retrigger);
 		
 		if (!noteIsOn || retrigger) {
 			adsr.trigger(when, velocity, adsr_attackTime, adsr_decayTime, adsr_sustain, retrigger);
