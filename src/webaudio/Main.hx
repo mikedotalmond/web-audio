@@ -27,14 +27,11 @@ import js.html.Blob;
 import js.html.audio.AudioContext;
 
 import webaudio.synth.MonoSynth;
-import webaudio.synth.processor.Crusher;
 import webaudio.synth.ui.Fonts;
 import webaudio.synth.ui.MonoSynthUI;
 import webaudio.utils.AudioNodeRecorder;
 import webaudio.utils.KeyboardInput;
 import webaudio.utils.KeyboardNotes;
-
-
 
 
 
@@ -46,21 +43,37 @@ import webaudio.utils.KeyboardNotes;
  */
 @:final class Main {
 	
-	public var keyboardInputs(default,null)	:KeyboardInput;
-	public var keyboardNotes(default, null)	:KeyboardNotes;
-	
 	public var textureAtlas	(default, null)	:Map<String,SubTexture>;
 	
+	var stageWidth			:Int;
+	var stageHeight			:Int;
 	
-	var monoSynth		:MonoSynth 		= null;
-	var crusher			:Crusher 		= null;
-	var monoSynthUI		:MonoSynthUI 	= null;
+	var scene				:Entity;
+	var sceneUILayer		:Entity;
+	var sceneContentLayer	:Entity;
+	var sceneBackgroundLayer:Entity;
+	var sceneContainer		:Sprite;
 	
-	var activeKeys:Vector<Bool>;
-	var stageWidth:Int;
-	var stageHeight:Int;
-	var recorder:AudioNodeRecorder;
-		
+	var ui					:Entity;
+	var uiContainer			:Sprite;
+	
+	var camera				:Camera;
+	var cameraMouseControl	:MouseControlBehaviour;
+	var cameraZoomLimit		:ZoomLimitBehaviour;
+	
+	// -----------------------------------------------
+	
+	
+	public var keyboardInputs(default,null)	:KeyboardInput; // VirtualMIDIKeyboard
+	public var keyboardNotes(default, null)	:KeyboardNotes;
+	
+	var activeKeys			:Vector<Bool>;
+	
+	var monoSynth			:MonoSynth;
+	var monoSynthUI			:MonoSynthUI;
+	var recorder			:AudioNodeRecorder;
+	
+	
 	function new() {
 		trace('MonoSynth');
 		keyboardNotes 	= new KeyboardNotes(2); // util
@@ -72,23 +85,39 @@ import webaudio.utils.KeyboardNotes;
 		
 		Fonts.setup(pack);
 		
+		stageWidth 		= System.stage.width;
+		stageHeight 	= System.stage.height;
+		
+		// core flambe setup (scene, camera, ui, ...)
+		setupFlambe(pack);
+		
+		// setup synth ui
+		monoSynthUI	= new MonoSynthUI(textureAtlas, keyboardNotes);
+		scene.addChild(new Entity().add(monoSynthUI));	
+		
+		// setup (chromatic) keyboard controller
+		initSynthControlInputs();
+		
+		initAudio();
+		
+		monoSynthUI.outputLevelParameter.addObserver(monoSynth);
+		
+		/*
+		recorder = new AudioNodeRecorder(monoSynth.output);
+		recorder.wavEncoded.connect(onWavEncoded);
+		recorder.start();
+		Timer.delay(function() {
+			recorder.stop();
+			recorder.encodeWAV();
+		}, 5000);
+		*/
+	}
+	
+	function setupFlambe(pack:AssetPack) {
 		var xml			= Xml.parse(pack.getFile('sprites.xml').toString());
 		var texture 	= pack.getTexture('sprites');
 		textureAtlas 	= StarlingSpriteSheet.parse(xml, texture);
 		
-		stageWidth 		= System.stage.width;
-		stageHeight 	= System.stage.height;
-		
-		var scene:Entity;
-		var ui	:Entity;
-		var uiContainer:Sprite;
-		var sceneContainer:Sprite;
-		var camera:Camera;
-		var mouseControlBehaviour:MouseControlBehaviour;
-		var zoomLimitBehaviour:ZoomLimitBehaviour;
-		var sceneBackgroundLayer:Entity;
-		var sceneContentLayer:Entity;
-		var sceneUILayer:Entity;
 		
 		System.root.addChild(scene = new Entity()); // scene, with camera
 		System.root.addChild(ui = new Entity()); // non-game, no camera, on top of everything (HUD)
@@ -113,40 +142,21 @@ import webaudio.utils.KeyboardNotes;
 			.addChild(sceneUILayer = new Entity());			
 		
 		//setupCamera
-		mouseControlBehaviour = new MouseControlBehaviour(camera);
-		camera.behaviours.push(mouseControlBehaviour);
-		mouseControlBehaviour.enabled = true;
+		cameraMouseControl = new MouseControlBehaviour(camera);
+		camera.behaviours.push(cameraMouseControl);
+		cameraMouseControl.enabled = true;
 		
-		zoomLimitBehaviour = new ZoomLimitBehaviour(camera, .25, 1);
-		camera.behaviours.push(zoomLimitBehaviour);
-		zoomLimitBehaviour.enabled = true;
+		cameraZoomLimit = new ZoomLimitBehaviour(camera, .25, 1);
+		camera.behaviours.push(cameraZoomLimit);
+		cameraZoomLimit.enabled = true;
 		
 		camera.controller.zoom._ = 1;
 		
 		scene.addChild(new Entity().add(new CameraBackgroundFill(0x666666, camera)), false);
 		
-		System.stage.resize.connect(onResize); 	
-		
-		
-		// setup synth ui
-		monoSynthUI	= new MonoSynthUI(textureAtlas, keyboardNotes);
-		scene.addChild(new Entity().add(monoSynthUI));	
-		initInputs();
-		initAudio();
-		
-		
-		monoSynthUI.outputLevelParameter.addObserver(monoSynth);
-		
-		/*
-		recorder = new AudioNodeRecorder(monoSynth.output);
-		recorder.wavEncoded.connect(onWavEncoded);
-		recorder.start();
-		Timer.delay(function() {
-			recorder.stop();
-			recorder.encodeWAV();
-		}, 5000);
-		*/
+		System.stage.resize.connect(onResize);
 	}
+	
 	
 	function onWavEncoded(b:Blob) {
 		AudioNodeRecorder.forceDownload(b);
@@ -154,7 +164,7 @@ import webaudio.utils.KeyboardNotes;
 	}
 	
 	
-	function initInputs() {
+	function initSynthControlInputs() {
 		
 		if (System.keyboard.supported) {
 			
@@ -183,6 +193,7 @@ import webaudio.utils.KeyboardNotes;
 			// System.touch.points
 		}
 		
+		
 		initKeyboardInputs();
 		
 	}
@@ -200,7 +211,7 @@ import webaudio.utils.KeyboardNotes;
 			
 			monoSynthUI.keyboard.setNoteState(i, false);
 			
-			// retrigger note on if any keys/notes are held
+			// retrigger note-on if any keys/notes are held
 			if (keyboardInputs.noteCount > 0) handleNoteOn(keyboardInputs.lastNote);
 			else monoSynth.noteOff(audioContext.currentTime);
 		};
@@ -212,10 +223,6 @@ import webaudio.utils.KeyboardNotes;
 
 	function initAudio() {
 		
-		//crusher 		= new Crusher(audioContext, null, WebAudioSound.gain);
-		//crusher.bits	= 8;
-		
-		//var destination = crusher.node; //audioContext.destination
 		var destination = audioContext.destination;
 		
 		// set up monosynth test
@@ -238,9 +245,9 @@ import webaudio.utils.KeyboardNotes;
 		monoSynth.filterEnvRelease = .2;
 		monoSynth.filterQ = 1;
 		
-		monoSynth.delay.delayTime.value = .45;
-		monoSynth.delayLevel.gain.value = .8;
-		monoSynth.delayFeedback.gain.value = .17;
+		monoSynth.delay.time.value = .45;
+		monoSynth.delay.level.value = .8;
+		monoSynth.delay.feedback.value = .17;
 	}
 	
 	

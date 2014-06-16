@@ -54,7 +54,7 @@ extern class PannerNode extends AudioNode
 	var maxDistance : Float;
 
 	/** Setter throws DOMException. */
-	var panningModel : Int;
+	var panningModel : Dynamic;
 
 	var refDistance : Float;
 

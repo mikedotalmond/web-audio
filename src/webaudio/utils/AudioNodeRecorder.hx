@@ -1,14 +1,17 @@
 package webaudio.utils;
 
 /**
- * ...
- * port of https://github.com/mattdiamond/Recorderjs
+ * A Haxe port of Recorderjs - https://github.com/mattdiamond/Recorderjs
+ * 
+ * Utility to record the output of an AudioNode and save as WAV
+ * (encode process runs asynchronously in a webworker)
  */
 
 import flambe.util.Signal1;
 import js.Browser;
 
 import js.html.AnchorElement;
+import js.html.audio.AnalyserNode;
 import js.html.audio.AudioContext;
 import js.html.audio.AudioNode;
 import js.html.audio.ScriptProcessorNode;

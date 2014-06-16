@@ -26,7 +26,7 @@ abstract WaveShaper(WaveShaperNode) from WaveShaperNode to WaveShaperNode {
 	}
 	
 	public var node(get, never):WaveShaperNode;
-	inline function get_node():WaveShaperNode return cast this;
+	inline function get_node():WaveShaperNode return this;
 	
 	/*
 	 * Set the waveshaper distortion amount [-1.0 ... 1.0] 
