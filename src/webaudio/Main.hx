@@ -19,7 +19,7 @@ import flambe.System;
 import flambe.util.Promise;
 import haxe.ds.Vector;
 import haxe.Timer;
-import webaudio.synth.Oscillator.OscillatorType;
+import webaudio.synth.generator.Oscillator.OscillatorType;
 
 import js.Browser;
 
@@ -134,6 +134,9 @@ import webaudio.utils.KeyboardNotes;
 		initInputs();
 		initAudio();
 		
+		
+		monoSynthUI.outputLevelParameter.addObserver(monoSynth);
+		
 		/*
 		recorder = new AudioNodeRecorder(monoSynth.output);
 		recorder.wavEncoded.connect(onWavEncoded);
@@ -217,8 +220,8 @@ import webaudio.utils.KeyboardNotes;
 		
 		// set up monosynth test
 		monoSynth = new MonoSynth(destination, keyboardNotes.noteFreq);
-		monoSynth.oscillator0Type = OscillatorType.SQUARE; // TRIANGLE; SQUARE
-		monoSynth.oscillator1Type = OscillatorType.SAWTOOTH; // TRIANGLE; SQUARE
+		monoSynth.osc0.type = OscillatorType.SQUARE; // TRIANGLE; SQUARE
+		monoSynth.osc1.type = OscillatorType.SAWTOOTH; // TRIANGLE; SQUARE
 		monoSynth.phase = .123;
 		monoSynth.osc0_portamentoTime = .15; //1.0
 		monoSynth.osc1_portamentoTime = .15; //1.0

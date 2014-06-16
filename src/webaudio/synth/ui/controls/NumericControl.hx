@@ -88,7 +88,7 @@ class NumericControl extends Component implements ParameterObserver {
 	
 	function dragDelta(dX:Float, dY:Float) {
 		var val = value.getValue(true) + dY;
-		value.setValue(val > 1 ? 1 : (val < 0 ? 0 : val));
+		value.setValue(val > 1 ? 1 : (val < 0 ? 0 : val), true);
 	}
 	
 	

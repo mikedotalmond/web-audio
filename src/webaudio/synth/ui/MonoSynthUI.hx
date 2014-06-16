@@ -1,6 +1,7 @@
 package webaudio.synth.ui;
 
 import audio.parameter.mapping.MapFactory;
+import audio.parameter.Parameter;
 import flambe.animation.Ease;
 import flambe.Component;
 import flambe.display.NineSlice;
@@ -33,7 +34,14 @@ class MonoSynthUI extends Sprite {
 	var textureAtlas	:Map<String,SubTexture>;
 	var keyboardNotes	:KeyboardNotes;
 	var keyboardContainer:Sprite;
-	var keyboardMask:Sprite;
+	var keyboardMask	:Sprite;
+	
+	var outputLevelKnob	:Entity;
+	var ouputPanel		:Entity;
+	
+	public var outputLevelParameter(get, never):Parameter;
+	inline function get_outputLevelParameter():Parameter return outputLevelKnob.get(Rotary).value;
+	
 	
 	public function new(textureAtlas:Map<String,SubTexture>, keyboardNotes:KeyboardNotes) {
 		super();
@@ -97,19 +105,7 @@ class MonoSynthUI extends Sprite {
 		background.height = 680;
 		background.setTint(.15, .15, .15);
 		
-		// panel ui test...
-		var panel;
-		var knob = Rotary.create(MapFactory.getMapping(MapType.FLOAT, 0, 1), 0.5, -FMath.PI / 1.25, FMath.PI / 1.25);
-		
-		owner.addChild(
-			(panel = new Entity().add(new ImageSprite(textureAtlas.get('panel-bg_50%')))).addChild(knob)
-		);
-		
-		panel.get(Sprite).x._ = 64;
-		panel.get(Sprite).y._ = 64;
-		
-		knob.get(Sprite).x._ = 35;
-		knob.get(Sprite).y._ = 35;
+		setupOutputPanel();
 		
 		/*
 		var slicedX;
@@ -127,5 +123,22 @@ class MonoSynthUI extends Sprite {
 		slicedY.y = 96;
 		slicedY.height = 256;
 		//*/
+	}
+	
+	function setupOutputPanel() {
+		
+		// panel ui test...
+		outputLevelKnob = Rotary.create(MapFactory.getMapping(MapType.FLOAT, 0, 1), 1.0, -FMath.PI / 1.25, FMath.PI / 1.25);
+		outputLevelKnob.get(Rotary).value.name = 'outputLevelRotary';
+		
+		owner.addChild(
+			(ouputPanel = new Entity().add(new ImageSprite(textureAtlas.get('panel-bg_50%')))).addChild(outputLevelKnob)
+		);
+		
+		ouputPanel.get(Sprite).x._ = 64;
+		ouputPanel.get(Sprite).y._ = 64;
+		outputLevelKnob.get(Sprite).x._ = 35;
+		outputLevelKnob.get(Sprite).y._ = 35;
+		
 	}
 }

@@ -1,4 +1,4 @@
-package webaudio.synth;
+package webaudio.synth.generator;
 
  import js.Browser;
 

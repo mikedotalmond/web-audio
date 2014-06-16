@@ -1,4 +1,4 @@
-package webaudio.synth;
+package webaudio.synth.processor;
 /**
  * ...
  * @author Mike Almond - https://github.com/mikedotalmond
