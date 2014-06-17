@@ -230,8 +230,8 @@ import webaudio.utils.KeyboardNotes;
 		monoSynth.osc0.type = OscillatorType.SQUARE; // TRIANGLE; SQUARE
 		monoSynth.osc1.type = OscillatorType.SQUARE; // TRIANGLE; SQUARE
 		monoSynth.phase = .2;
-		monoSynth.osc0_portamentoTime = .15; //1.0
-		monoSynth.osc1_portamentoTime = .15; //1.0
+		monoSynth.osc0_portamentoTime = .1; //1.0
+		monoSynth.osc1_portamentoTime = .1; //1.0
 		
 		monoSynth.osc0_detuneCents = 0;
 		
@@ -248,9 +248,9 @@ import webaudio.utils.KeyboardNotes;
 		monoSynth.filterEnvRelease = .2;
 		monoSynth.filterQ = 1;
 		
-		monoSynth.delay.time.value = .45;
+		monoSynth.delay.time.value = .245;
 		monoSynth.delay.level.value = .4;
-		monoSynth.delay.feedback.value = .17;
+		monoSynth.delay.feedback.value = .25;
 	}
 	
 	
