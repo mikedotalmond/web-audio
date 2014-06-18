@@ -6,13 +6,36 @@ import js.html.audio.AudioParam;
 import js.html.audio.BiquadFilterNode;
 import js.html.audio.GainNode;
 
+class ADSR {
+	
+	public var attack	:Float = .1;
+	public var decay	:Float = 0.2;
+	public var sustain	:Float = .44;
+	public var release	:Float = .25;
+	
+	public var node(default, null):ADSRNode;
+	
+	public function new(context:AudioContext, ?input:AudioNode, ?destination:AudioNode) {
+		node = new ADSRNode(context, input, destination);
+	}
+	
+	public inline function on(when:Float = .0, level:Float = 1.0, retrigger:Bool = false) {
+		node.trigger(when, level, attack, decay, sustain, retrigger);
+	}
+	
+	public inline function off(when:Float = .0):Float {
+		return node.release(when, release);
+	}
+}
+
+
 
 /**
  * ADSR Envelope wrapper for GainNode
  * 
  * @author Mike Almond - https://github.com/mikedotalmond
  */
-abstract ADSR(GainNode) from GainNode to GainNode {
+abstract ADSRNode(GainNode) from GainNode to GainNode {
 	
 	public var node(get, never):GainNode;
 	inline function get_node():GainNode return cast this;

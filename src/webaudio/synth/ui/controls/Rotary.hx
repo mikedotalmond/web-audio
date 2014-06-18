@@ -26,10 +26,9 @@ import flambe.Component;
 
 class Rotary extends NumericControl {
 	
-	public var radius			:Float;
-	public var minAngle			:Float;
-	public var maxAngle			:Float;
-	public var labelFormatter	:Float->String;
+	public var radius	:Float;
+	public var minAngle	:Float;
+	public var maxAngle	:Float;
 	
 	var centreX			:Float;
 	var centreY			:Float;
@@ -47,7 +46,6 @@ class Rotary extends NumericControl {
 		this.minAngle = minAngle;
 		this.maxAngle = maxAngle;
 		this.radius = radius;
-		labelFormatter = defaultLabelFormatter;
 	}
 	
 	override public function onAdded() {
@@ -59,7 +57,7 @@ class Rotary extends NumericControl {
 		centreX = display.anchorX._;
 		centreY = display.anchorY._;
 		
-		// knob nipple-dot setup..
+		// knob nipple setup..
 		owner.firstChild.get(Sprite)
 			.centerAnchor()
 			.disablePixelSnapping()
@@ -78,13 +76,13 @@ class Rotary extends NumericControl {
 	}
 	
 	
-	// triggered onParameterChange
+	// triggered whenever the value Parameter changes
 	override function updateDisplay() {
 		
 		setKnobPosition(value.getValue(true));
 		
 		if (label != null) {
-			label.text = labelFormatter(value.getValue());
+			label.text = '${NumericControl.roundValueForDisplay(value.getValue(), 3)}';
 			label.centerAnchor();
 			label.x._ = centreX;
 		}
@@ -109,9 +107,7 @@ class Rotary extends NumericControl {
 	}
 	
 	
-	function defaultLabelFormatter(value:Float):String {
-		return NumericControl.roundValueForDisplay(value, 3);
-	}
+	
 	
 	/**
 	 *

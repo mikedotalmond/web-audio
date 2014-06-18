@@ -6,6 +6,8 @@ import js.html.audio.AudioNode;
 import js.html.audio.WaveShaperNode;
 import js.html.Float32Array;
 
+import webaudio.synth.processor.Waveshaper.WaveShaper;
+
 /**
  * ...
  * @author Mike Almond - https://github.com/mikedotalmond
@@ -15,11 +17,11 @@ abstract WaveShaper(WaveShaperNode) from WaveShaperNode to WaveShaperNode {
 	
 	inline public function new(context:AudioContext, oversample:String='none', ?input:AudioNode=null, ?destination:AudioNode=null) {
 		
-		this 		= context.createWaveShaper();
-		this.curve 	= new Float32Array(Std.int(context.sampleRate));
+		this 			= context.createWaveShaper();
+		this.curve 		= new Float32Array(Std.int(context.sampleRate));
 		
 		this.oversample = oversample; // 'none','2x', '4x'
-		setDistortion(.5);
+		amount 			= 0;
 		
 		if (input != null) input.connect(this);
 		if (destination != null) this.connect(destination);
@@ -28,17 +30,18 @@ abstract WaveShaper(WaveShaperNode) from WaveShaperNode to WaveShaperNode {
 	public var node(get, never):WaveShaperNode;
 	inline function get_node():WaveShaperNode return this;
 	
+	
 	/*
 	 * Set the waveshaper distortion amount [-1.0 ... 1.0] 
-	 * 
 	 * */
-	public function setDistortion(amount=.0) {
-		WaveShaper.getDistortionCurve(amount, this.curve); 
+	public var amount(never, set):Float;
+	inline function set_amount(value:Float = .0) {
+		WaveShaper.getDistortionCurve(value, this.curve);
+		return value;
 	}
 	
 	
 	/**
-	 * 
 	 * Distortion amount [-1.0 ... 1.0] 
 	 */	
 	public static function getDistortionCurve(amount:Float = .0, target:Float32Array=null):Float32Array {

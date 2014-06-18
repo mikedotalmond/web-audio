@@ -11,6 +11,7 @@ import js.html.audio.ChannelMergerNode;
 import js.html.audio.DelayNode;
 import js.html.audio.GainNode;
 import js.html.audio.OscillatorNode;
+
 import webaudio.synth.generator.ADSR;
 import webaudio.synth.generator.Oscillator.OscillatorType;
 import webaudio.synth.generator.OscillatorGroup;
@@ -18,76 +19,85 @@ import webaudio.synth.processor.DistortionGroup;
 import webaudio.synth.processor.FeedbackDelay;
 import webaudio.synth.processor.LRPanner;
 import webaudio.synth.processor.Waveshaper;
-import webaudio.synth.processor.Waveshaper;
 import webaudio.utils.NoteFrequencyUtil;
 
 import webaudio.synth.processor.Biquad;
 
 /**
- * A fairly basic monosynth
+ * A fairly simple monosynth
  *
+ * 
  * Audio routing:
- * OSC-0 + OSC-1[Phase Delay] -> ADSR -> BiQuad -> WaveShaper -> Delay[level+feedback] -> Output Gain
-	
- *
- *
- * @author Mike Almond - https://github.com/mikedotalmond *
+ * 
+ * OSC-0 + OSC-1[Phase Delay]-->
+ *  
+ * ADSR-->
+ * 
+ * Filter [BiQuad]-->
+ * 
+ * Distortion[WaveShaper + Crusher]-->
+ * 
+ * Delay[level+feedback]-->
+ * 
+ * Output Gain
+ * 
  */
 
 class MonoSynth implements ParameterObserver { //
 	
-	// generator
-	public var osc0				(default, null):OscillatorGroup;
-	public var osc1				(default, null):OscillatorGroup;
-	public var adsr				(default, null):ADSR;
-	
-	// fx
-	public var biquad			(default, null):Biquad;
-	public var distortionGroup	(default, null):DistortionGroup;
-	public var delay			(default, null):FeedbackDelay;
-
-	// output
-	public var outputGain		(default, null):GainNode;
-	
-	
-	public var adsr_attackTime		:Float = .1;
-	public var adsr_decayTime		:Float = 0.2;
-	public var adsr_releaseTime		:Float = .25;
-	public var adsr_sustain			:Float = .44;
-	
-	public var osc0_randomCents		:Float = 0;
-	public var osc1_randomCents		:Float = 0;
-	public var osc0_portamentoTime	:Float = 0;
-	public var osc0_detuneCents		:Int = 0;
-	public var osc1_portamentoTime	:Float = 0;
-	public var osc1_detuneCents		:Int = 0;
-	
-	public var phase(get, set):Float;
-	
 	public var noteIsOn(default, null):Bool = false;
 	
+	// generators
+	public var osc0(default, null):OscillatorGroup;
+	public var osc1(default, null):OscillatorGroup;	
+	public var osc0Level(default, null):GainNode;
+	public var osc1Level(default, null):GainNode;
+	public var osc0Pan	(default, null):LRPanner;
+	public var osc1Pan	(default, null):LRPanner;
 	
-	var freqUtil:NoteFrequencyUtil;
+	public var osc0_randomCents		:Float 	= 0;
+	public var osc0_portamentoTime	:Float 	= 0;
+	public var osc0_detuneCents		:Int 	= 0;
+	//
+	public var osc1_randomCents		:Float 	= 0;
+	public var osc1_portamentoTime	:Float 	= 0;
+	public var osc1_detuneCents		:Int	= 0;	
+	
+	// OSC A/B phase offset
+	public var phase(get, set):Float;
+	
+	// Envelope generator
+	public var adsr(default, null):ADSR;
+	
+	// fx
+	public var biquad(default, null):Biquad;
+	public var distortionGroup(default, null):DistortionGroup;
+	public var delay(default, null):FeedbackDelay;
+	
+	// output
+	public var outputGain(default, null):GainNode;
+	
+	//TODO: bend-o pitchio
+	var pitchBendRange	:Float = 2;
+	var pitchBend		:Float = 0; // [-1.0, 1.0]
+	
+	// TODOS: theses LFOses.... apparently we can connect output of LFO (or any node...) as input to an AudioParam
+	//var OscPhase_LFO	:OscillatorGroup;
+	//var FilterFreq_LFO	:OscillatorGroup;
+	//var FM_LFO			:OscillatorGroup;
+	//var AM_LFO			:OscillatorGroup;
+	
+	
+	var context		:AudioContext;
+	var freqUtil	:NoteFrequencyUtil;
+	var noteFreq	:Float = 440;
 	
 	// osc 0/1 phase offset (using delaynode)
-	var phaseDelay:DelayNode;
-	var _phase:Float = 0;
-	
-	var noteFreq:Float = 440;
-	var context:AudioContext;
+	var phaseDelay	:DelayNode;
+	var _phase		:Float = 0;
 	
 	/** filter */
-	public var filterType:Int = 0;
-	public var filterFrequency:Float=.001;
-	public var filterQ:Float=10;
-	public var filterGain:Float = 1;
-	
-	public var filterEnvEnabled:Bool = true;
-	public var filterEnvRange:Float=1;
-	public var filterEnvAttack:Float=.1;
-	public var filterEnvRelease:Float=1;
-	
-	
+	public var filter:BiquadFilter;
 	
 	/**
 	 * 
@@ -106,16 +116,12 @@ class MonoSynth implements ParameterObserver { //
 		outputGain.gain.value = 1;
 		
 		delay = new FeedbackDelay(context);
-		delay.output.connect(outputGain);			
-		
-		//var test = new LRPanner(context, delay.output, outputGain);
-		//test.setPan(0.0);
-		
+		delay.output.connect(outputGain);	
 		
 		setupDistortion();
 		
-		biquad 	= new Biquad(FilterType.LOWPASS, filterFrequency, filterQ, context, null, distortionGroup.input);
-		adsr 	= new ADSR(context, null, biquad);
+		filter	= new BiquadFilter(FilterType.LOWPASS, 1, 1, context, null, distortionGroup.input);
+		adsr 	= new ADSR(context, null, filter.biquad);
 		
 		setupOscillators();
 		
@@ -138,12 +144,26 @@ class MonoSynth implements ParameterObserver { //
 	
 	function setupOscillators():Void {
 		
-		// osc0 output is routed directly though this delay - used to offset the waveform by small amounts (zero to one wavelength)
-		phaseDelay = context.createDelay(1 / freqUtil.noteIndexToFrequency(0));
-		phaseDelay.connect(adsr, 0);
+		// osc -> gain -> pan
 		
-		osc0 = new OscillatorGroup(context, phaseDelay);
-		osc1 = new OscillatorGroup(context, adsr);
+		// osc0 output is routed though this delay - used to offset the waveform by small amounts (ie - from zero to one wavelengths)
+		phaseDelay = context.createDelay(1 / freqUtil.noteIndexToFrequency(0)); // set max phase delay (for lowest note playable)
+		phaseDelay.connect(adsr.node, 0);
+		
+		// Pan
+		osc0Pan = new LRPanner(context);
+		osc1Pan = new LRPanner(context);
+		osc0Pan.node.connect(phaseDelay);
+		osc1Pan.node.connect(adsr.node);
+		
+		// Gain
+		osc0Level = context.createGain();		
+		osc1Level = context.createGain();
+		osc0Level.connect(osc0Pan);
+		osc1Level.connect(osc1Pan);		
+		
+		osc0 = new OscillatorGroup(context, osc0Level);
+		osc1 = new OscillatorGroup(context, osc1Level);
 	}
 	
 	
@@ -185,12 +205,8 @@ class MonoSynth implements ParameterObserver { //
 		osc1.oscillator.trigger(when, osc1Freq, osc1_portamentoTime, retrigger);
 		
 		if (!noteIsOn || retrigger) {
-			adsr.trigger(when, velocity, adsr_attackTime, adsr_decayTime, adsr_sustain, retrigger);
-			if (filterEnvEnabled) { 
-				var start = filterFrequency * 6000;
-				var dest  = start + filterEnvRange * 8000;
-				biquad.trigger(when, start, filterEnvAttack, dest, retrigger);
-			}
+			adsr.on(when, velocity, retrigger);
+			if (filter.envEnabled) filter.on(when, retrigger);
 		}
 		
 		noteIsOn = true;
@@ -204,13 +220,14 @@ class MonoSynth implements ParameterObserver { //
 	 */
 	public function noteOff(when) {
 		if (noteIsOn) {
-			var r = adsr.release(when, adsr_releaseTime);
+			
+			var r = adsr.off(when);
+			
+			if (filter.envEnabled) filter.off(when);
 			
 			osc0.oscillator.release(r);
 			osc1.oscillator.release(r);
 			phaseDelay.delayTime.cancelScheduledValues(r);
-			
-			if (filterEnvEnabled) biquad.release(when, filterFrequency * 6000, filterEnvRelease);
 			
 			noteIsOn = false;
 		}
@@ -223,54 +240,58 @@ class MonoSynth implements ParameterObserver { //
 	 **/
 	public function onParameterChange(parameter:Parameter) {
 		
-		trace('[MonoSynth] onParameterChange - ${parameter.name} - value:${parameter.getValue()}, normalised:${parameter.getValue(true)}');
+		trace('[MonoSynth] ${parameter.name} - value:${parameter.getValue()}, normalised:${parameter.getValue(true)}');
 		
 		var now = context.currentTime;
 		var val = parameter.getValue();
 		
 		switch(parameter.name) {
+			
 			// OUTPUT
-			case 'outputLevelRotary': outputGain.gain.setValueAtTime(parameter.getValue(), now);
+			case 'outputLevelRotary': outputGain.gain.setValueAtTime(val, now);
 			
 			// OSCILLATORS
-			case 'osc0_type'		:
-			case 'osc0_level'		:
-			case 'osc0_pan'			:
-			case 'osc0_slide'		:
-			case 'osc0_detune'		:
-			case 'osc0_random'		:
+			case 'osc0_type'		: osc0.type = Std.int(val);
+			case 'osc0_level'		: osc0Level.gain.setValueAtTime(val, now);
+			case 'osc0_pan'			: osc0Pan.pan = val;
+			case 'osc0_slide'		: osc0_portamentoTime = val;
+			case 'osc0_detune'		: osc0_detuneCents = Std.int(val);
+			case 'osc0_random'		: osc0_randomCents = val;
 			
-			case 'osc1_type'		:
-			case 'osc1_level'		:
-			case 'osc1_pan'			:
-			case 'osc1_slide'		:
-			case 'osc1_detune'		:
-			case 'osc1_random'		:
+			case 'osc1_type'		: osc1.type = Std.int(val);
+			case 'osc1_level'		: osc1Level.gain.setValueAtTime(val, now);
+			case 'osc1_pan'			: osc1Pan.pan = val;
+			case 'osc1_slide'		: osc1_portamentoTime = val;
+			case 'osc1_detune'		: osc1_detuneCents = Std.int(val);
+			case 'osc1_random'		: osc1_randomCents = val;
 			
 			case 'osc_phase'		: phase = val;
 			
 			//ADSR
-			case 'adsr_attack'		:
-			case 'adsr_decay'		:
-			case 'adsr_sustain'		:
-			case 'adsr_release'		:			
+			case 'adsr_attack'		: adsr.attack 	= val;
+			case 'adsr_decay'		: adsr.decay 	= val;
+			case 'adsr_sustain'		: adsr.sustain 	= val;
+			case 'adsr_release'		: adsr.release 	= val;
+			
 			// AM  LFO
 			case 'am_lfo_type'		:
 			case 'am_lfo_freq'		:
 			case 'am_lfo_depth'		:
 			
 			//Filter
-			case 'filter_type'		:
-			case 'filter_freq'		:
-			case 'filter_q'			:
-			case 'filter_attack'	:
-			case 'filter_release'	:
+			case 'filter_enabled'	: filter.envEnabled	= Std.int(val) == 1;
+			case 'filter_type'		: filter.type 		= Std.int(val);
+			case 'filter_freq'		: filter.frequency 	= val;
+			case 'filter_q'			: filter.q 			= val;
+			case 'filter_attack'	: filter.envAttack 	= val;
+			case 'filter_release'	: filter.envRelease = val;
+			case 'filter_env_range'	: filter.envRange 	= val;
 			
 			//Distortion
 			case 'dist_pregain' 		: distortionGroup.pregain.gain.setValueAtTime(val, now);
-			case 'dist_waveshape_amount': distortionGroup.waveshaper.setDistortion(val);
+			case 'dist_waveshape_amount': distortionGroup.waveshaper.amount = val;
 			case 'dist_bitcrush_bits'	: distortionGroup.crusher.bits = val;
-			case 'dist_bitcrush_rate'	: /*distortionGroup.crusher.rate = val;*/
+			case 'dist_bitcrush_rate'	: distortionGroup.crusher.rateReduction = val;
 			
 			//Delay
 			case 'delay_time'			: delay.time.setValueAtTime(val, now);
@@ -294,8 +315,7 @@ class MonoSynth implements ParameterObserver { //
 	
 	inline function get_phase():Float return _phase;
 	function set_phase(value:Float):Float {
-		phaseDelay.delayTime.value = (1 / noteFreq) * value;
+		phaseDelay.delayTime.setValueAtTime((1 / noteFreq) * value, 0);
 		return _phase = value;
 	}
-	
 }

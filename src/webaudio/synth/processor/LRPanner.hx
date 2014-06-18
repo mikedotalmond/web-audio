@@ -15,8 +15,10 @@ abstract LRPanner(PannerNode) from PannerNode to PannerNode {
 	
 	inline public function new(context:AudioContext, input:AudioNode=null, destination:AudioNode=null) {
 		
-		this 					= context.createPanner();
-		this.panningModel 		= 'equalpower';
+		this = context.createPanner();
+		this.panningModel = 'equalpower';
+		
+		pan = 0;
 		
 		if (input != null) input.connect(this);
 		if (destination != null) this.connect(destination);
@@ -27,16 +29,16 @@ abstract LRPanner(PannerNode) from PannerNode to PannerNode {
 	 * 
 	 * @param	value [-1.0, 1.0]
 	 */
-	public function setPan(value:Float) {
+	public var pan(never, set):Float;
+	inline function set_pan(value:Float):Float {	
 		
-		var x = value * FMath.PI;// * 2;
-		var z = x  + FMath.PI / 2;
+		var x = value * FMath.PI /2;
+		var z = x + FMath.PI / 2;
 		
 		if (z > FMath.PI / 2) z = FMath.PI - z;
 		
-		trace(x,Math.sin(x));
-		trace(z,Math.sin(z));
-		
 		this.setPosition(Math.sin(x), 0, Math.sin(z));
+		
+		return value;
 	}
 }

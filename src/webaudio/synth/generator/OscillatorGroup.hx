@@ -33,10 +33,6 @@ class OscillatorGroup {
 	}
 	
 	
-	inline function get_oscillator():Oscillator return osc.get(_type); 
-	inline function get_oscillatorNode():OscillatorNode return osc.get(_type).node; 
-	
-	
 	inline function get_type() return _type;
 	function set_type(value:Int) {
 		osc.get(_type).node.disconnect(0);
@@ -53,4 +49,8 @@ class OscillatorGroup {
 		}
 		return _output = value;
 	}
+	
+	
+	inline function get_oscillator():Oscillator return osc.get(_type); 
+	inline function get_oscillatorNode():OscillatorNode return osc.get(_type).node; 
 }

@@ -230,27 +230,41 @@ import webaudio.utils.KeyboardNotes;
 		monoSynth.osc0.type = OscillatorType.SQUARE; // TRIANGLE; SQUARE
 		monoSynth.osc1.type = OscillatorType.SQUARE; // TRIANGLE; SQUARE
 		monoSynth.phase = .2;
-		monoSynth.osc0_portamentoTime = .1; //1.0
-		monoSynth.osc1_portamentoTime = .1; //1.0
+		
+		monoSynth.osc0_portamentoTime = .15; //1.0
+		monoSynth.osc1_portamentoTime = .15; //1.0
 		
 		monoSynth.osc0_detuneCents = 0;
+		monoSynth.osc1_detuneCents = -1200;
 		
-		monoSynth.osc0_randomCents = 40;
-		monoSynth.osc1_randomCents = 40;
+		monoSynth.osc0_randomCents = 30;
+		monoSynth.osc1_randomCents = 30;
 		
-		monoSynth.adsr_attackTime = .025;
-		monoSynth.adsr_decayTime = .1;
-		monoSynth.adsr_sustain = 0.8;
-		monoSynth.adsr_releaseTime = .08;
+		monoSynth.osc0Pan.pan = -.01;
+		monoSynth.osc1Pan.pan = .01;
 		
-		monoSynth.filterFrequency = .54;
-		monoSynth.filterEnvAttack = .15;
-		monoSynth.filterEnvRelease = .2;
-		monoSynth.filterQ = 1;
+		// Env		
+		monoSynth.adsr.attack = .025;
+		monoSynth.adsr.decay = .1;
+		monoSynth.adsr.sustain = 0.8;
+		monoSynth.adsr.release = .08;
 		
-		monoSynth.delay.time.value = .245;
+		// Filter
+		monoSynth.filter.q = 1;
+		monoSynth.filter.frequency = .54;
+		monoSynth.filter.envAttack = .15;
+		monoSynth.filter.envRelease = .2;
+		
+		// Distortion
+		monoSynth.distortionGroup.pregain.gain.value 	= 2;
+		monoSynth.distortionGroup.waveshaper.amount 	= .5;
+		monoSynth.distortionGroup.crusher.bits 			= 8;
+		monoSynth.distortionGroup.crusher.rateReduction = 2;
+		
+		// Delay
+		monoSynth.delay.time.value = .45;
 		monoSynth.delay.level.value = .4;
-		monoSynth.delay.feedback.value = .25;
+		monoSynth.delay.feedback.value = .17;
 	}
 	
 	
