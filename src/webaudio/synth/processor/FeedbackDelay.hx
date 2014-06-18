@@ -69,7 +69,7 @@ class FeedbackDelay {
 		
 		var lpf 			= context.createBiquadFilter();
 		lpf.type 			= FilterTypeShim.LOWPASS;
-		lpf.frequency.value	= 2000;
+		lpf.frequency.value	= 4000;
 		lpf.Q.value			= 1; //default is 1 - valid range is 0.0001 to 1000
 		
 		_gain.connect(_delay);

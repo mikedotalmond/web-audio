@@ -20,6 +20,7 @@ import flambe.util.Promise;
 import haxe.ds.Vector;
 import haxe.Timer;
 import webaudio.synth.generator.Oscillator.OscillatorType;
+import webaudio.synth.ui.controls.Rotary;
 
 import js.Browser;
 
@@ -100,9 +101,14 @@ import webaudio.utils.KeyboardNotes;
 		
 		initAudio();
 		
-		monoSynthUI.outputLevelParameter.addObserver(monoSynth);
-		monoSynthUI.pitchBendParameter.addObserver(monoSynth);
+		monoSynthUI.outputLevelRotary.value.addObserver(monoSynth);
+		monoSynthUI.pitchBendRotary.value.addObserver(monoSynth);
+		monoSynthUI.pitchBendRotary.returnToDefault = true;
 		
+		monoSynthUI.pitchBendRotary.labelFormatter = function(val) {
+			return monoSynthUI.pitchBendRotary.defaultLabelFormatter((val * monoSynth.pitchBendRange) / 100);
+		};
+	
 		/*
 		recorder = new AudioNodeRecorder(monoSynth.output);
 		recorder.wavEncoded.connect(onWavEncoded);
@@ -265,7 +271,7 @@ import webaudio.utils.KeyboardNotes;
 		// Delay
 		monoSynth.delay.time.value = .45;
 		monoSynth.delay.level.value = .4;
-		monoSynth.delay.feedback.value = .17;
+		monoSynth.delay.feedback.value = .5;
 	}
 	
 	

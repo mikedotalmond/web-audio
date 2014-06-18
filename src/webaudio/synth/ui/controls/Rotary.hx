@@ -109,7 +109,7 @@ class Rotary extends NumericControl {
 	}
 	
 	
-	function defaultLabelFormatter(value:Float):String {
+	public function defaultLabelFormatter(value:Float):String {
 		return NumericControl.roundValueForDisplay(value, 3);
 	}
 	

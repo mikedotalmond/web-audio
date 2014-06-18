@@ -15,10 +15,12 @@ class Parameter {
 	
 	var observers:Map<ParameterObserver, SignalConnection>;
 	
-	var normalisedValue:Float;
-	
 	public var name:String;
-	public var defaultValue:Float;
+	
+	public var normalisedValue(default, null):Float;
+	
+	public var defaultValue(default, null):Float;
+	public var normalisedDefaultValue(default, null):Float;
 	
 	public var mapping(default, null):Mapping;
 	public var change(default, null):Signal1<Parameter>;
@@ -35,6 +37,7 @@ class Parameter {
 		
 		normalisedValue = 0;
 		setValue(defaultValue);
+		normalisedDefaultValue = normalisedValue;
 	}
 	
 	public function setValue(value:Float, normalised:Bool = false, forced:Bool = false):Void {

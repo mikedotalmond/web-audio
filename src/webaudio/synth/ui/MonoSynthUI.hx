@@ -41,11 +41,11 @@ class MonoSynthUI extends Sprite {
 	
 	var pitchBendKnob	:Entity;
 	
-	public var outputLevelParameter(get, never):Parameter;	
-	inline function get_outputLevelParameter():Parameter return outputLevelKnob.get(Rotary).value;
+	public var outputLevelRotary(get, never):Rotary;	
+	inline function get_outputLevelRotary():Rotary return outputLevelKnob.get(Rotary);
 	
-	public var pitchBendParameter(get, never):Parameter;
-	inline function get_pitchBendParameter():Parameter return pitchBendKnob.get(Rotary).value;
+	public var pitchBendRotary(get, never):Rotary;
+	inline function get_pitchBendRotary():Rotary return pitchBendKnob.get(Rotary);
 	
 	
 	public function new(textureAtlas:Map<String,SubTexture>, keyboardNotes:KeyboardNotes) {
@@ -136,9 +136,8 @@ class MonoSynthUI extends Sprite {
 		outputLevelKnob = Rotary.create(MapFactory.getMapping(MapType.FLOAT, 0, 1), 1.0, -FMath.PI / 1.25, FMath.PI / 1.25);
 		outputLevelKnob.get(Rotary).value.name = 'outputLevel';
 		
-		pitchBendKnob = Rotary.create(MapFactory.getMapping(MapType.FLOAT_EXPONENTIAL, -1, 1), 0.0, -FMath.PI / 1.25, FMath.PI / 1.25);
+		pitchBendKnob = Rotary.create(MapFactory.getMapping(MapType.FLOAT, -1, 1), 0.0, -FMath.PI / 1.25, FMath.PI / 1.25);
 		pitchBendKnob.get(Rotary).value.name = 'pitchBend';
-		
 		
 		owner.addChild(
 			(ouputPanel = new Entity().add(new ImageSprite(textureAtlas.get('panel-bg_50%'))))

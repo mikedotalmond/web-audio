@@ -30,6 +30,12 @@ class NumericControl extends Component implements ParameterObserver {
 	var pY				:Float = .0;
 	var moveConnection	:SignalConnection = null;
 	
+	var returningToDefault	:Bool = false;
+	
+	// return to default once user releases control?
+	public var returnToDefault		:Bool = false;
+	public var returnToDefaultSpeed	:Float = 10;
+	public var returnToDefaultMin	:Float = 1e-4; // min abs normalised value
 	
 	/**
 	 *
@@ -47,13 +53,26 @@ class NumericControl extends Component implements ParameterObserver {
 		value.addObserver(this, true);
 	}
 	
+	override public function onUpdate(dt:Float) {
+		if (returningToDefault) {
+			
+			var now 	= value.getValue(true);
+			var delta	= value.normalisedDefaultValue - now;
+			
+			delta = (delta < 0 ? -delta : delta) < returnToDefaultMin ? 0 : delta;
+			
+			if (delta != 0) value.setValue(now + delta * dt * returnToDefaultSpeed, true);
+			else returningToDefault = false;
+		}
+	}
+	
 	override public function onRemoved() {
 		value.removeObserver(this);
 	}
 	
 	
 	function pointerDown(e:PointerEvent) {
-		pointerHasMoved = false;
+		pointerHasMoved = returningToDefault = false;
 		pX = e.viewX; pY = e.viewY;
 		
 		if (moveConnection != null) moveConnection.dispose();
@@ -105,6 +124,8 @@ class NumericControl extends Component implements ParameterObserver {
 			var dt = t - lastTime;
 			if (dt < .5) value.setValue(value.defaultValue);
 			lastTime = t;
+		} else if(returnToDefault) {
+			returningToDefault = true;
 		}
 	}
 	
