@@ -73,12 +73,6 @@ class ModuleUI {
 	static function createControl(control:Element):RangeControl {
 		
 		if (control.className.indexOf('slider') != -1) {
-			// currently modules only contain input range-sliders
-			/*<div class="slider volume">
-				<span class="label">Out</span>
-				<input title="Output gain" type="range" id="outGain" min="-1" max="1" step=".01" value="0" />
-			</div>*/
-			
 			var input:InputElement = cast control.getElementsByTagName('input').item(0);
 			
 			//var label = control.getElementsByTagName('span')[0].nodeValue;

@@ -101,6 +101,7 @@ import webaudio.utils.KeyboardNotes;
 		initAudio();
 		
 		monoSynthUI.outputLevelParameter.addObserver(monoSynth);
+		monoSynthUI.pitchBendParameter.addObserver(monoSynth);
 		
 		/*
 		recorder = new AudioNodeRecorder(monoSynth.output);

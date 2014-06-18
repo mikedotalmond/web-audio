@@ -1,15 +1,19 @@
 package webaudio.synth.processor;
+
 import js.html.audio.AudioContext;
 import js.html.audio.AudioNode;
 import js.html.audio.AudioParam;
 import js.html.audio.DelayNode;
 import js.html.audio.GainNode;
 
+import webaudio.synth.processor.Biquad.FilterTypeShim;
+
 /**
  * 
  * @author Mike Almond - https://github.com/mikedotalmond
  * 
- * TODO: Other delay types? ping-pong / panning delay / dub-delay (this + lp filter in the chain)
+ * TODO: Other delay types? ping-pong / panning delay / dub-ish-delay (this + an lp filter in the feedback chain)
+ * 
  */
 
 class FeedbackDelay {
@@ -63,8 +67,18 @@ class FeedbackDelay {
 		_gain.gain.value 		= .5;
 		_feedback.gain.value 	= .5;
 		
+		var lpf 			= context.createBiquadFilter();
+		lpf.type 			= FilterTypeShim.LOWPASS;
+		lpf.frequency.value	= 2000;
+		lpf.Q.value			= 1; //default is 1 - valid range is 0.0001 to 1000
+		
 		_gain.connect(_delay);
-		_delay.connect(_feedback);
+		
+		// TESTING LPF
+		_delay.connect(lpf);
+		lpf.connect(_feedback);
+		
+		//_delay.connect(_feedback);
 		_feedback.connect(_delay);
 	}
 	

@@ -24,7 +24,7 @@ import webaudio.utils.NoteFrequencyUtil;
 import webaudio.synth.processor.Biquad;
 
 /**
- * A fairly simple monosynth
+ * A (fairly) simple monosynth
  *
  * 
  * Audio routing:
@@ -47,9 +47,9 @@ class MonoSynth implements ParameterObserver { //
 	
 	public var noteIsOn(default, null):Bool = false;
 	
-	// generators
-	public var osc0(default, null):OscillatorGroup;
-	public var osc1(default, null):OscillatorGroup;	
+	// oscillators
+	public var osc0		(default, null):OscillatorGroup;
+	public var osc1		(default, null):OscillatorGroup;	
 	public var osc0Level(default, null):GainNode;
 	public var osc1Level(default, null):GainNode;
 	public var osc0Pan	(default, null):LRPanner;
@@ -66,20 +66,27 @@ class MonoSynth implements ParameterObserver { //
 	// OSC A/B phase offset
 	public var phase(get, set):Float;
 	
-	// Envelope generator
+	// 
+	public var pitchBend(get,set)	:Float; // [-1.0, 1.0]
+	public var pitchBendRange		:Float = 200; // cents
+	
+	
+	// Amplitude Envelope Generator
 	public var adsr(default, null):ADSR;
 	
 	// fx
-	public var biquad(default, null):Biquad;
+	public var filter(default, null):BiquadFilter;
 	public var distortionGroup(default, null):DistortionGroup;
 	public var delay(default, null):FeedbackDelay;
 	
 	// output
 	public var outputGain(default, null):GainNode;
 	
-	//TODO: bend-o pitchio
-	var pitchBendRange	:Float = 2;
-	var pitchBend		:Float = 0; // [-1.0, 1.0]
+	
+	// osc 0/1 phase offset
+	var phaseDelay	:DelayNode;
+	var _phase		:Float = 0;	
+	var _pitchBend	:Float = 0; // [-1.0, 1.0]
 	
 	// TODOS: theses LFOses.... apparently we can connect output of LFO (or any node...) as input to an AudioParam
 	//var OscPhase_LFO	:OscillatorGroup;
@@ -90,14 +97,13 @@ class MonoSynth implements ParameterObserver { //
 	
 	var context		:AudioContext;
 	var freqUtil	:NoteFrequencyUtil;
-	var noteFreq	:Float = 440;
 	
-	// osc 0/1 phase offset (using delaynode)
-	var phaseDelay	:DelayNode;
-	var _phase		:Float = 0;
 	
-	/** filter */
-	public var filter:BiquadFilter;
+	var noteFreq	:Float = 440; // current/last note frequency
+	var osc0Freq	:Float = 440; // actual osc freq (notefreq+detune+pitchbend+random...etc)
+	var osc1Freq	:Float = 440;
+	
+	
 	
 	/**
 	 * 
@@ -107,9 +113,9 @@ class MonoSynth implements ParameterObserver { //
 	public function new(destination:AudioNode, freqUtil:NoteFrequencyUtil) {
 		this.freqUtil = freqUtil;
 		
-		context 	= destination.context;
+		context = destination.context;
 		
-		// set  up audio process chain in reverse
+		// set up audio process chain in reverse
 		
 		outputGain 	= context.createGain();
 		outputGain.connect(destination);
@@ -166,8 +172,6 @@ class MonoSynth implements ParameterObserver { //
 		osc1 = new OscillatorGroup(context, osc1Level);
 	}
 	
-	
-	
 	/**
 	 * 
 	 * @param	when
@@ -177,21 +181,30 @@ class MonoSynth implements ParameterObserver { //
 	 */
 	public function noteOn(when:Float, freq:Float, velocity:Float = 1, retrigger:Bool = false) {
 		
-		noteFreq = freq;
+		// (re)set current freq
+		noteFreq = osc0Freq = osc1Freq = freq;
 		
-		var osc0Freq = freq;
-		var osc1Freq = freq;
+		// various processes can detune the oscillators and need to be checked here...
+		var detune0:Float = osc0_detuneCents;
+		var detune1:Float = osc1_detuneCents;
+
+		// random detune
+		if (osc0_randomCents > 0) detune0 += (osc0_randomCents * (Math.random() - .5));
+		if (osc1_randomCents > 0) detune1 += (osc1_randomCents * (Math.random() - .5));
 		
-		if (osc0_detuneCents != 0) osc0Freq = freqUtil.detuneFreq(osc0Freq, osc0_detuneCents);
-		if (osc1_detuneCents != 0) osc1Freq = freqUtil.detuneFreq(osc1Freq, osc1_detuneCents);
+		if (_pitchBend != 0) {
+			var pbCents = _pitchBend * pitchBendRange;
+			detune0 += pbCents;
+			detune1 += pbCents;
+		}
 		
-		if (osc0_randomCents > 0) osc0Freq = freqUtil.detuneFreq(osc0Freq, osc0_randomCents * (Math.random() - .5));
-		if (osc1_randomCents > 0) osc1Freq = freqUtil.detuneFreq(osc1Freq, osc1_randomCents * (Math.random() - .5));
+		// calculate new oscillator frequencies after detuning
+		if (detune0 != 0) osc0Freq = freqUtil.detuneFreq(osc0Freq, detune0);
+		if (detune1 != 0) osc1Freq = freqUtil.detuneFreq(osc1Freq, detune1);
 		
-		
+		// update phase offset time - depends on the played freq (and will only work (well) when osc0Freq == osc1Freq)
 		var p = (1 / osc0Freq) * _phase;
-		phaseDelay.delayTime.cancelScheduledValues(when);
-		
+		phaseDelay.delayTime.cancelScheduledValues(when);		
 		if (osc0_portamentoTime > 0) {
 			// make phase-change match portamento
 			phaseDelay.delayTime.setValueAtTime(phaseDelay.delayTime.value, when);
@@ -201,9 +214,12 @@ class MonoSynth implements ParameterObserver { //
 		}
 		
 		
+		// trigger oscillators
 		osc0.oscillator.trigger(when, osc0Freq, osc0_portamentoTime, retrigger);
 		osc1.oscillator.trigger(when, osc1Freq, osc1_portamentoTime, retrigger);
 		
+		
+		// (re)trigger the AEG (ADSR) and FEG (ASR)
 		if (!noteIsOn || retrigger) {
 			adsr.on(when, velocity, retrigger);
 			if (filter.envEnabled) filter.on(when, retrigger);
@@ -248,7 +264,7 @@ class MonoSynth implements ParameterObserver { //
 		switch(parameter.name) {
 			
 			// OUTPUT
-			case 'outputLevelRotary': outputGain.gain.setValueAtTime(val, now);
+			case 'outputLevel'		: outputGain.gain.setValueAtTime(val, now);
 			
 			// OSCILLATORS
 			case 'osc0_type'		: osc0.type = Std.int(val);
@@ -265,7 +281,8 @@ class MonoSynth implements ParameterObserver { //
 			case 'osc1_detune'		: osc1_detuneCents = Std.int(val);
 			case 'osc1_random'		: osc1_randomCents = val;
 			
-			case 'osc_phase'		: phase = val;
+			case 'osc_phase'		: phase 	= val;
+			case 'pitchBend'		: pitchBend = val;
 			
 			//ADSR
 			case 'adsr_attack'		: adsr.attack 	= val;
@@ -306,16 +323,45 @@ class MonoSynth implements ParameterObserver { //
 		adsr = null;
 		osc0 = null;
 		osc1 = null;
-		biquad = null;
+		filter = null;
 		delay = null;
 		phaseDelay = null;
 		outputGain = null;
 	}
 	
 	
+	
+	
 	inline function get_phase():Float return _phase;
 	function set_phase(value:Float):Float {
 		phaseDelay.delayTime.setValueAtTime((1 / noteFreq) * value, 0);
 		return _phase = value;
+	}
+	
+	
+	function get_pitchBend():Float return _pitchBend;
+	function set_pitchBend(value:Float):Float {
+		value = value <-1.0 ? -1.0 : (value > 1.0 ? 1.0 : value);
+		
+		if (noteIsOn) {
+			
+			// alreay playing a note?
+			var dP = (value - _pitchBend) * pitchBendRange; // pitchBend delta - cents
+			var f0  = freqUtil.detuneFreq(osc0Freq, dP);
+			var f1  = freqUtil.detuneFreq(osc1Freq, dP);
+			
+			var now = context.currentTime;
+			
+			osc0.oscillator.node.frequency.cancelScheduledValues(now);
+			osc0.oscillator.node.frequency.setValueAtTime(f0, now);
+			
+			osc1.oscillator.node.frequency.cancelScheduledValues(now);
+			osc1.oscillator.node.frequency.setValueAtTime(f1, now);
+			
+			osc0Freq = f0;
+			osc1Freq = f1;
+		}
+		
+		return _pitchBend = value;
 	}
 }

@@ -12,6 +12,9 @@ import js.html.audio.AudioNode;
 import js.html.audio.AudioParam;
 import js.html.audio.BiquadFilterNode;
 
+/**
+ * Biquad filter with ASR (Attack->Sustain->Release) envelope generator
+ */
 class BiquadFilter {
 	
 	static inline var MinFreq	:Float = 20;

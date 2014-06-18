@@ -36,11 +36,16 @@ class MonoSynthUI extends Sprite {
 	var keyboardContainer:Sprite;
 	var keyboardMask	:Sprite;
 	
-	var outputLevelKnob	:Entity;
 	var ouputPanel		:Entity;
+	var outputLevelKnob	:Entity;
 	
-	public var outputLevelParameter(get, never):Parameter;
+	var pitchBendKnob	:Entity;
+	
+	public var outputLevelParameter(get, never):Parameter;	
 	inline function get_outputLevelParameter():Parameter return outputLevelKnob.get(Rotary).value;
+	
+	public var pitchBendParameter(get, never):Parameter;
+	inline function get_pitchBendParameter():Parameter return pitchBendKnob.get(Rotary).value;
 	
 	
 	public function new(textureAtlas:Map<String,SubTexture>, keyboardNotes:KeyboardNotes) {
@@ -83,12 +88,11 @@ class MonoSynthUI extends Sprite {
 				.addChild(new Entity().add(keyboardContainer = new Sprite()).add(keyboard))
 			);
 		
-		
+			
 		keyboardMask.x._ 		= 64;
 		keyboardMask.y._ 		= 520;
 		keyboardMask.scissor 	= new Rectangle(0, 0, 1148, 164);
-		
-		// perhaps create more keys and animate them left/right to change available range...
+		// perhaps create more keys and animate them left/right to move the playable range...
 	}
 	
 	
@@ -125,20 +129,31 @@ class MonoSynthUI extends Sprite {
 		//*/
 	}
 	
+	
 	function setupOutputPanel() {
 		
 		// panel ui test...
 		outputLevelKnob = Rotary.create(MapFactory.getMapping(MapType.FLOAT, 0, 1), 1.0, -FMath.PI / 1.25, FMath.PI / 1.25);
-		outputLevelKnob.get(Rotary).value.name = 'outputLevelRotary';
+		outputLevelKnob.get(Rotary).value.name = 'outputLevel';
+		
+		pitchBendKnob = Rotary.create(MapFactory.getMapping(MapType.FLOAT_EXPONENTIAL, -1, 1), 0.0, -FMath.PI / 1.25, FMath.PI / 1.25);
+		pitchBendKnob.get(Rotary).value.name = 'pitchBend';
+		
 		
 		owner.addChild(
-			(ouputPanel = new Entity().add(new ImageSprite(textureAtlas.get('panel-bg_50%')))).addChild(outputLevelKnob)
+			(ouputPanel = new Entity().add(new ImageSprite(textureAtlas.get('panel-bg_50%'))))
+				.addChild(outputLevelKnob)
+				.addChild(pitchBendKnob)
 		);
 		
 		ouputPanel.get(Sprite).x._ = 64;
 		ouputPanel.get(Sprite).y._ = 64;
+		
 		outputLevelKnob.get(Sprite).x._ = 35;
 		outputLevelKnob.get(Sprite).y._ = 35;
+		
+		pitchBendKnob.get(Sprite).x._ = 128;
+		pitchBendKnob.get(Sprite).y._ = 35;
 		
 	}
 }
