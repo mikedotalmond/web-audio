@@ -6,6 +6,7 @@ import flambe.display.ImageSprite;
 import flambe.display.SpriteSheet;
 import flambe.display.SubTexture;
 import flambe.Entity;
+import flambe.input.MouseButton;
 import flambe.input.PointerEvent;
 import flambe.System;
 import flambe.util.Signal1;
@@ -102,16 +103,23 @@ class KeyboardUI extends Component {
 			
 			naturals.addChild(new Entity().add(spr));
 			
+			spr.pointerMove.connect(onKeyPointerMove);
+			spr.pointerDown.connect(onKeyPointerDown);
+			spr.pointerUp.connect(onKeyPointerUp);
+			
 			if (key.hasSharp) {
 				spr 	= new KeySprite(blackKeyTexture, i + 1, true);
 				spr.x._ = keyX + 26;
 				spr.y._ = keyY;
 				noteIndexToKey.set(i + 1, spr);
 				sharps.addChild(new Entity().add(spr));
+				
+				spr.pointerMove.connect(onKeyPointerMove);
+				spr.pointerDown.connect(onKeyPointerDown);
+				spr.pointerUp.connect(onKeyPointerUp);
 			}
 			
 			keyX += (keyWidth + marginRight);
-			//spr.pointerDown.connect(onKeyPointerDown);
 		}
 		
 		heldKey = -1;
@@ -119,39 +127,50 @@ class KeyboardUI extends Component {
 	
 	
 	
-	function onKeyMouse(e:MouseEvent) {
-		/*
-		e.stopImmediatePropagation();
-		var node:Element = cast e.target;
-		var noteIndex = Std.parseInt(node.getAttribute('data-noteindex'));
-		
-		switch (e.type) {
-			case "mouseover":
-				if (pointerDown) {
-					setKeyIsDown(node, true);
-					heldKey = noteIndex;
-					keyDown.emit(noteIndex);
+	function onKeyPointerMove(e:PointerEvent) {
+		pointerDown = (System.mouse.supported && System.mouse.isDown(MouseButton.Left)) || (!System.mouse.supported && System.touch.supported);
+		var key:KeySprite = cast e.hit;
+		if (pointerDown) {
+			if(key != null){
+				//trace('move ${key.noteIndex} ${key.isSharp}');
+				if (heldKey != key.noteIndex) {
+					if (heldKey != -1) {
+						setKeyIsDown(getKeyForNote(heldKey), false);
+						pointerDown = false;
+						keyUp.emit(heldKey);
+					}				
+					heldKey = key.noteIndex;
+					setKeyIsDown(key, true);
+					keyDown.emit(key.noteIndex);
 				}
-				
-			case "mousedown", "touchstart":
-				pointerDown = true;
-				setKeyIsDown(node, true);
-				heldKey = noteIndex;
-				keyDown.emit(noteIndex);
-				
-			case "mouseup", "mouseout", "touchend":
-				if (heldKey != -1 && heldKey == noteIndex) {
-					
-					heldKey 	= -1;
-					pointerDown = !(e.type == "mouseup" || e.type == "touchend");
-					
-					setKeyIsDown(node, false);
-					
-					keyUp.emit(noteIndex);
-				}
-		}*/
+			} 
+		}
 	}
 	
+	function onKeyPointerDown(e:PointerEvent) {
+		var key:KeySprite = cast e.hit;
+		//trace('down ${key.noteIndex} ${key.isSharp}');
+		pointerDown = true;
+		if (heldKey != key.noteIndex) {
+			heldKey = key.noteIndex;
+			setKeyIsDown(key, true);
+			keyDown.emit(key.noteIndex);
+		}
+	}
+	
+	function onKeyPointerUp(e:PointerEvent) {
+		var key:KeySprite = cast e.hit;
+		//trace('up ${key.noteIndex} ${key.isSharp}');
+		pointerDown = false;
+		
+		if (heldKey != -1 && heldKey == key.noteIndex) {
+			heldKey 	= -1;
+			pointerDown = false;
+			setKeyIsDown(key, false);
+			keyUp.emit(key.noteIndex);
+		}
+	}
+
 	
 	
 	function getKeysData(startOctave:Int = 2, octaveCount:Int=2):Array<UINote> {

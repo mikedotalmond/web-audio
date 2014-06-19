@@ -195,10 +195,13 @@ import webaudio.utils.KeyboardNotes;
 			});
 		}
 		
-		if (System.touch.supported && System.touch.maxPoints > 1) {
-			// multitouch
-			// System.touch.points
-		}
+		// mouse/touch keyboard input/control
+		monoSynthUI.keyboard.keyDown.connect(function(i) {
+			keyboardInputs.onNoteKeyDown(i);
+		});
+		monoSynthUI.keyboard.keyUp.connect(function(i) {
+			keyboardInputs.onNoteKeyUp(i);
+		});
 		
 		
 		initKeyboardInputs();
@@ -242,7 +245,7 @@ import webaudio.utils.KeyboardNotes;
 		monoSynth.osc1_portamentoTime = .15; //1.0
 		
 		monoSynth.osc0_detuneCents = 0;
-		monoSynth.osc1_detuneCents = -1200;
+		monoSynth.osc1_detuneCents = 0;
 		
 		monoSynth.osc0_randomCents = 30;
 		monoSynth.osc1_randomCents = 30;
