@@ -290,6 +290,14 @@ import webaudio.utils.KeyboardNotes;
 	/* Entry point */
     static function main () {
 		
+		#if debug
+		var d = Browser.window.document;
+		var head = d.getElementsByTagName('head')[0];
+		var script = d.createScriptElement();
+		script.src = 'js/console-log-viewer.js?console_at_bottom=true';
+		head.appendChild(script);
+		#end
+		
         System.init();
 		
 		var noAudio = Browser.document.getElementById("noWebAudio");
