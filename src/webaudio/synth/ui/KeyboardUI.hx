@@ -103,6 +103,7 @@ class KeyboardUI extends Component {
 			
 			naturals.addChild(new Entity().add(spr));
 			
+			spr.pointerOut.connect(onKeyPointerOut);
 			spr.pointerMove.connect(onKeyPointerMove);
 			spr.pointerDown.connect(onKeyPointerDown);
 			spr.pointerUp.connect(onKeyPointerUp);
@@ -114,6 +115,7 @@ class KeyboardUI extends Component {
 				noteIndexToKey.set(i + 1, spr);
 				sharps.addChild(new Entity().add(spr));
 				
+				spr.pointerOut.connect(onKeyPointerOut);
 				spr.pointerMove.connect(onKeyPointerMove);
 				spr.pointerDown.connect(onKeyPointerDown);
 				spr.pointerUp.connect(onKeyPointerUp);
@@ -127,29 +129,43 @@ class KeyboardUI extends Component {
 	
 	
 	
-	function onKeyPointerMove(e:PointerEvent) {
-		pointerDown = (System.mouse.supported && System.mouse.isDown(MouseButton.Left)) || (!System.mouse.supported && System.touch.supported);
+	function onKeyPointerOut(e:PointerEvent) {
 		var key:KeySprite = cast e.hit;
-		if (pointerDown) {
-			if(key != null){
-				//trace('move ${key.noteIndex} ${key.isSharp}');
-				if (heldKey != key.noteIndex) {
-					if (heldKey != -1) {
-						setKeyIsDown(getKeyForNote(heldKey), false);
-						pointerDown = false;
-						keyUp.emit(heldKey);
-					}				
-					heldKey = key.noteIndex;
-					setKeyIsDown(key, true);
-					keyDown.emit(key.noteIndex);
-				}
-			} 
+		if (!Std.is(key, KeySprite)) {
+			if (heldKey != -1) {
+				setKeyIsDown(getKeyForNote(heldKey), false);
+				pointerDown = false;
+				keyUp.emit(heldKey);
+				heldKey = -1;
+			}
 		}
 	}
 	
+	
+	function onKeyPointerMove(e:PointerEvent) {
+		pointerDown = (System.mouse.supported && System.mouse.isDown(MouseButton.Left)) || (!System.mouse.supported && System.touch.supported);
+		if (pointerDown) {
+			var key:KeySprite = cast e.hit;
+			if (heldKey != key.noteIndex) {
+				
+				// a new key is down (pointer drag-in)
+				setKeyIsDown(key, true);
+				keyDown.emit(key.noteIndex);
+				
+				if (heldKey != -1) {
+					//a key was already down - release it here, after triggering a new note
+					setKeyIsDown(getKeyForNote(heldKey), false);
+					keyUp.emit(heldKey);
+				}
+				
+				heldKey = key.noteIndex;
+			}
+		}
+	}
+	
+	
 	function onKeyPointerDown(e:PointerEvent) {
 		var key:KeySprite = cast e.hit;
-		//trace('down ${key.noteIndex} ${key.isSharp}');
 		pointerDown = true;
 		if (heldKey != key.noteIndex) {
 			heldKey = key.noteIndex;
@@ -158,9 +174,9 @@ class KeyboardUI extends Component {
 		}
 	}
 	
+	
 	function onKeyPointerUp(e:PointerEvent) {
 		var key:KeySprite = cast e.hit;
-		//trace('up ${key.noteIndex} ${key.isSharp}');
 		pointerDown = false;
 		
 		if (heldKey != -1 && heldKey == key.noteIndex) {
@@ -182,6 +198,7 @@ class KeyboardUI extends Component {
 	inline function getKeyForNote(noteIndex:Int):KeySprite {
 		return noteIndexToKey.get(noteIndex);
 	}
+	
 	
 	public function setNoteState(index:Int, isDown:Bool) {
 		setKeyIsDown(cast getKeyForNote(index), isDown);
@@ -206,10 +223,8 @@ class KeyboardUI extends Component {
 	 * @return
 	 */
 	function getUIKeyNoteData(startOctave:Int = 0, octaveCount:Int=2):Array<UINote> {
-		//octaveShift = octaveShift < 0 ? 0 : (octaveShift > 4 ? 4 : octaveShift);
-		var i = keyboardNotes.noteFreq.noteNameToIndex('C${startOctave}');
-		
-		var out = [];
+		var i 	= keyboardNotes.noteFreq.noteNameToIndex('C${startOctave}');
+		var out	= [];
 		for (oct in 0...octaveCount) {
 			out.push({ index:i +  	 12 * oct, hasSharp:true } );
 			out.push({ index:i + 2 + 12 * oct , hasSharp:true } );

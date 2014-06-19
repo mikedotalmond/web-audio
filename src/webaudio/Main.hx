@@ -77,7 +77,7 @@ import webaudio.utils.KeyboardNotes;
 	
 	function new() {
 		trace('MonoSynth');
-		keyboardNotes 	= new KeyboardNotes(2); // util
+		keyboardNotes 	= new KeyboardNotes(1); // util
 		keyboardInputs 	= new KeyboardInput(keyboardNotes);
 	}	
 	
@@ -239,7 +239,7 @@ import webaudio.utils.KeyboardNotes;
 		monoSynth = new MonoSynth(destination, keyboardNotes.noteFreq);
 		monoSynth.osc0.type = OscillatorType.SQUARE; // TRIANGLE; SQUARE
 		monoSynth.osc1.type = OscillatorType.SQUARE; // TRIANGLE; SQUARE
-		monoSynth.phase = .2;
+		monoSynth.phase = .333;
 		
 		monoSynth.osc0_portamentoTime = .15; //1.0
 		monoSynth.osc1_portamentoTime = .15; //1.0
@@ -266,15 +266,16 @@ import webaudio.utils.KeyboardNotes;
 		monoSynth.filter.envRelease = .2;
 		
 		// Distortion
-		monoSynth.distortionGroup.pregain.gain.value 	= 2;
-		monoSynth.distortionGroup.waveshaper.amount 	= .5;
-		monoSynth.distortionGroup.crusher.bits 			= 8;
-		monoSynth.distortionGroup.crusher.rateReduction = 2;
+		monoSynth.distortionGroup.pregain.gain.value 	= 1;
+		monoSynth.distortionGroup.waveshaper.amount 	= .25;
+		monoSynth.distortionGroup.crusher.bits 			= 12;
+		monoSynth.distortionGroup.crusher.rateReduction = 1;
 		
 		// Delay
-		monoSynth.delay.time.value = .45;
-		monoSynth.delay.level.value = .4;
-		monoSynth.delay.feedback.value = .5;
+		monoSynth.delay.time.value = .25;
+		monoSynth.delay.level.value = .66;
+		monoSynth.delay.feedback.value = .44;
+		monoSynth.delay.lpfFrequency.value = 6000;
 	}
 	
 	
