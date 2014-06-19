@@ -134,16 +134,17 @@ class MonoSynthUI extends Sprite {
 		
 		// panel ui test...
 		outputLevelKnob = Rotary.create(MapFactory.getMapping(MapType.FLOAT, 0, 1), 1.0, -FMath.PI / 1.25, FMath.PI / 1.25);
-		outputLevelKnob.get(Rotary).value.name = 'outputLevel';
-		
 		pitchBendKnob = Rotary.create(MapFactory.getMapping(MapType.FLOAT, -1, 1), 0.0, -FMath.PI / 1.25, FMath.PI / 1.25);
-		pitchBendKnob.get(Rotary).value.name = 'pitchBend';
 		
 		owner.addChild(
 			(ouputPanel = new Entity().add(new ImageSprite(textureAtlas.get('panel-bg_50%'))))
 				.addChild(outputLevelKnob)
 				.addChild(pitchBendKnob)
 		);
+		
+		// ACK! - can't get(ComponentClass) now until it is added..
+		outputLevelKnob.get(Rotary).value.name = 'outputLevel';
+		pitchBendKnob.get(Rotary).value.name = 'pitchBend';
 		
 		ouputPanel.get(Sprite).x._ = 64;
 		ouputPanel.get(Sprite).y._ = 64;

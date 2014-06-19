@@ -89,20 +89,17 @@ class MonoSynth implements ParameterObserver { //
 	var _pitchBend	:Float = 0; // [-1.0, 1.0]
 	
 	// TODOS: theses LFOses.... apparently we can connect output of LFO (or any node...) as input to an AudioParam
-	//var OscPhase_LFO	:OscillatorGroup;
+	//var OscPhase_LFO		:OscillatorGroup;
 	//var FilterFreq_LFO	:OscillatorGroup;
 	//var FM_LFO			:OscillatorGroup;
 	//var AM_LFO			:OscillatorGroup;
 	
-	
 	var context		:AudioContext;
 	var freqUtil	:NoteFrequencyUtil;
 	
-	
 	var noteFreq	:Float = 440; // current/last note frequency
-	var osc0Freq	:Float = 440; // actual osc freq (notefreq+detune+pitchbend+random...etc)
+	var osc0Freq	:Float = 440; // actual current osc freq (notefreq+detune+pitchbend+random...etc)
 	var osc1Freq	:Float = 440;
-	
 	
 	
 	/**
@@ -117,7 +114,7 @@ class MonoSynth implements ParameterObserver { //
 		
 		// set up audio process chain in reverse
 		
-		outputGain 	= context.createGain();
+		outputGain = context.createGain();
 		outputGain.connect(destination);
 		outputGain.gain.value = 1;
 		
@@ -131,15 +128,16 @@ class MonoSynth implements ParameterObserver { //
 		
 		setupOscillators();
 		
-		// todo: pitch bend, osc pan, amplitude modulation, ouput levels AnalyserNode
+		//
+		// todo: LFO(s) AM/FM/Filter, Ouput-AnalyserNode (VU Bars etc...)
 	}
 	
 	
 	function setupDistortion():Void {
 		
 		distortionGroup = new DistortionGroup(context);
-		distortionGroup.pregain.gain.value = 1.0;
 		
+		distortionGroup.pregain.gain.value = 1.0;
 		//distortionGroup.waveshaper.setDistortion(.5);
 		//distortionGroup.crusher.bits = 12;
 		

@@ -17,6 +17,11 @@ import js.html.audio.BiquadFilterNode;
  */
 class BiquadFilter {
 	
+	var _q						:Float;
+	var _gain					:Float;
+	var _frequency				:Float;
+	
+	// settings for the envelope...
 	static inline var MinFreq	:Float = 20;
 	static inline var MaxFreq	:Float = 8000;
 	static inline var FreqRange	:Float = MaxFreq - MinFreq;
@@ -32,24 +37,18 @@ class BiquadFilter {
 	public var envAttack		:Float = .1;
 	public var envRelease		:Float = 1;
 	
-	var _q						:Float;
-	var _gain					:Float;
-	var _frequency				:Float;
-	
-	public var frequency(get, set):Float;
-	public var q(get, set)		:Float;
-	public var gain(get, set)	:Float;
+	public var frequency(get, set)	:Float;
+	public var q(get, set)			:Float;
+	public var gain(get, set)		:Float; // only relevant to peak/shelving modes, not lp/hp
 	
 	
 	public function new(type:Int, freq:Float=350.0, q:Float=1.0, context:AudioContext, ?input:AudioNode, ?destination:AudioNode) {
-		
-		_frequency = freq;
-		_q = q;
-		_gain = 1.0;
-		
-		biquad = new Biquad(type, freq, q, context, input, destination);
-		biquad.node.gain.value = _gain;
+		_frequency 	= freq;
+		_q 			= q;
+		_gain 		= 1.0;
+		biquad 		= new Biquad(type, freq, q, context, input, destination);
 	}
+	
 	
 	public function on(when:Float, retrigger:Bool=false) {
 		var start = MinFreq + _frequency * FreqRange;
@@ -57,24 +56,47 @@ class BiquadFilter {
 		biquad.trigger(when, start, envAttack, dest, retrigger);
 	}
 	
+	
 	public function off(when:Float):Float {
 		var dest = MinFreq + _frequency * FreqRange;
 		return biquad.release(when, dest, envRelease);
 	}
 	
+	
 	inline function get_frequency():Float return _frequency;	
 	function set_frequency(value:Float):Float {
-		return biquad.node.frequency.value = _frequency = value;
+		
+		var ctx 	= biquad.node.context;
+		var nyquist = ctx.sampleRate / 2;
+		var now 	= ctx.currentTime;
+		
+		value = (value < 10) ? 10 : ((value > nyquist) ? nyquist : value);
+		
+		biquad.node.frequency.cancelScheduledValues(now);
+		biquad.node.frequency.setValueAtTime(value, now);
+		
+		return _frequency = value;
 	}
 	
+	
+	// default=1, valid range - 0.0001 to 1000
 	inline function get_q():Float return _q;	
 	function set_q(value:Float):Float {
-		return biquad.node.Q.value = _q = value;
+		value = value < 0.0001 ? 0.0001 : (value > 1000 ? 1000 : value);
+		
+		var now = biquad.node.context.currentTime;
+		biquad.node.Q.cancelScheduledValues(now);
+		biquad.node.Q.setValueAtTime(value, now);
+		return _q = value;
 	}
+	
 	
 	inline function get_gain():Float return _gain;	
 	function set_gain(value:Float):Float {
-		return biquad.node.gain.value = _gain = value;
+		var now = biquad.node.context.currentTime;
+		biquad.node.gain.cancelScheduledValues(now);
+		biquad.node.gain.setValueAtTime(value, now);
+		return _gain = value;
 	}
 }
 
@@ -114,7 +136,6 @@ abstract Biquad(BiquadFilterNode) from BiquadFilterNode to BiquadFilterNode {
 	 * @param	retrigger
 	 */
 	inline public function trigger(when:Float, startFreq:Float, attackTime:Float, sustainFreq:Float, retrigger:Bool=false) {
-		//trace(startFreq,sustainFreq);
 		startFreq = retrigger ? startFreq : this.frequency.value;
 		rampToFreqAtTime(when, attackTime, startFreq, sustainFreq);
 	}
@@ -179,7 +200,7 @@ extern enum FilterTypeShim {
 	}
 	
 	static function __init__() {
-		// fix current differences in chrome/firefox
+		// fix some differences in api implementation between chrome/firefox
 		var Node = Reflect.getProperty(Browser.window, "BiquadFilterNode");
 		if (Node != null) {
 			if (Reflect.hasField(Node, "LOWPASS")) {

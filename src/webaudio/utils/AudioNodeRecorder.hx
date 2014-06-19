@@ -8,13 +8,15 @@ package webaudio.utils;
  */
 
 import flambe.util.Signal1;
+
 import js.Browser;
 
 import js.html.AnchorElement;
-import js.html.audio.AnalyserNode;
+
 import js.html.audio.AudioContext;
 import js.html.audio.AudioNode;
 import js.html.audio.ScriptProcessorNode;
+
 import js.html.Blob;
 import js.html.Document;
 import js.html.DOMURL;

@@ -132,7 +132,8 @@ class Rotary extends NumericControl {
 			
 		if (showLabel) ent.addChild(new Entity().add(Fonts.getField(Fonts.Prime13, '0.00', 0x212133)));
 		
-		ent.add(new Rotary(defaultValue, parameterMapping, minAngle, maxAngle, small ? 5.25 : 12));
+		var r = new Rotary(defaultValue, parameterMapping, minAngle, maxAngle, small ? 5.25 : 12);
+		ent.add(r);
 		
 		return ent;
 	}
