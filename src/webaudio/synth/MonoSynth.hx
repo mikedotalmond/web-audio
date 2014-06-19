@@ -351,10 +351,10 @@ class MonoSynth implements ParameterObserver { //
 			var now = context.currentTime;
 			
 			osc0.oscillator.node.frequency.cancelScheduledValues(now);
-			osc0.oscillator.node.frequency.setValueAtTime(f0, now);
+			osc0.oscillator.node.frequency.exponentialRampToValueAtTime(f0, now+1/60);
 			
 			osc1.oscillator.node.frequency.cancelScheduledValues(now);
-			osc1.oscillator.node.frequency.setValueAtTime(f1, now);
+			osc1.oscillator.node.frequency.exponentialRampToValueAtTime(f1, now+1/60);
 			
 			osc0Freq = f0;
 			osc1Freq = f1;

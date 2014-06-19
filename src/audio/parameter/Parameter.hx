@@ -53,6 +53,10 @@ class Parameter {
 		}
 	}
 	
+	public function setToDefault() {
+		setValue(normalisedDefaultValue, true);
+	}
+	
 	public function getValue(normalised:Bool = false):Float {
 		if (normalised) return normalisedValue;
 		return mapping.map(normalisedValue);

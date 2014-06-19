@@ -34,7 +34,7 @@ class NumericControl extends Component implements ParameterObserver {
 	
 	// return to default once user releases control?
 	public var returnToDefault		:Bool = false;
-	public var returnToDefaultSpeed	:Float = 10;
+	public var returnToDefaultSpeed	:Float = 16;
 	public var returnToDefaultMin	:Float = 1e-4; // min abs normalised value
 	
 	/**
@@ -61,8 +61,12 @@ class NumericControl extends Component implements ParameterObserver {
 			
 			delta = (delta < 0 ? -delta : delta) < returnToDefaultMin ? 0 : delta;
 			
-			if (delta != 0) value.setValue(now + delta * dt * returnToDefaultSpeed, true);
-			else returningToDefault = false;
+			if (delta != 0) {
+				value.setValue(now + delta * dt * returnToDefaultSpeed, true);
+			} else {
+				returningToDefault = false;
+				value.setToDefault();
+			}
 		}
 	}
 	

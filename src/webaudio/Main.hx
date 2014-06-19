@@ -241,6 +241,8 @@ import webaudio.utils.KeyboardNotes;
 		monoSynth.osc1.type = OscillatorType.SQUARE; // TRIANGLE; SQUARE
 		monoSynth.phase = .333;
 		
+		monoSynth.pitchBendRange = 700;
+		
 		monoSynth.osc0_portamentoTime = .15; //1.0
 		monoSynth.osc1_portamentoTime = .15; //1.0
 		
