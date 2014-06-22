@@ -6,6 +6,6 @@ http://www.w3.org/TR/webaudio/
 
 ---
 
-Fairly experimental, so you'll need a recent version of Chrome (or Firefox)
+Fairly experimental, so you'll need a recent version of Chrome
 
 http://mikedotalmond.github.io/web-audio/
