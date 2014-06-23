@@ -29,11 +29,17 @@ class Rotary extends NumericControl {
 	public var radius			:Float;
 	public var minAngle			:Float;
 	public var maxAngle			:Float;
+	
 	public var labelFormatter	:Float->String;
+	
 	
 	var centreX			:Float;
 	var centreY			:Float;
-	var label			:TextSprite;
+	
+	var display			:Sprite;
+	var knobDot			:Sprite;
+	var valueLabel		:TextSprite;
+	
 	
 	/**
 	 *
@@ -44,34 +50,32 @@ class Rotary extends NumericControl {
 	 */
 	public function new(defaultValue:Float, parameterMapping:Mapping, minAngle:Float, maxAngle:Float, radius:Float) {
 		super('rotary', defaultValue, parameterMapping);
-		this.minAngle = minAngle;
-		this.maxAngle = maxAngle;
-		this.radius = radius;
-		labelFormatter = defaultLabelFormatter;
+		this.minAngle 	= minAngle;
+		this.maxAngle 	= maxAngle;
+		this.radius 	= radius;
+		labelFormatter 	= defaultLabelFormatter;
 	}
+	
 	
 	override public function onAdded() {
 		
-		var display = owner.get(Sprite);
-		
-		// align knob...
-		display.centerAnchor();
+		display = owner.get(Sprite).centerAnchor();		
 		centreX = display.anchorX._;
 		centreY = display.anchorY._;
 		
 		// knob nipple-dot setup..
-		owner.firstChild.get(Sprite)
+		knobDot = owner.firstChild.get(Sprite)
 			.centerAnchor()
 			.disablePixelSnapping()
 			.disablePointer();
 		
-		// label
-		label = owner.firstChild.next.get(TextSprite);
-		if (Std.is(label, TextSprite)) {
-			label.centerAnchor();
-			label.y._ = centreY + display.getNaturalHeight() / 2 + 7;
+		// value label
+		valueLabel = owner.firstChild.next.get(TextSprite);
+		if (Std.is(valueLabel, TextSprite)) {
+			valueLabel.centerAnchor();
+			valueLabel.y._ = centreY + display.getNaturalHeight() / 2 + 7;
 		} else {
-			label = null;
+			valueLabel = null;
 		}
 		
 		super.onAdded();
@@ -80,13 +84,16 @@ class Rotary extends NumericControl {
 	
 	// triggered onParameterChange
 	override function updateDisplay() {
-		
 		setKnobPosition(value.getValue(true));
-		
-		if (label != null) {
-			label.text = labelFormatter(value.getValue());
-			label.centerAnchor();
-			label.x._ = centreX;
+		updateLabel();
+	}
+	
+	
+	inline function updateLabel() {
+		if (valueLabel != null) {
+			valueLabel.text = labelFormatter(value.getValue());
+			valueLabel.centerAnchor();
+			valueLabel.x._ = centreX;
 		}
 	}
 	
@@ -105,13 +112,14 @@ class Rotary extends NumericControl {
 		var px 		= centreX + Math.cos(angle - FMath.PI / 2) * radius;
 		var py 		= centreY + Math.sin(angle - FMath.PI / 2) * radius;
 		
-		owner.firstChild.get(Sprite).setXY(px, py);
+		knobDot.setXY(px, py);
 	}
 	
 	
 	public function defaultLabelFormatter(value:Float):String {
 		return NumericControl.roundValueForDisplay(value, 3);
 	}
+	
 	
 	/**
 	 *
@@ -132,8 +140,7 @@ class Rotary extends NumericControl {
 			
 		if (showLabel) ent.addChild(new Entity().add(Fonts.getField(Fonts.Prime13, '0.00', 0x212133)));
 		
-		var r = new Rotary(defaultValue, parameterMapping, minAngle, maxAngle, small ? 5.25 : 12);
-		ent.add(r);
+		ent.add(new Rotary(defaultValue, parameterMapping, minAngle, maxAngle, small ? 5.25 : 12));
 		
 		return ent;
 	}

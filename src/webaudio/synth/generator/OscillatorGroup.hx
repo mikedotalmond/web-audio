@@ -36,7 +36,7 @@ class OscillatorGroup {
 	inline function get_type() return _type;
 	function set_type(value:Int) {
 		osc.get(_type).node.disconnect(0);
-		osc.get(value).node.connect(output, 0);
+		osc.get(value).node.connect(output);
 		return _type = value;
 	}
 	

@@ -101,14 +101,28 @@ import webaudio.utils.KeyboardNotes;
 		
 		initAudio();
 		
-		monoSynthUI.outputLevelRotary.value.addObserver(monoSynth);
-		monoSynthUI.pitchBendRotary.value.addObserver(monoSynth);
-		monoSynthUI.pitchBendRotary.returnToDefault = true;
+		monoSynthUI.outputLevel.value.addObserver(monoSynth);
+		monoSynthUI.pitchBend.value.addObserver(monoSynth);
+		monoSynthUI.pitchBend.returnToDefault = true;
 		
-		monoSynthUI.pitchBendRotary.labelFormatter = function(val) {
-			return monoSynthUI.pitchBendRotary.defaultLabelFormatter((val * monoSynth.pitchBendRange) / 100);
+		monoSynthUI.pitchBend.labelFormatter = function(val) {
+			return monoSynthUI.pitchBend.defaultLabelFormatter((val * monoSynth.pitchBendRange) / 100);
 		};
-	
+		
+		monoSynthUI.osc0Level.value.addObserver(monoSynth);
+		monoSynthUI.osc0Pan.value.addObserver(monoSynth);
+		monoSynthUI.osc0Slide.value.addObserver(monoSynth);
+		monoSynthUI.osc0Random.value.addObserver(monoSynth);
+		monoSynthUI.osc0Detune.value.addObserver(monoSynth);
+		
+		monoSynthUI.osc1Level.value.addObserver(monoSynth);
+		monoSynthUI.osc1Pan.value.addObserver(monoSynth);
+		monoSynthUI.osc1Slide.value.addObserver(monoSynth);
+		monoSynthUI.osc1Random.value.addObserver(monoSynth);
+		monoSynthUI.osc1Detune.value.addObserver(monoSynth);
+		
+		monoSynthUI.oscPhase.value.addObserver(monoSynth);
+		
 		/*
 		recorder = new AudioNodeRecorder(monoSynth.output);
 		recorder.wavEncoded.connect(onWavEncoded);
@@ -299,7 +313,7 @@ import webaudio.utils.KeyboardNotes;
 		
 		if (WebAudioSound.supported) {
 		
-			#if debug addConsoleViewer();#end
+			//#if debug addConsoleViewer();#end
 			
 			noAudio.parentNode.removeChild(noAudio);
 			audioContext = cast WebAudioSound.ctx;

@@ -92,7 +92,7 @@ class MonoSynth implements ParameterObserver { //
 	//var OscPhase_LFO		:OscillatorGroup;
 	//var FilterFreq_LFO	:OscillatorGroup;
 	//var FM_LFO			:OscillatorGroup;
-	//var AM_LFO			:OscillatorGroup;
+	var AM_LFO		:OscillatorGroup;
 	
 	var context		:AudioContext;
 	var freqUtil	:NoteFrequencyUtil;
@@ -126,6 +126,12 @@ class MonoSynth implements ParameterObserver { //
 		filter	= new BiquadFilter(FilterType.LOWPASS, 1, 1, context, null, distortionGroup.input);
 		adsr 	= new ADSR(context, null, filter.biquad);
 		
+		//var gain = context.createGain();
+		//AM_LFO 	= new OscillatorGroup(context, cast adsr.node.node.gain);
+		////AM_LFO.oscillator.node.start(context.currentTime);
+		//AM_LFO.oscillator.setType(OscillatorType.SINE);
+		//AM_LFO.oscillatorNode.frequency.value = 1;
+		//
 		setupOscillators();
 		
 		//
@@ -265,21 +271,21 @@ class MonoSynth implements ParameterObserver { //
 			case 'outputLevel'		: outputGain.gain.setValueAtTime(val, now);
 			
 			// OSCILLATORS
-			case 'osc0_type'		: osc0.type = Std.int(val);
-			case 'osc0_level'		: osc0Level.gain.setValueAtTime(val, now);
-			case 'osc0_pan'			: osc0Pan.pan = val;
-			case 'osc0_slide'		: osc0_portamentoTime = val;
-			case 'osc0_detune'		: osc0_detuneCents = Std.int(val);
-			case 'osc0_random'		: osc0_randomCents = val;
+			case 'osc0Type'			: osc0.type = Std.int(val);
+			case 'osc0Level'		: osc0Level.gain.setValueAtTime(val, now);
+			case 'osc0Pan'			: osc0Pan.pan = val;
+			case 'osc0Rlide'		: osc0_portamentoTime = val;
+			case 'osc0Detune'		: osc0_detuneCents = Std.int(val);
+			case 'osc0Random'		: osc0_randomCents = val;
 			
-			case 'osc1_type'		: osc1.type = Std.int(val);
-			case 'osc1_level'		: osc1Level.gain.setValueAtTime(val, now);
-			case 'osc1_pan'			: osc1Pan.pan = val;
-			case 'osc1_slide'		: osc1_portamentoTime = val;
-			case 'osc1_detune'		: osc1_detuneCents = Std.int(val);
-			case 'osc1_random'		: osc1_randomCents = val;
+			case 'osc1Type'			: osc1.type = Std.int(val);
+			case 'osc1Level'		: osc1Level.gain.setValueAtTime(val, now);
+			case 'osc1Pan'			: osc1Pan.pan = val;
+			case 'osc1Slide'		: osc1_portamentoTime = val;
+			case 'osc1Detune'		: osc1_detuneCents = Std.int(val);
+			case 'osc1Random'		: osc1_randomCents = val;
 			
-			case 'osc_phase'		: phase 	= val;
+			case 'oscPhase'			: phase 	= val;
 			case 'pitchBend'		: pitchBend = val;
 			
 			//ADSR
@@ -332,7 +338,9 @@ class MonoSynth implements ParameterObserver { //
 	
 	inline function get_phase():Float return _phase;
 	function set_phase(value:Float):Float {
-		phaseDelay.delayTime.setValueAtTime((1 / noteFreq) * value, 0);
+		var now = context.currentTime;
+		phaseDelay.delayTime.cancelScheduledValues(now);
+		phaseDelay.delayTime.setValueAtTime((1 / noteFreq) * value, now);
 		return _phase = value;
 	}
 	

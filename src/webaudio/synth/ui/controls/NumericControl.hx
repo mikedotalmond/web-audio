@@ -35,7 +35,8 @@ class NumericControl extends Component implements ParameterObserver {
 	// return to default once user releases control?
 	public var returnToDefault		:Bool = false;
 	public var returnToDefaultSpeed	:Float = 16;
-	public var returnToDefaultMin	:Float = 1e-4; // min abs normalised value
+	public var returnToDefaultMin	:Float = 1e-6; // min abs normalised value
+	
 	
 	/**
 	 *
@@ -47,11 +48,13 @@ class NumericControl extends Component implements ParameterObserver {
 		value = new Parameter('${name}_value', defaultValue, parameterMapping);
 	}
 	
+	
 	override public function onAdded() {
 		var display = owner.get(Sprite);
 		display.pointerDown.connect(pointerDown);
 		value.addObserver(this, true);
 	}
+	
 	
 	override public function onUpdate(dt:Float) {
 		if (returningToDefault) {
@@ -69,6 +72,7 @@ class NumericControl extends Component implements ParameterObserver {
 			}
 		}
 	}
+	
 	
 	override public function onRemoved() {
 		value.removeObserver(this);
@@ -133,17 +137,20 @@ class NumericControl extends Component implements ParameterObserver {
 		}
 	}
 	
+	
 	/* INTERFACE audio.parameter.ParameterObserver */
 	public function onParameterChange(p:Parameter):Void {
 		if (p == value) updateDisplay();
 	}
 	
-	function updateDisplay() {
-		// implement in subclasses
-	}
+	
+	/**
+	 * Called when the value Parameter changes - implement in subclasses
+	 */
+	function updateDisplay() { }
 	
 	
-	//TODO:move elsewhere
+	
 	public static function roundValueForDisplay(value:Float, sigfig:Int):String {
 		
 		if (sigfig < 1) sigfig = 1;

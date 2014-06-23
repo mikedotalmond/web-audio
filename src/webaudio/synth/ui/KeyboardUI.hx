@@ -67,8 +67,8 @@ class KeyboardUI extends Component {
 		keyDown = new Signal1<Int>();
 		keyUp 	= new Signal1<Int>();
 		
-		whiteKeyTexture = textureAtlas.get('whiteKey');
-		blackKeyTexture = textureAtlas.get('blackKey');
+		whiteKeyTexture = textureAtlas.get('WhiteKey');
+		blackKeyTexture = textureAtlas.get('BlackKey');
 	}
 	
 	
