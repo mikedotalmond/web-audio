@@ -31,8 +31,6 @@ class Rotary extends NumericControl {
 	public var maxAngle			:Float;
 	
 	public var labelFormatter	:Float->String;
-	
-	
 	var centreX			:Float;
 	var centreY			:Float;
 	

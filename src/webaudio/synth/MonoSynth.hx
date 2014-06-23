@@ -55,13 +55,14 @@ class MonoSynth implements ParameterObserver { //
 	public var osc0Pan	(default, null):LRPanner;
 	public var osc1Pan	(default, null):LRPanner;
 	
-	public var osc0_randomCents		:Float 	= 0;
 	public var osc0_portamentoTime	:Float 	= 0;
-	public var osc0_detuneCents		:Int 	= 0;
+	public var osc0_randomCents		:Float 	= 0;
+	public var osc0_detuneCents		(get, set):Int;
 	//
+	public var osc1_portamentoTime	:Float 	= 0;	
 	public var osc1_randomCents		:Float 	= 0;
-	public var osc1_portamentoTime	:Float 	= 0;
-	public var osc1_detuneCents		:Int	= 0;	
+	public var osc1_detuneCents		(get, set):Int;
+	
 	
 	// OSC A/B phase offset
 	public var phase(get, set):Float;
@@ -74,6 +75,7 @@ class MonoSynth implements ParameterObserver { //
 	// Amplitude Envelope Generator
 	public var adsr(default, null):ADSR;
 	
+	
 	// fx
 	public var filter(default, null):BiquadFilter;
 	public var distortionGroup(default, null):DistortionGroup;
@@ -84,15 +86,19 @@ class MonoSynth implements ParameterObserver { //
 	
 	
 	// osc 0/1 phase offset
-	var phaseDelay	:DelayNode;
-	var _phase		:Float = 0;	
-	var _pitchBend	:Float = 0; // [-1.0, 1.0]
+	var phaseDelay			:DelayNode;
+	var _phase				:Float = 0;	
+	var _pitchBend			:Float = 0; // [-1.0, 1.0]
+	
+	var _osc0_detuneCents	:Int = 0;
+	var _osc1_detuneCents	:Int = 0;
+	
 	
 	// TODOS: theses LFOses.... apparently we can connect output of LFO (or any node...) as input to an AudioParam
 	//var OscPhase_LFO		:OscillatorGroup;
 	//var FilterFreq_LFO	:OscillatorGroup;
 	//var FM_LFO			:OscillatorGroup;
-	var AM_LFO		:OscillatorGroup;
+	//var AM_LFO		:OscillatorGroup;
 	
 	var context		:AudioContext;
 	var freqUtil	:NoteFrequencyUtil;
@@ -100,7 +106,6 @@ class MonoSynth implements ParameterObserver { //
 	var noteFreq	:Float = 440; // current/last note frequency
 	var osc0Freq	:Float = 440; // actual current osc freq (notefreq+detune+pitchbend+random...etc)
 	var osc1Freq	:Float = 440;
-	
 	
 	/**
 	 * 
@@ -140,13 +145,8 @@ class MonoSynth implements ParameterObserver { //
 	
 	
 	function setupDistortion():Void {
-		
-		distortionGroup = new DistortionGroup(context);
-		
-		distortionGroup.pregain.gain.value = 1.0;
-		//distortionGroup.waveshaper.setDistortion(.5);
-		//distortionGroup.crusher.bits = 12;
-		
+		distortionGroup = new DistortionGroup(context);		
+		distortionGroup.pregain.gain.value = 1.0;		
 		distortionGroup.output.connect(delay.input); // send to delay
 		distortionGroup.output.connect(outputGain);  // master output
 	}
@@ -189,9 +189,9 @@ class MonoSynth implements ParameterObserver { //
 		noteFreq = osc0Freq = osc1Freq = freq;
 		
 		// various processes can detune the oscillators and need to be checked here...
-		var detune0:Float = osc0_detuneCents;
-		var detune1:Float = osc1_detuneCents;
-
+		var detune0:Float = _osc0_detuneCents;
+		var detune1:Float = _osc1_detuneCents;
+		
 		// random detune
 		if (osc0_randomCents > 0) detune0 += (osc0_randomCents * (Math.random() - .5));
 		if (osc1_randomCents > 0) detune1 += (osc1_randomCents * (Math.random() - .5));
@@ -211,8 +211,12 @@ class MonoSynth implements ParameterObserver { //
 		phaseDelay.delayTime.cancelScheduledValues(when);		
 		if (osc0_portamentoTime > 0) {
 			// make phase-change match portamento
-			phaseDelay.delayTime.setValueAtTime(phaseDelay.delayTime.value, when);
-			phaseDelay.delayTime.exponentialRampToValueAtTime(p, when + osc0_portamentoTime);
+			if (p > 0) {
+				phaseDelay.delayTime.setValueAtTime(phaseDelay.delayTime.value, when);
+				phaseDelay.delayTime.exponentialRampToValueAtTime(p, when + osc0_portamentoTime);
+			} else {
+				phaseDelay.delayTime.setValueAtTime(p, when);
+			}
 		} else {
 			phaseDelay.delayTime.setValueAtTime(p, when);
 		}
@@ -274,7 +278,7 @@ class MonoSynth implements ParameterObserver { //
 			case 'osc0Type'			: osc0.type = Std.int(val);
 			case 'osc0Level'		: osc0Level.gain.setValueAtTime(val, now);
 			case 'osc0Pan'			: osc0Pan.pan = val;
-			case 'osc0Rlide'		: osc0_portamentoTime = val;
+			case 'osc0Slide'		: osc0_portamentoTime = val;
 			case 'osc0Detune'		: osc0_detuneCents = Std.int(val);
 			case 'osc0Random'		: osc0_randomCents = val;
 			
@@ -334,6 +338,7 @@ class MonoSynth implements ParameterObserver { //
 	}
 	
 	
+	//
 	
 	
 	inline function get_phase():Float return _phase;
@@ -349,20 +354,18 @@ class MonoSynth implements ParameterObserver { //
 	function set_pitchBend(value:Float):Float {
 		value = value <-1.0 ? -1.0 : (value > 1.0 ? 1.0 : value);
 		
-		if (noteIsOn) {
+		if (noteIsOn) { // playing a note?
 			
-			// alreay playing a note?
 			var dP = (value - _pitchBend) * pitchBendRange; // pitchBend delta - cents
 			var f0  = freqUtil.detuneFreq(osc0Freq, dP);
 			var f1  = freqUtil.detuneFreq(osc1Freq, dP);
-			
 			var now = context.currentTime;
 			
 			osc0.oscillator.node.frequency.cancelScheduledValues(now);
-			osc0.oscillator.node.frequency.exponentialRampToValueAtTime(f0, now+1/60);
+			osc0.oscillator.node.frequency.exponentialRampToValueAtTime(f0, now + frameTime);
 			
 			osc1.oscillator.node.frequency.cancelScheduledValues(now);
-			osc1.oscillator.node.frequency.exponentialRampToValueAtTime(f1, now+1/60);
+			osc1.oscillator.node.frequency.exponentialRampToValueAtTime(f1, now + frameTime);
 			
 			osc0Freq = f0;
 			osc1Freq = f1;
@@ -370,4 +373,42 @@ class MonoSynth implements ParameterObserver { //
 		
 		return _pitchBend = value;
 	}
+	
+	
+	inline function get_osc0_detuneCents() return _osc0_detuneCents;	
+	function set_osc0_detuneCents(value:Int):Int {		
+		value = value <-100 ? -100 : (value > 100 ? 100 : value);
+		
+		if (noteIsOn) { // playing a note?
+			var dt = value - _osc0_detuneCents;
+			var f  = freqUtil.detuneFreq(osc0Freq, dt);
+			var now = context.currentTime;
+			
+			osc0.oscillator.node.frequency.cancelScheduledValues(now);
+			osc0.oscillator.node.frequency.exponentialRampToValueAtTime(f, now + frameTime);		
+			osc0Freq = f;	
+		}
+		
+		return _osc0_detuneCents = value;
+	}
+	
+	
+	inline function get_osc1_detuneCents() return _osc1_detuneCents;
+	function set_osc1_detuneCents(value:Int):Int {		
+		value = value <-100 ? -100 : (value > 100 ? 100 : value);
+		
+		if (noteIsOn) { // playing a note?
+			var dt = value - _osc1_detuneCents;
+			var f  = freqUtil.detuneFreq(osc1Freq, dt);
+			var now = context.currentTime;
+			
+			osc1.oscillator.node.frequency.cancelScheduledValues(now);
+			osc1.oscillator.node.frequency.exponentialRampToValueAtTime(f, now + frameTime);	
+			osc1Freq = f;
+		}
+		
+		return _osc1_detuneCents = value;
+	}
+	
+	static inline var frameTime = 1 / 60;
 }

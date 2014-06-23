@@ -91,6 +91,7 @@ class NumericControl extends Component implements ParameterObserver {
 	
 	
 	function pointerMove(e:PointerEvent) {
+		
 		// hmm. something has changed (in Chrome at least) - mouse-down fires off a mosue-move immediately afterward, without moving...
 		
 		if (e.viewX != pX || e.viewY != pY) {
@@ -112,7 +113,7 @@ class NumericControl extends Component implements ParameterObserver {
 		}
 	}
 	
-	
+	// override if needed in subclasses....
 	function dragDelta(dX:Float, dY:Float) {
 		var val = value.getValue(true) + dY;
 		value.setValue(val > 1 ? 1 : (val < 0 ? 0 : val), true);
