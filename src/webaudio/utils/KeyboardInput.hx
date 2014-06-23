@@ -38,9 +38,12 @@ class KeyboardInput {
 		keyToNote 	= keyNotes.keycodeToNoteIndex;
 	}
 	
+	public inline function qwertyKeyIsNote(code:Int) {
+		return keyToNote.exists(code);
+	}
 	
 	public function onQwertyKeyDown(code:Int) {
-		if (keyToNote.exists(code)) {
+		if (qwertyKeyIsNote(code)) {
 			onNoteKeyDown(keyToNote.get(code));
 		}
 	}

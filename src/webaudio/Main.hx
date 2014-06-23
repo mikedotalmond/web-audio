@@ -12,21 +12,22 @@ import flambe.display.Sprite;
 import flambe.display.SpriteSheet.StarlingSpriteSheet;
 import flambe.display.SubTexture;
 import flambe.Entity;
+import flambe.input.Key;
 import flambe.input.KeyboardEvent;
 import flambe.platform.html.WebAudioSound;
 import flambe.platform.KeyCodes;
+
 import flambe.System;
 import flambe.util.Promise;
+
 import haxe.ds.Vector;
 import haxe.Timer;
-import webaudio.synth.generator.Oscillator.OscillatorType;
-import webaudio.synth.ui.controls.Rotary;
 
 import js.Browser;
-
-import js.html.Blob;
 import js.html.audio.AudioContext;
+import js.html.Blob;
 
+import webaudio.synth.generator.Oscillator.OscillatorType;
 import webaudio.synth.MonoSynth;
 import webaudio.synth.ui.Fonts;
 import webaudio.synth.ui.MonoSynthUI;
@@ -82,6 +83,12 @@ import webaudio.utils.KeyboardNotes;
 	}	
 	
 	
+	function onWavEncoded(b:Blob) {
+		AudioNodeRecorder.forceDownload(b);
+		recorder.clear();
+	}
+	
+	
     function assetsReady (pack:AssetPack) {
 		
 		Fonts.setup(pack);
@@ -96,33 +103,11 @@ import webaudio.utils.KeyboardNotes;
 		monoSynthUI	= new MonoSynthUI(textureAtlas, keyboardNotes);
 		scene.addChild(new Entity().add(monoSynthUI));	
 		
-		// setup (chromatic) keyboard controller
-		initSynthControlInputs();
-		
 		initAudio();
 		
-		monoSynthUI.outputLevel.value.addObserver(monoSynth);
-		monoSynthUI.pitchBend.value.addObserver(monoSynth);
-		monoSynthUI.pitchBend.returnToDefault = true;
+		initControl();
 		
-		monoSynthUI.pitchBend.labelFormatter = function(val) {
-			return monoSynthUI.pitchBend.defaultLabelFormatter((val * monoSynth.pitchBendRange) / 100);
-		};
-		
-		monoSynthUI.osc0Level.value.addObserver(monoSynth);
-		monoSynthUI.osc0Pan.value.addObserver(monoSynth);
-		monoSynthUI.osc0Slide.value.addObserver(monoSynth);
-		monoSynthUI.osc0Random.value.addObserver(monoSynth);
-		monoSynthUI.osc0Detune.value.addObserver(monoSynth);
-		
-		monoSynthUI.osc1Level.value.addObserver(monoSynth);
-		monoSynthUI.osc1Pan.value.addObserver(monoSynth);
-		monoSynthUI.osc1Slide.value.addObserver(monoSynth);
-		monoSynthUI.osc1Random.value.addObserver(monoSynth);
-		monoSynthUI.osc1Detune.value.addObserver(monoSynth);
-		
-		monoSynthUI.oscPhase.value.addObserver(monoSynth);
-		
+		//
 		/*
 		recorder = new AudioNodeRecorder(monoSynth.output);
 		recorder.wavEncoded.connect(onWavEncoded);
@@ -133,6 +118,7 @@ import webaudio.utils.KeyboardNotes;
 		}, 5000);
 		*/
 	}
+	
 	
 	function setupFlambe(pack:AssetPack) {
 		var xml			= Xml.parse(pack.getFile('sprites.xml').toString());
@@ -179,72 +165,7 @@ import webaudio.utils.KeyboardNotes;
 	}
 	
 	
-	function onWavEncoded(b:Blob) {
-		AudioNodeRecorder.forceDownload(b);
-		recorder.clear();
-	}
 	
-	
-	function initSynthControlInputs() {
-		
-		if (System.keyboard.supported) {
-			
-			activeKeys = new Vector<Bool>(256);
-			for (i in 0...activeKeys.length) activeKeys[i] = false;
-			
-			System.keyboard.up.connect(function(e:KeyboardEvent) {
-				var code = KeyCodes.toKeyCode(e.key);
-				activeKeys[code] = false;
-				keyboardInputs.onQwertyKeyUp(code);
-			});
-			
-			System.keyboard.down.connect(function(e:KeyboardEvent) {
-				var code = KeyCodes.toKeyCode(e.key);
-				activeKeys[code] = true;
-				
-				// don't trigger keyboard ui-keys if ctrl||alt are down
-				if (!(keyIsDown(KeyCodes.CONTROL) || keyIsDown(KeyCodes.ALT))) {
-					keyboardInputs.onQwertyKeyDown(code);
-				}
-			});
-		}
-		
-		// mouse/touch keyboard input/control
-		monoSynthUI.keyboard.keyDown.connect(function(i) {
-			keyboardInputs.onNoteKeyDown(i);
-		});
-		monoSynthUI.keyboard.keyUp.connect(function(i) {
-			keyboardInputs.onNoteKeyUp(i);
-		});
-		
-		
-		initKeyboardInputs();
-		
-	}
-	
-	
-	inline function initKeyboardInputs() {
-		
-		var handleNoteOn = function(i) {
-			var f = keyboardNotes.noteFreq.noteIndexToFrequency(i);
-			monoSynth.noteOn(audioContext.currentTime, f, .8, !monoSynth.noteIsOn);
-			monoSynthUI.keyboard.setNoteState(i, true);
-		};
-		
-		var handleNoteOff = function(i) {
-			
-			monoSynthUI.keyboard.setNoteState(i, false);
-			
-			// retrigger note-on if any keys/notes are held
-			if (keyboardInputs.noteCount > 0) handleNoteOn(keyboardInputs.lastNote);
-			else monoSynth.noteOff(audioContext.currentTime);
-		};
-		
-		keyboardInputs.noteOn.connect(handleNoteOn);
-		keyboardInputs.noteOff.connect(handleNoteOff);
-	}
-	
-
 	function initAudio() {
 		
 		var destination = audioContext.destination;
@@ -293,6 +214,106 @@ import webaudio.utils.KeyboardNotes;
 		monoSynth.delay.feedback.value = .44;
 		monoSynth.delay.lpfFrequency.value = 6000;
 	}
+	
+	
+	
+	function initControl() {
+		
+		initKeyboardInputs();
+		
+		// monoSynth observes changes on ui parameters...
+		
+		monoSynthUI.outputLevel.value.addObserver(monoSynth);
+		
+		monoSynthUI.pitchBend.returnToDefault = true;
+		monoSynthUI.pitchBend.value.addObserver(monoSynth);
+		monoSynthUI.pitchBend.labelFormatter = function(val) {
+			return monoSynthUI.pitchBend.defaultLabelFormatter((val * monoSynth.pitchBendRange) / 100);
+		};
+		
+		
+		var osc = monoSynthUI.oscillators;
+		osc.osc0Level.value.addObserver(monoSynth);
+		osc.osc0Pan.value.addObserver(monoSynth);
+		osc.osc0Slide.value.addObserver(monoSynth);
+		osc.osc0Random.value.addObserver(monoSynth);
+		osc.osc0Detune.value.addObserver(monoSynth);
+		//
+		osc.osc1Level.value.addObserver(monoSynth);
+		osc.osc1Pan.value.addObserver(monoSynth);
+		osc.osc1Slide.value.addObserver(monoSynth);
+		osc.osc1Random.value.addObserver(monoSynth);
+		osc.osc1Detune.value.addObserver(monoSynth);
+		//
+		osc.oscPhase.value.addObserver(monoSynth);
+	}
+	
+	
+	
+	function onKeyDown(e:KeyboardEvent) {
+		
+		var code = KeyCodes.toKeyCode(e.key);
+		activeKeys[code] = true;
+		
+		switch(e.key) {
+			
+			case Key.Escape	 		: System.stage.requestFullscreen(false);
+			case Key.F, Key.F11		: System.stage.requestFullscreen();
+			
+			case Key.NumpadAdd		: camera.controller.zoom.animateBy(.2, .25, Ease.quadOut);
+			case Key.NumpadSubtract	: camera.controller.zoom.animateBy(-.2, .25, Ease.quadOut);
+			
+			default:
+				// trace(e.key);
+				// don't trigger keyboard ui-keys if ctrl||alt are down
+				if (!(keyIsDown(KeyCodes.CONTROL) || keyIsDown(KeyCodes.ALT))) {
+					keyboardInputs.onQwertyKeyDown(code);
+				}
+		}
+	}
+	
+	
+	function onKeyUp(e:KeyboardEvent) {
+		var code = KeyCodes.toKeyCode(e.key);
+		activeKeys[code] = false;
+		keyboardInputs.onQwertyKeyUp(code);
+	}
+	
+	
+	// setup (chromatic) keyboard controller	
+	function initKeyboardInputs() {
+		
+		if (System.keyboard.supported) {
+			activeKeys = new Vector<Bool>(256);
+			for (i in 0...activeKeys.length) activeKeys[i] = false;
+			
+			System.keyboard.up.connect(onKeyUp);			
+			System.keyboard.down.connect(onKeyDown);
+		}
+		
+		// Mouse / Touch keyboard-controls
+		monoSynthUI.keyboard.keyDown.connect(keyboardInputs.onNoteKeyDown);
+		monoSynthUI.keyboard.keyUp.connect(keyboardInputs.onNoteKeyUp);
+		
+		
+		// note on/off handlers		
+		var handleNoteOn = function(noteIndex:Int) {
+			var f = keyboardNotes.noteFreq.noteIndexToFrequency(noteIndex);
+			monoSynth.noteOn(audioContext.currentTime, f, .8, !monoSynth.noteIsOn);
+			monoSynthUI.keyboard.setNoteState(noteIndex, true);
+		}
+		
+		var handleNoteOff = function(noteIndex:Int) {		
+			monoSynthUI.keyboard.setNoteState(noteIndex, false);		
+			// retrigger note-on if any keys/notes are held
+			if (keyboardInputs.noteCount > 0) handleNoteOn(keyboardInputs.lastNote);
+			else monoSynth.noteOff(audioContext.currentTime);
+		}
+		
+		keyboardInputs.noteOn.connect(handleNoteOn);
+		keyboardInputs.noteOff.connect(handleNoteOff);
+	}
+	
 	
 	
 	inline function keyIsDown(code:Int):Bool return activeKeys[code];
