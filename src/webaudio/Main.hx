@@ -16,18 +16,18 @@ import flambe.input.Key;
 import flambe.input.KeyboardEvent;
 import flambe.platform.html.WebAudioSound;
 import flambe.platform.KeyCodes;
+
 import flambe.System;
 import flambe.util.Promise;
+
 import haxe.ds.Vector;
 import haxe.Timer;
-import webaudio.synth.generator.Oscillator.OscillatorType;
-import webaudio.synth.ui.controls.Rotary;
 
 import js.Browser;
-
-import js.html.Blob;
 import js.html.audio.AudioContext;
+import js.html.Blob;
 
+import webaudio.synth.generator.Oscillator.OscillatorType;
 import webaudio.synth.MonoSynth;
 import webaudio.synth.ui.Fonts;
 import webaudio.synth.ui.MonoSynthUI;
@@ -249,6 +249,7 @@ import webaudio.utils.KeyboardNotes;
 	}
 	
 	
+	
 	function onKeyDown(e:KeyboardEvent) {
 		
 		var code = KeyCodes.toKeyCode(e.key);
@@ -283,7 +284,6 @@ import webaudio.utils.KeyboardNotes;
 	function initKeyboardInputs() {
 		
 		if (System.keyboard.supported) {
-			
 			activeKeys = new Vector<Bool>(256);
 			for (i in 0...activeKeys.length) activeKeys[i] = false;
 			
