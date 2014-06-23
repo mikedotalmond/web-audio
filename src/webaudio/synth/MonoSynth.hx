@@ -293,10 +293,10 @@ class MonoSynth implements ParameterObserver { //
 			case 'pitchBend'		: pitchBend = val;
 			
 			//ADSR
-			case 'adsr_attack'		: adsr.attack 	= val;
-			case 'adsr_decay'		: adsr.decay 	= val;
-			case 'adsr_sustain'		: adsr.sustain 	= val;
-			case 'adsr_release'		: adsr.release 	= val;
+			case 'adsrAttack'		: adsr.attack 	= val;
+			case 'adsrDecay'		: adsr.decay 	= val;
+			case 'adsrSustain'		: adsr.sustain 	= val;
+			case 'adsrRelease'		: adsr.release 	= val;
 			
 			// AM  LFO
 			case 'am_lfo_type'		:

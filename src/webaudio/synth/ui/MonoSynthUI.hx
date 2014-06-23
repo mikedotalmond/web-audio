@@ -18,6 +18,9 @@ import flambe.System;
 import flambe.util.Signal0;
 import webaudio.Main;
 import webaudio.synth.ui.controls.Rotary;
+import webaudio.synth.ui.modules.ADSRModule;
+import webaudio.synth.ui.modules.DistortionModule;
+import webaudio.synth.ui.modules.FilterModule;
 import webaudio.synth.ui.modules.OscillatorsModule;
 import webaudio.utils.KeyboardNotes;
 
@@ -28,21 +31,23 @@ import webaudio.utils.KeyboardNotes;
  */
 class MonoSynthUI extends Sprite {
 	
-	//public var modules	(default,null):Array<ModuleUI>;
-	public var keyboard	(default,null):KeyboardUI;
+	var textureAtlas		:Map<String,SubTexture>;
+	var keyboardNotes		:KeyboardNotes;
+	var keyboardContainer	:Sprite;
+	var keyboardMask		:Sprite;
+	
+	var ouputPanel			:Entity;
+	var background			:NineSlice;
+	
+	public var keyboard		(default,null):KeyboardUI;
 
-	var textureAtlas	:Map<String,SubTexture>;
-	var keyboardNotes	:KeyboardNotes;
-	var keyboardContainer:Sprite;
-	var keyboardMask	:Sprite;
-	
-	var ouputPanel		:Entity;
-	var background		:NineSlice;
-	
 	public var outputLevel	(default, null):Rotary;	
 	public var pitchBend	(default, null):Rotary;
-		
+	
 	public var oscillators	(default, null):OscillatorsModule;
+	public var adsr			(default, null):ADSRModule;
+	public var filter		(default, null):FilterModule;
+	public var distortion	(default, null):DistortionModule;
 	
 	
 	public function new(textureAtlas:Map<String,SubTexture>, keyboardNotes:KeyboardNotes) {
@@ -71,6 +76,9 @@ class MonoSynthUI extends Sprite {
 		panelBg.y._ = -4;
 		
 		oscillators = new OscillatorsModule(owner, textureAtlas);
+		adsr = new ADSRModule(owner, textureAtlas);
+		//filter = new FilterModule(owner, textureAtlas);
+		//distortion = new DistortionModule(owner, textureAtlas);
 		
 		setupOutputPanel();
 	}

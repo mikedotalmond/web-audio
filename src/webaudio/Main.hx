@@ -246,6 +246,13 @@ import webaudio.utils.KeyboardNotes;
 		osc.osc1Detune.value.addObserver(monoSynth);
 		//
 		osc.oscPhase.value.addObserver(monoSynth);
+		
+		var adsr = monoSynthUI.adsr;
+		adsr.attack.value.addObserver(monoSynth);
+		adsr.decay.value.addObserver(monoSynth);
+		adsr.sustain.value.addObserver(monoSynth);
+		adsr.release.value.addObserver(monoSynth);
+		
 	}
 	
 	
