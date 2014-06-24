@@ -29,17 +29,16 @@ class BiquadFilter {
 	static inline var MinQ		:Float = 0;
 	static inline var MaxQ		:Float = 24;
 	
-	public var type				:Int;
 	public var biquad			:Biquad;
 	
-	public var envEnabled		:Bool = true;
 	public var envRange			:Float = 1;
 	public var envAttack		:Float = .1;
 	public var envRelease		:Float = 1;
 	
-	public var frequency(get, set)	:Float;
-	public var q(get, set)			:Float;
-	public var gain(get, set)		:Float; // only relevant to peak/shelving modes, not lp/hp
+	public var type		(get,set):Int;
+	public var frequency(get, set):Float;
+	public var q		(get, set):Float;
+	public var gain		(get, set):Float; // only relevant to peak/shelving modes, not lp/hp
 	
 	
 	public function new(type:Int, freq:Float=350.0, q:Float=1.0, context:AudioContext, ?input:AudioNode, ?destination:AudioNode) {
@@ -51,15 +50,13 @@ class BiquadFilter {
 	
 	
 	public function on(when:Float, retrigger:Bool=false) {
-		var start = MinFreq + _frequency * FreqRange;
-		var dest  = Math.max(start + envRange * FreqRange, MaxFreq);
-		biquad.trigger(when, start, envAttack, dest, retrigger);
+		var dest  = Math.min(_frequency + envRange * (MaxFreq - _frequency), MaxFreq);
+		biquad.trigger(when, _frequency, envAttack, dest, retrigger);
 	}
 	
 	
 	public function off(when:Float):Float {
-		var dest = MinFreq + _frequency * FreqRange;
-		return biquad.release(when, dest, envRelease);
+		return biquad.release(when, _frequency, envRelease);
 	}
 	
 	
@@ -98,6 +95,10 @@ class BiquadFilter {
 		biquad.node.gain.setValueAtTime(value, now);
 		return _gain = value;
 	}
+	
+	
+	inline function get_type():Int return cast biquad.node.type;
+	inline function set_type(value:Int):Int return cast biquad.node.type = FilterType.get(value);
 }
 
 
@@ -136,7 +137,7 @@ abstract Biquad(BiquadFilterNode) from BiquadFilterNode to BiquadFilterNode {
 	 * @param	retrigger
 	 */
 	inline public function trigger(when:Float, startFreq:Float, attackTime:Float, sustainFreq:Float, retrigger:Bool=false) {
-		startFreq = retrigger ? startFreq : this.frequency.value;
+		startFreq = retrigger ? this.frequency.value : startFreq;
 		rampToFreqAtTime(when, attackTime, startFreq, sustainFreq);
 	}
 	

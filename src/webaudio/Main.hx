@@ -172,8 +172,8 @@ import webaudio.utils.KeyboardNotes;
 		
 		// set up monosynth test
 		monoSynth = new MonoSynth(destination, keyboardNotes.noteFreq);
-		monoSynth.osc0.type = OscillatorType.SQUARE; // TRIANGLE; SQUARE
-		monoSynth.osc1.type = OscillatorType.SQUARE; // TRIANGLE; SQUARE
+		monoSynth.osc0.type = OscillatorType.SINE; // TRIANGLE; SQUARE
+		monoSynth.osc1.type = OscillatorType.SAWTOOTH; // TRIANGLE; SQUARE
 		monoSynth.phase = .333;
 		
 		monoSynth.pitchBendRange = 700;
@@ -198,20 +198,20 @@ import webaudio.utils.KeyboardNotes;
 		
 		// Filter
 		monoSynth.filter.q = 1;
-		monoSynth.filter.frequency = .54;
-		monoSynth.filter.envAttack = .15;
-		monoSynth.filter.envRelease = .2;
+		monoSynth.filter.frequency= .8;
+		monoSynth.filter.envAttack = 0;
+		monoSynth.filter.envRelease = 1;
 		
 		// Distortion
 		monoSynth.distortionGroup.pregain.gain.value 	= 1;
-		monoSynth.distortionGroup.waveshaper.amount 	= .25;
+		monoSynth.distortionGroup.waveshaper.amount 	= .125;
 		monoSynth.distortionGroup.crusher.bits 			= 12;
 		monoSynth.distortionGroup.crusher.rateReduction = 1;
 		
 		// Delay
-		monoSynth.delay.time.value = .25;
-		monoSynth.delay.level.value = .66;
-		monoSynth.delay.feedback.value = .44;
+		monoSynth.delay.time.value = .3;
+		monoSynth.delay.level.value = .1;
+		monoSynth.delay.feedback.value = .33;
 		monoSynth.delay.lpfFrequency.value = 6000;
 	}
 	
@@ -253,6 +253,13 @@ import webaudio.utils.KeyboardNotes;
 		adsr.sustain.value.addObserver(monoSynth);
 		adsr.release.value.addObserver(monoSynth);
 		
+		var filter = monoSynthUI.filter;
+		filter.type.value.addObserver(monoSynth);
+		filter.frequency.value.addObserver(monoSynth);
+		filter.Q.value.addObserver(monoSynth);
+		filter.attack.value.addObserver(monoSynth);
+		filter.release.value.addObserver(monoSynth);
+		filter.range.value.addObserver(monoSynth);
 	}
 	
 	

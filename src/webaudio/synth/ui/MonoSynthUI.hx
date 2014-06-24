@@ -77,7 +77,7 @@ class MonoSynthUI extends Sprite {
 		
 		oscillators = new OscillatorsModule(owner, textureAtlas);
 		adsr = new ADSRModule(owner, textureAtlas);
-		//filter = new FilterModule(owner, textureAtlas);
+		filter = new FilterModule(owner, textureAtlas);
 		//distortion = new DistortionModule(owner, textureAtlas);
 		
 		setupOutputPanel();

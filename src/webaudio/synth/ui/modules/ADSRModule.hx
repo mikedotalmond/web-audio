@@ -59,10 +59,10 @@ class ADSRModule {
 	
 	function init(owner:Entity, textureAtlas) {
 		
-		_attack 	= Rotary.create(MapFactory.getMapping(MapType.FLOAT, 0, 2), .1, -FMath.PI / 1.25, FMath.PI / 1.25);
-		_decay 		= Rotary.create(MapFactory.getMapping(MapType.FLOAT, 0, 1), 0.0, -FMath.PI / 1.25, FMath.PI / 1.25);
+		_attack 	= Rotary.create(MapFactory.getMapping(MapType.FLOAT_EXPONENTIAL, 0, 1), .1, -FMath.PI / 1.25, FMath.PI / 1.25);
+		_decay 		= Rotary.create(MapFactory.getMapping(MapType.FLOAT_EXPONENTIAL, 0, 1), 1.0, -FMath.PI / 1.25, FMath.PI / 1.25);
 		_sustain 	= Rotary.create(MapFactory.getMapping(MapType.FLOAT, 0, 1), 1.0, -FMath.PI / 1.25, FMath.PI / 1.25);
-		_release 	= Rotary.create(MapFactory.getMapping(MapType.FLOAT, 0, 2), 0.25, -FMath.PI / 1.25, FMath.PI / 1.25);
+		_release 	= Rotary.create(MapFactory.getMapping(MapType.FLOAT_EXPONENTIAL, 0, 1), 0.25, -FMath.PI / 1.25, FMath.PI / 1.25);
 		
 		_panel = NineSlice.fromSubTexture(textureAtlas.get('InnerPanelBg'), 8, 8, 320, 192);
 		

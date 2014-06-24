@@ -230,7 +230,7 @@ class MonoSynth implements ParameterObserver { //
 		// (re)trigger the AEG (ADSR) and FEG (ASR)
 		if (!noteIsOn || retrigger) {
 			adsr.on(when, velocity, retrigger);
-			if (filter.envEnabled) filter.on(when, retrigger);
+			filter.on(when, retrigger);
 		}
 		
 		noteIsOn = true;
@@ -247,7 +247,7 @@ class MonoSynth implements ParameterObserver { //
 			
 			var r = adsr.off(when);
 			
-			if (filter.envEnabled) filter.off(when);
+			filter.off(when);
 			
 			osc0.oscillator.release(r);
 			osc1.oscillator.release(r);
@@ -304,13 +304,12 @@ class MonoSynth implements ParameterObserver { //
 			case 'am_lfo_depth'		:
 			
 			//Filter
-			case 'filter_enabled'	: filter.envEnabled	= Std.int(val) == 1;
-			case 'filter_type'		: filter.type 		= Std.int(val);
-			case 'filter_freq'		: filter.frequency 	= val;
-			case 'filter_q'			: filter.q 			= val;
-			case 'filter_attack'	: filter.envAttack 	= val;
-			case 'filter_release'	: filter.envRelease = val;
-			case 'filter_env_range'	: filter.envRange 	= val;
+			case 'filterType'		: filter.type 		= Std.int(val) == 0 ? FilterType.LOWPASS : FilterType.HIGHPASS;
+			case 'filterFrequency'	: filter.frequency 	= val;
+			case 'filterQ'			: filter.q 			= val;
+			case 'filterAttack'		: filter.envAttack 	= val;
+			case 'filterRelease'	: filter.envRelease = val;
+			case 'filterRange'		: filter.envRange 	= val;
 			
 			//Distortion
 			case 'dist_pregain' 		: distortionGroup.pregain.gain.setValueAtTime(val, now);
