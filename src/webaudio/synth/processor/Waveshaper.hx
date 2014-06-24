@@ -36,6 +36,7 @@ abstract WaveShaper(WaveShaperNode) from WaveShaperNode to WaveShaperNode {
 	 * */
 	public var amount(never, set):Float;
 	inline function set_amount(value:Float = .0) {
+		value = value < -1.0 ? -1.0 : (value > 1.0 ? 1.0 : value);
 		WaveShaper.getDistortionCurve(value, this.curve);
 		return value;
 	}

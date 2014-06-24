@@ -83,13 +83,13 @@ class FilterModule {
 	
 	function init(owner:Entity, textureAtlas) {
 		
-		_type 		= Rotary.create(MapFactory.getMapping(MapType.INT, 0, 1), 0.0, -FMath.PI / 1.25, FMath.PI / 1.25);
-		_frequency 	= Rotary.create(MapFactory.getMapping(MapType.FLOAT_EXPONENTIAL, 20, 8000), 8000.0, -FMath.PI / 1.25, FMath.PI / 1.25);
-		_Q 			= Rotary.create(MapFactory.getMapping(MapType.FLOAT_EXPONENTIAL, 0.0001, 128), 1.0, -FMath.PI / 1.25, FMath.PI / 1.25);
+		_type 		= Rotary.create(MapFactory.getMapping(MapType.INT, 0, 1), 0, 'filterType');
+		_frequency 	= Rotary.create(MapFactory.getMapping(MapType.FLOAT_EXPONENTIAL, 20, 8000), 8000.0, 'filterFrequency');
+		_Q 			= Rotary.create(MapFactory.getMapping(MapType.FLOAT_EXPONENTIAL, 0.0001, 128), 1.0, 'filterQ');
 		
-		_attack 	= Rotary.create(MapFactory.getMapping(MapType.FLOAT_EXPONENTIAL, 0, 1), 0.25, -FMath.PI / 1.25, FMath.PI / 1.25);
-		_release 	= Rotary.create(MapFactory.getMapping(MapType.FLOAT_EXPONENTIAL, 0, 1), 0.5, -FMath.PI / 1.25, FMath.PI / 1.25);
-		_range	 	= Rotary.create(MapFactory.getMapping(MapType.FLOAT_EXPONENTIAL, 0, 1), 0.0, -FMath.PI / 1.25, FMath.PI / 1.25);
+		_attack 	= Rotary.create(MapFactory.getMapping(MapType.FLOAT_EXPONENTIAL, 0, 1), 0.25, 'filterAttack');
+		_release 	= Rotary.create(MapFactory.getMapping(MapType.FLOAT_EXPONENTIAL, 0, 1), 0.5, 'filterRelease');
+		_range	 	= Rotary.create(MapFactory.getMapping(MapType.FLOAT_EXPONENTIAL, 0, 1), 0.0, 'filterRange');
 		
 		_panel 		= NineSlice.fromSubTexture(textureAtlas.get('InnerPanelBg'), 8, 8, 470, 192);
 		
@@ -103,25 +103,13 @@ class FilterModule {
 				.addChild(_range)
 		);
 		
+		type 		= _type.get(Rotary);
+		frequency 	= _frequency.get(Rotary);
+		Q 			= _Q.get(Rotary);
 		
-		type = _type.get(Rotary);
-		type.value.name = 'filterType';
-		
-		frequency = _frequency.get(Rotary);
-		frequency.value.name = 'filterFrequency';
-		
-		Q = _Q.get(Rotary);
-		Q.value.name = 'filterQ';
-		
-		
-		attack = _attack.get(Rotary);
-		attack.value.name = 'filterAttack';
-		
-		release = _release.get(Rotary);
-		release.value.name = 'filterRelease';
-		
-		range = _range.get(Rotary);
-		range.value.name = 'filterRange';
+		attack 		= _attack.get(Rotary);		
+		release 	= _release.get(Rotary);		
+		range 		= _range.get(Rotary);
 	}	
 	
 }

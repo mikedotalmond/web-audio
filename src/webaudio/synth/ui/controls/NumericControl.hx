@@ -45,7 +45,7 @@ class NumericControl extends Component implements ParameterObserver {
 	 * @param	parameterMapping
 	 */
 	public function new(name:String, defaultValue:Float, parameterMapping:Mapping) {
-		value = new Parameter('${name}_value', defaultValue, parameterMapping);
+		value = new Parameter(name, defaultValue, parameterMapping);
 	}
 	
 	
@@ -139,6 +139,11 @@ class NumericControl extends Component implements ParameterObserver {
 	}
 	
 	
+	public function defaultLabelFormatter(value:Float):String {
+		return NumericControl.roundValueForDisplay(value, 3);
+	}
+	
+	
 	/* INTERFACE audio.parameter.ParameterObserver */
 	public function onParameterChange(p:Parameter):Void {
 		if (p == value) updateDisplay();
@@ -149,7 +154,6 @@ class NumericControl extends Component implements ParameterObserver {
 	 * Called when the value Parameter changes - implement in subclasses
 	 */
 	function updateDisplay() { }
-	
 	
 	
 	public static function roundValueForDisplay(value:Float, sigfig:Int):String {

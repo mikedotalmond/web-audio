@@ -26,17 +26,18 @@ import flambe.Component;
 
 class Rotary extends NumericControl {
 	
-	public var radius			:Float;
-	public var minAngle			:Float;
-	public var maxAngle			:Float;
+	 var radius		:Float;
+	 var minAngle	:Float;
+	 var maxAngle	:Float;
 	
-	public var labelFormatter	:Float->String;
-	var centreX			:Float;
-	var centreY			:Float;
+	var centreX		:Float;
+	var centreY		:Float;
 	
-	var display			:Sprite;
-	var knobDot			:Sprite;
-	var valueLabel		:TextSprite;
+	var display		:Sprite;
+	var knobDot		:Sprite;
+	var valueLabel	:TextSprite;
+	
+	public var labelFormatter:Float->String;
 	
 	
 	/**
@@ -46,8 +47,8 @@ class Rotary extends NumericControl {
 	 * @param	maxAngle
 	 * @param	radius
 	 */
-	public function new(defaultValue:Float, parameterMapping:Mapping, minAngle:Float, maxAngle:Float, radius:Float) {
-		super('rotary', defaultValue, parameterMapping);
+	public function new(name:String, defaultValue:Float, parameterMapping:Mapping, minAngle:Float, maxAngle:Float, radius:Float) {
+		super(name, defaultValue, parameterMapping);
 		this.minAngle 	= minAngle;
 		this.maxAngle 	= maxAngle;
 		this.radius 	= radius;
@@ -114,11 +115,6 @@ class Rotary extends NumericControl {
 	}
 	
 	
-	public function defaultLabelFormatter(value:Float):String {
-		return NumericControl.roundValueForDisplay(value, 3);
-	}
-	
-	
 	/**
 	 *
 	 * @param	parameterMapping
@@ -128,18 +124,21 @@ class Rotary extends NumericControl {
 	 * @param	radius
 	 * @return
 	 */
-	public static function create(parameterMapping:Mapping, defaultValue:Float, minAngle:Float, maxAngle:Float, small:Bool=false, showLabel:Bool=true):Entity {
+	public static function create(parameterMapping:Mapping, defaultValue:Float, minAngle:Float=MinRotaryAngle, maxAngle:Float=MaxRotaryAngle, small:Bool=false, showLabel:Bool=true, name:String='Rotary'):Entity {
 		
-		var textures = Main.instance.textureAtlas;
-		var ent = new Entity();
+		var textures 	= Main.instance.textureAtlas; 
+		var ent 		= new Entity();
 		
 		ent	.add(new ImageSprite(textures.get('knob_${small?"25":"50"}%')))
 			.addChild(new Entity().add(new ImageSprite(textures.get('knob-nipple_50%'))));
 			
 		if (showLabel) ent.addChild(new Entity().add(Fonts.getField(Fonts.Prime13, '0.00', 0x212133)));
 		
-		ent.add(new Rotary(defaultValue, parameterMapping, minAngle, maxAngle, small ? 5.25 : 12));
+		ent.add(new Rotary(name, defaultValue, parameterMapping, minAngle, maxAngle, small ? 5.25 : 12));
 		
 		return ent;
 	}
+	
+	static inline var MaxRotaryAngle:Float = FMath.PI / 1.25;
+	static inline var MinRotaryAngle:Float = -MaxRotaryAngle;
 }

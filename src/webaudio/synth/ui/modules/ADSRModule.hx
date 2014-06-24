@@ -31,7 +31,7 @@ class ADSRModule {
 		
 		init(owner, textureAtlas);
 		
-		position(700, 96);		
+		position(648, 96);		
 	}
 	
 	function position(panelX:Float,panelY:Float) {
@@ -41,7 +41,7 @@ class ADSRModule {
 		_panel.x = panelX;
 		_panel.y = panelY;
 
-		panelX += 61;
+		panelX += 43;
 		panelY += 132;
 		
 		_attack.get(Sprite).x._ = panelX;
@@ -59,12 +59,12 @@ class ADSRModule {
 	
 	function init(owner:Entity, textureAtlas) {
 		
-		_attack 	= Rotary.create(MapFactory.getMapping(MapType.FLOAT_EXPONENTIAL, 0, 1), .1, -FMath.PI / 1.25, FMath.PI / 1.25);
-		_decay 		= Rotary.create(MapFactory.getMapping(MapType.FLOAT_EXPONENTIAL, 0, 1), 1.0, -FMath.PI / 1.25, FMath.PI / 1.25);
-		_sustain 	= Rotary.create(MapFactory.getMapping(MapType.FLOAT, 0, 1), 1.0, -FMath.PI / 1.25, FMath.PI / 1.25);
-		_release 	= Rotary.create(MapFactory.getMapping(MapType.FLOAT_EXPONENTIAL, 0, 1), 0.25, -FMath.PI / 1.25, FMath.PI / 1.25);
+		_attack = Rotary.create(MapFactory.getMapping(MapType.FLOAT_EXPONENTIAL, 0, 1), .1, 'adsrAttack');
+		_decay 	= Rotary.create(MapFactory.getMapping(MapType.FLOAT_EXPONENTIAL, 0, 1), 1.0, 'adsrDecay');
+		_sustain= Rotary.create(MapFactory.getMapping(MapType.FLOAT, 0, 1), 1.0, 'adsrSustain');
+		_release= Rotary.create(MapFactory.getMapping(MapType.FLOAT_EXPONENTIAL, 0, 1), 0.25, 'adsrRelease');
 		
-		_panel = NineSlice.fromSubTexture(textureAtlas.get('InnerPanelBg'), 8, 8, 320, 192);
+		_panel 	= NineSlice.fromSubTexture(textureAtlas.get('InnerPanelBg'), 8, 8, 280, 192);
 		
 		owner.addChild(
 			new Entity().add(_panel)
@@ -74,16 +74,9 @@ class ADSRModule {
 				.addChild(_release)
 		);
 		
-		attack = _attack.get(Rotary);
-		attack.value.name = 'adsrAttack';
-		
-		decay = _decay.get(Rotary);
-		decay.value.name = 'adsrDecay';
-		
-		sustain = _sustain.get(Rotary);
-		sustain.value.name = 'adsrSustain';
-		
+		attack = _attack.get(Rotary);		
+		decay = _decay.get(Rotary);		
+		sustain = _sustain.get(Rotary);		
 		release = _release.get(Rotary);
-		release.value.name = 'adsrRelease';
 	}	
 }

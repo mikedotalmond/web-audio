@@ -227,9 +227,7 @@ import webaudio.utils.KeyboardNotes;
 		
 		monoSynthUI.pitchBend.returnToDefault = true;
 		monoSynthUI.pitchBend.value.addObserver(monoSynth);
-		monoSynthUI.pitchBend.labelFormatter = function(val) {
-			return monoSynthUI.pitchBend.defaultLabelFormatter((val * monoSynth.pitchBendRange) / 100);
-		};
+		monoSynthUI.pitchBend.labelFormatter = function(val) return monoSynthUI.pitchBend.defaultLabelFormatter((val * monoSynth.pitchBendRange) / 100);
 		
 		
 		var osc = monoSynthUI.oscillators;
@@ -260,6 +258,19 @@ import webaudio.utils.KeyboardNotes;
 		filter.attack.value.addObserver(monoSynth);
 		filter.release.value.addObserver(monoSynth);
 		filter.range.value.addObserver(monoSynth);
+		
+		var distortion = monoSynthUI.distortion;
+		distortion.pregain.value.addObserver(monoSynth);
+		distortion.waveshaperAmount.value.addObserver(monoSynth);
+		distortion.bits.value.addObserver(monoSynth);
+		distortion.rateReduction.value.addObserver(monoSynth);
+		
+		var delay = monoSynthUI.delay;
+		delay.level.value.addObserver(monoSynth);
+		delay.time.value.addObserver(monoSynth);
+		delay.feedback.value.addObserver(monoSynth);
+		delay.lfpFreq.value.addObserver(monoSynth);
+		delay.lfpQ.value.addObserver(monoSynth);
 	}
 	
 	

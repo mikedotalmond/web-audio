@@ -45,7 +45,7 @@ import webaudio.synth.processor.Biquad;
 
 class MonoSynth implements ParameterObserver { //
 	
-	public var noteIsOn(default, null):Bool = false;
+	public var noteIsOn	(default, null):Bool = false;
 	
 	// oscillators
 	public var osc0		(default, null):OscillatorGroup;
@@ -63,8 +63,7 @@ class MonoSynth implements ParameterObserver { //
 	public var osc1_randomCents		:Float 	= 0;
 	public var osc1_detuneCents		(get, set):Int;
 	
-	
-	// OSC A/B phase offset
+	// OSC 0/1 phase offset
 	public var phase(get, set):Float;
 	
 	// 
@@ -77,12 +76,20 @@ class MonoSynth implements ParameterObserver { //
 	
 	
 	// fx
-	public var filter(default, null):BiquadFilter;
-	public var distortionGroup(default, null):DistortionGroup;
-	public var delay(default, null):FeedbackDelay;
+	public var filter			(default, null):BiquadFilter;
+	public var distortionGroup	(default, null):DistortionGroup;
+	public var delay			(default, null):FeedbackDelay;
+	
 	
 	// output
-	public var outputGain(default, null):GainNode;
+	public var outputGain		(default, null):GainNode;
+	
+	
+	// TODOS: these LFOses.... apparently we can connect output of LFO (or any node...) as input to an AudioParam
+	//var OscPhase_LFO		:OscillatorGroup;
+	//var FilterFreq_LFO	:OscillatorGroup;
+	//var FM_LFO			:OscillatorGroup;
+	//var AM_LFO			:OscillatorGroup;
 	
 	
 	// osc 0/1 phase offset
@@ -93,19 +100,13 @@ class MonoSynth implements ParameterObserver { //
 	var _osc0_detuneCents	:Int = 0;
 	var _osc1_detuneCents	:Int = 0;
 	
+	var context				:AudioContext;
+	var freqUtil			:NoteFrequencyUtil;
 	
-	// TODOS: theses LFOses.... apparently we can connect output of LFO (or any node...) as input to an AudioParam
-	//var OscPhase_LFO		:OscillatorGroup;
-	//var FilterFreq_LFO	:OscillatorGroup;
-	//var FM_LFO			:OscillatorGroup;
-	//var AM_LFO		:OscillatorGroup;
+	var noteFreq			:Float = 440; // current/last note frequency
+	var osc0Freq			:Float = 440; // actual current osc (trigger) freq (notefreq+detune+pitchbend+random...etc)
+	var osc1Freq			:Float = 440;
 	
-	var context		:AudioContext;
-	var freqUtil	:NoteFrequencyUtil;
-	
-	var noteFreq	:Float = 440; // current/last note frequency
-	var osc0Freq	:Float = 440; // actual current osc freq (notefreq+detune+pitchbend+random...etc)
-	var osc1Freq	:Float = 440;
 	
 	/**
 	 * 
@@ -312,15 +313,17 @@ class MonoSynth implements ParameterObserver { //
 			case 'filterRange'		: filter.envRange 	= val;
 			
 			//Distortion
-			case 'dist_pregain' 		: distortionGroup.pregain.gain.setValueAtTime(val, now);
-			case 'dist_waveshape_amount': distortionGroup.waveshaper.amount = val;
-			case 'dist_bitcrush_bits'	: distortionGroup.crusher.bits = val;
-			case 'dist_bitcrush_rate'	: distortionGroup.crusher.rateReduction = val;
+			case 'distortionPregain' 			: distortionGroup.pregain.gain.setValueAtTime(1 + val, now); //
+			case 'distortionWaveshaperAmount'	: distortionGroup.waveshaper.amount = val;
+			case 'distortionBits'				: distortionGroup.crusher.bits = val;
+			case 'distortionRateReduction'		: distortionGroup.crusher.rateReduction = val;
 			
 			//Delay
-			case 'delay_time'			: delay.time.setValueAtTime(val, now);
-			case 'delay_level'			: delay.level.setValueAtTime(val, now);
-			case 'delay_feedback'		: delay.feedback.setValueAtTime(val, now);
+			case 'delayTime'		: delay.time.setValueAtTime(val, now);
+			case 'delayLevel'		: delay.level.setValueAtTime(val, now);
+			case 'delayFeedback'	: delay.feedback.setValueAtTime(val, now);
+			case 'delayLFPFreq'		: delay.lpfFrequency.setValueAtTime(val, now);
+			case 'delayLFPQ'		: delay.lpfQ.setValueAtTime(val, now);
 		}
 	}
 	

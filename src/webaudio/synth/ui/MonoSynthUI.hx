@@ -17,8 +17,10 @@ import flambe.math.Rectangle;
 import flambe.System;
 import flambe.util.Signal0;
 import webaudio.Main;
+
 import webaudio.synth.ui.controls.Rotary;
 import webaudio.synth.ui.modules.ADSRModule;
+import webaudio.synth.ui.modules.DelayModule;
 import webaudio.synth.ui.modules.DistortionModule;
 import webaudio.synth.ui.modules.FilterModule;
 import webaudio.synth.ui.modules.OscillatorsModule;
@@ -48,6 +50,7 @@ class MonoSynthUI extends Sprite {
 	public var adsr			(default, null):ADSRModule;
 	public var filter		(default, null):FilterModule;
 	public var distortion	(default, null):DistortionModule;
+	public var delay		(default, null):DelayModule;
 	
 	
 	public function new(textureAtlas:Map<String,SubTexture>, keyboardNotes:KeyboardNotes) {
@@ -78,7 +81,8 @@ class MonoSynthUI extends Sprite {
 		oscillators = new OscillatorsModule(owner, textureAtlas);
 		adsr = new ADSRModule(owner, textureAtlas);
 		filter = new FilterModule(owner, textureAtlas);
-		//distortion = new DistortionModule(owner, textureAtlas);
+		distortion = new DistortionModule(owner, textureAtlas);
+		delay = new DelayModule(owner, textureAtlas);
 		
 		setupOutputPanel();
 	}
@@ -118,7 +122,7 @@ class MonoSynthUI extends Sprite {
 		var _pitchBend = Rotary.create(MapFactory.getMapping(MapType.FLOAT, -1, 1), 0.0, -FMath.PI / 1.25, FMath.PI / 1.25);
 	
 		owner.addChild(
-			(ouputPanel = new Entity().add(NineSlice.fromSubTexture(textureAtlas.get('InnerPanelBg'), 16, 16, 320, 192)))
+			(ouputPanel = new Entity().add(NineSlice.fromSubTexture(textureAtlas.get('InnerPanelBg'), 16, 16, 160, 192)))
 				.addChild(_outputLevel)
 				.addChild(_pitchBend)
 		);
@@ -138,7 +142,7 @@ class MonoSynthUI extends Sprite {
 		_outputLevel.get(Sprite).x._ = panelX+35;
 		_outputLevel.get(Sprite).y._ = panelY+35;
 		
-		_pitchBend.get(Sprite).x._ = panelX+128;
+		_pitchBend.get(Sprite).x._ = panelX+108;
 		_pitchBend.get(Sprite).y._ = panelY+35;
 		
 	}
