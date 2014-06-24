@@ -38,7 +38,7 @@ class FilterModule {
 		
 		init(owner, textureAtlas);
 		
-		position(700, 196);		
+		position(700, 312);		
 	}
 	
 	function position(panelX:Float,panelY:Float) {
@@ -84,14 +84,14 @@ class FilterModule {
 	function init(owner:Entity, textureAtlas) {
 		
 		_type 		= Rotary.create(MapFactory.getMapping(MapType.INT, 0, 1), 0.0, -FMath.PI / 1.25, FMath.PI / 1.25);
-		_frequency 	= Rotary.create(MapFactory.getMapping(MapType.FLOAT_EXPONENTIAL, 20, 8000), 1000.0, -FMath.PI / 1.25, FMath.PI / 1.25);
+		_frequency 	= Rotary.create(MapFactory.getMapping(MapType.FLOAT_EXPONENTIAL, 20, 8000), 8000.0, -FMath.PI / 1.25, FMath.PI / 1.25);
 		_Q 			= Rotary.create(MapFactory.getMapping(MapType.FLOAT_EXPONENTIAL, 0.0001, 128), 1.0, -FMath.PI / 1.25, FMath.PI / 1.25);
 		
-		_attack 	= Rotary.create(MapFactory.getMapping(MapType.FLOAT_EXPONENTIAL, 0, 1), .25, -FMath.PI / 1.25, FMath.PI / 1.25);
+		_attack 	= Rotary.create(MapFactory.getMapping(MapType.FLOAT_EXPONENTIAL, 0, 1), 0.25, -FMath.PI / 1.25, FMath.PI / 1.25);
 		_release 	= Rotary.create(MapFactory.getMapping(MapType.FLOAT_EXPONENTIAL, 0, 1), 0.5, -FMath.PI / 1.25, FMath.PI / 1.25);
-		_range	 	= Rotary.create(MapFactory.getMapping(MapType.FLOAT_EXPONENTIAL, 0, 1), 1.0, -FMath.PI / 1.25, FMath.PI / 1.25);
+		_range	 	= Rotary.create(MapFactory.getMapping(MapType.FLOAT_EXPONENTIAL, 0, 1), 0.0, -FMath.PI / 1.25, FMath.PI / 1.25);
 		
-		_panel 		= NineSlice.fromSubTexture(textureAtlas.get('InnerPanelBg'), 8, 8, 320, 192);
+		_panel 		= NineSlice.fromSubTexture(textureAtlas.get('InnerPanelBg'), 8, 8, 470, 192);
 		
 		owner.addChild(
 			new Entity().add(_panel)
