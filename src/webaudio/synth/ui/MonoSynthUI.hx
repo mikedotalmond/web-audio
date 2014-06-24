@@ -24,6 +24,7 @@ import webaudio.synth.ui.modules.DelayModule;
 import webaudio.synth.ui.modules.DistortionModule;
 import webaudio.synth.ui.modules.FilterModule;
 import webaudio.synth.ui.modules.OscillatorsModule;
+import webaudio.synth.ui.modules.OutputModule;
 import webaudio.utils.KeyboardNotes;
 
 
@@ -42,15 +43,13 @@ class MonoSynthUI extends Sprite {
 	var background			:NineSlice;
 	
 	public var keyboard		(default,null):KeyboardUI;
-
-	public var outputLevel	(default, null):Rotary;	
-	public var pitchBend	(default, null):Rotary;
 	
 	public var oscillators	(default, null):OscillatorsModule;
 	public var adsr			(default, null):ADSRModule;
 	public var filter		(default, null):FilterModule;
 	public var distortion	(default, null):DistortionModule;
 	public var delay		(default, null):DelayModule;
+	public var output		(default, null):OutputModule;
 	
 	
 	public function new(textureAtlas:Map<String,SubTexture>, keyboardNotes:KeyboardNotes) {
@@ -68,23 +67,17 @@ class MonoSynthUI extends Sprite {
 		setupBackground();
 		setupKeyboard();
 		setupPanels();
-		
 	}
 	
-	function setupPanels() {
+	
+	
+	function setupBackground(){
 		
-		var panelBg = new ImageSprite(textureAtlas.get('main-panel-bg')).disablePointer();
-		owner.addChild(new Entity().add(panelBg));
-		panelBg.x._ = -8;
-		panelBg.y._ = -4;
+		owner.addChild(new Entity().add(background = NineSlice.fromSubTexture(textureAtlas.get('panel-bg_50%'))));
 		
-		oscillators = new OscillatorsModule(owner, textureAtlas);
-		adsr = new ADSRModule(owner, textureAtlas);
-		filter = new FilterModule(owner, textureAtlas);
-		distortion = new DistortionModule(owner, textureAtlas);
-		delay = new DelayModule(owner, textureAtlas);
-		
-		setupOutputPanel();
+		background.width  = 1240;
+		background.height = 680;
+		background.setTint(96 / 196,  139 / 196, 139 / 196);
 	}
 	
 	
@@ -105,45 +98,19 @@ class MonoSynthUI extends Sprite {
 	}
 	
 	
-	function setupBackground(){
-		
-		owner.addChild(new Entity().add(background = NineSlice.fromSubTexture(textureAtlas.get('panel-bg_50%'))));
-		
-		background.width  = 1240;
-		background.height = 680;
-		background.setTint(96 / 196,  139 / 196, 139 / 196);
-	}
 	
-	
-	function setupOutputPanel() {
+	function setupPanels() {
 		
-		// panel ui test...
-		var _outputLevel = Rotary.create(MapFactory.getMapping(MapType.FLOAT, 0, 1), 1.0, -FMath.PI / 1.25, FMath.PI / 1.25);
-		var _pitchBend = Rotary.create(MapFactory.getMapping(MapType.FLOAT, -1, 1), 0.0, -FMath.PI / 1.25, FMath.PI / 1.25);
-	
-		owner.addChild(
-			(ouputPanel = new Entity().add(NineSlice.fromSubTexture(textureAtlas.get('InnerPanelBg'), 16, 16, 160, 192)))
-				.addChild(_outputLevel)
-				.addChild(_pitchBend)
-		);
+		var panelBg = new ImageSprite(textureAtlas.get('main-panel-bg')).disablePointer();
+		owner.addChild(new Entity().add(panelBg));
+		panelBg.x._ = -8;
+		panelBg.y._ = -4;
 		
-		outputLevel = _outputLevel.get(Rotary);
-		outputLevel.value.name = 'outputLevel';
-	
-		pitchBend = _pitchBend.get(Rotary);
-		pitchBend.value.name = 'pitchBend';
-		
-		var panelX = 23;
-		var panelY = 96+200;
-		
-		ouputPanel.get(NineSlice).x = panelX;
-		ouputPanel.get(NineSlice).y = panelY;
-		
-		_outputLevel.get(Sprite).x._ = panelX+35;
-		_outputLevel.get(Sprite).y._ = panelY+35;
-		
-		_pitchBend.get(Sprite).x._ = panelX+108;
-		_pitchBend.get(Sprite).y._ = panelY+35;
-		
+		oscillators = new OscillatorsModule(owner, textureAtlas);
+		adsr 		= new ADSRModule(owner, textureAtlas);
+		filter 		= new FilterModule(owner, textureAtlas);
+		distortion 	= new DistortionModule(owner, textureAtlas);
+		delay 		= new DelayModule(owner, textureAtlas);
+		output 		= new OutputModule(owner, textureAtlas);
 	}
 }

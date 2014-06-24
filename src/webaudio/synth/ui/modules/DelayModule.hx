@@ -42,7 +42,7 @@ class DelayModule {
 		_time 		= Rotary.create(MapFactory.getMapping(MapType.FLOAT, 0.0001, 1), .333, 'delayTime');
 		_feedback 	= Rotary.create(MapFactory.getMapping(MapType.FLOAT, 0, 1), 0.25, 'delayFeedback');
 		_lfpFreq 	= Rotary.create(MapFactory.getMapping(MapType.FLOAT, 20, 8000), 8000, 'delayLFPFreq');
-		_lfpQ 		= Rotary.create(MapFactory.getMapping(MapType.FLOAT, 0.0001, 100), 1, 'delayLFPQ');
+		_lfpQ 		= Rotary.create(MapFactory.getMapping(MapType.FLOAT, 0.0001, 10), 1, 'delayLFPQ');
 		
 		_panel 		= NineSlice.fromSubTexture(textureAtlas.get('InnerPanelBg'), 8, 8, 332, 192);
 		

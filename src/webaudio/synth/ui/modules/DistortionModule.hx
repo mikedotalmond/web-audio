@@ -36,7 +36,7 @@ class DistortionModule {
 	function init(owner:Entity, textureAtlas) {
 		
 		_pregain 			= Rotary.create(MapFactory.getMapping(MapType.FLOAT, 0, 12), 0.0, 'distortionPregain');
-		_waveshaperAmount 	= Rotary.create(MapFactory.getMapping(MapType.FLOAT, -1, 1), 0.0, 'distortionWaveshaperAmount');
+		_waveshaperAmount 	= Rotary.create(MapFactory.getMapping(MapType.FLOAT, -0.999, 0.999), 0.0, 'distortionWaveshaperAmount');
 		_bits 				= Rotary.create(MapFactory.getMapping(MapType.FLOAT, 1, 24), 12, 'distortionBits');
 		_rateReduction 		= Rotary.create(MapFactory.getMapping(MapType.FLOAT, 1, 16), 1, 'distortionRateReduction');
 		

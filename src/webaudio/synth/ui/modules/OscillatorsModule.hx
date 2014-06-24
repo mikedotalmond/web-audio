@@ -121,18 +121,18 @@ class OscillatorsModule {
 	
 	function init(owner:Entity, textureAtlas) {
 		
-		_osc0Type 	= Rotary.create(MapFactory.getMapping(MapType.INT, 0, 3), 0,'osc0Type');
+		_osc0Type 	= Rotary.create(MapFactory.getMapping(MapType.INT, 0, 3), 1,'osc0Type');
 		_osc0Level 	= Rotary.create(MapFactory.getMapping(MapType.FLOAT, 0, 1), .5, 'osc0Level');
 		_osc0Pan 	= Rotary.create(MapFactory.getMapping(MapType.FLOAT, -1, 1), 0.0, 'osc0Pan');
-		_osc0Slide 	= Rotary.create(MapFactory.getMapping(MapType.FLOAT, 0.001, 1), 0.001, 'osc0Slide');
-		_osc0Detune = Rotary.create(MapFactory.getMapping(MapType.FLOAT, -100, 100), 0.0, 'osc0Detune');
+		_osc0Slide 	= Rotary.create(MapFactory.getMapping(MapType.FLOAT, 0.001, 1), 0.1, 'osc0Slide');
+		_osc0Detune = Rotary.create(MapFactory.getMapping(MapType.FLOAT, -200, 200), 0.0, 'osc0Detune');
 		_osc0Random = Rotary.create(MapFactory.getMapping(MapType.FLOAT, 0, 100), 0.0, 'osc0Random');
 		
 		_osc1Type 	= Rotary.create(MapFactory.getMapping(MapType.INT, 0, 3), 1, 'osc1Type');
 		_osc1Level 	= Rotary.create(MapFactory.getMapping(MapType.FLOAT, 0, 1), .5, 'osc1Level');
 		_osc1Pan 	= Rotary.create(MapFactory.getMapping(MapType.FLOAT, -1, 1), 0.0,'osc1Pan');
-		_osc1Slide 	= Rotary.create(MapFactory.getMapping(MapType.FLOAT, 0.001, 1), 0.001, 'osc1Slide');
-		_osc1Detune = Rotary.create(MapFactory.getMapping(MapType.FLOAT, -100, 100), 0.0, 'osc1Detune');
+		_osc1Slide 	= Rotary.create(MapFactory.getMapping(MapType.FLOAT, 0.001, 1), 0.1, 'osc1Slide');
+		_osc1Detune = Rotary.create(MapFactory.getMapping(MapType.FLOAT, -200, 200), 0.0, 'osc1Detune');
 		_osc1Random = Rotary.create(MapFactory.getMapping(MapType.FLOAT, 0, 100), 0.0, 'osc1Random');
 		
 		_oscPhase 	= Rotary.create(MapFactory.getMapping(MapType.FLOAT, 0, 1), 0.0, 'oscPhase');

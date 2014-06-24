@@ -13,7 +13,7 @@ import flambe.util.SignalConnection;
 /**
  * Base for numeric input types; rotary knob, slider, etc.
  *
- * Uses Parameter, rovides delta mouse drag (x/y) values for the control.
+ * Uses Parameter, provides delta mouse drag (x/y) values for the control.
  * Ctrl-click-drag to increase accuracy,
  * Double-click to reset to default value
  *

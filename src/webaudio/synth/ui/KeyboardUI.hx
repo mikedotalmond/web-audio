@@ -146,6 +146,7 @@ class KeyboardUI extends Component {
 		pointerDown = (System.mouse.supported && System.mouse.isDown(MouseButton.Left)) || (!System.mouse.supported && System.touch.supported);
 		if (pointerDown) {
 			var key:KeySprite = cast e.hit;
+			//TODO: read key pointer-y position -- use for velocity
 			if (heldKey != key.noteIndex) {
 				
 				// a new key is down (pointer drag-in)
@@ -227,7 +228,7 @@ class KeyboardUI extends Component {
 		var out	= [];
 		for (oct in 0...octaveCount) {
 			out.push({ index:i +  	 12 * oct, hasSharp:true } );
-			out.push({ index:i + 2 + 12 * oct , hasSharp:true } );
+			out.push({ index:i + 2 + 12 * oct, hasSharp:true } );
 			out.push({ index:i + 4 + 12 * oct, hasSharp:false } );
 			out.push({ index:i + 5 + 12 * oct, hasSharp:true } );
 			out.push({ index:i + 7 + 12 * oct, hasSharp:true } );

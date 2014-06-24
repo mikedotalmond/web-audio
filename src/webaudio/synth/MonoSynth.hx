@@ -45,15 +45,15 @@ import webaudio.synth.processor.Biquad;
 
 class MonoSynth implements ParameterObserver { //
 	
-	public var noteIsOn	(default, null):Bool = false;
+	public var noteIsOn				(default, null):Bool = false;
 	
 	// oscillators
-	public var osc0		(default, null):OscillatorGroup;
-	public var osc1		(default, null):OscillatorGroup;	
-	public var osc0Level(default, null):GainNode;
-	public var osc1Level(default, null):GainNode;
-	public var osc0Pan	(default, null):LRPanner;
-	public var osc1Pan	(default, null):LRPanner;
+	public var osc0					(default, null):OscillatorGroup;
+	public var osc1					(default, null):OscillatorGroup;	
+	public var osc0Level			(default, null):GainNode;
+	public var osc1Level			(default, null):GainNode;
+	public var osc0Pan				(default, null):LRPanner;
+	public var osc1Pan				(default, null):LRPanner;
 	
 	public var osc0_portamentoTime	:Float 	= 0;
 	public var osc0_randomCents		:Float 	= 0;
@@ -64,28 +64,25 @@ class MonoSynth implements ParameterObserver { //
 	public var osc1_detuneCents		(get, set):Int;
 	
 	// OSC 0/1 phase offset
-	public var phase(get, set):Float;
+	public var phase				(get, set):Float;
 	
 	// 
-	public var pitchBend(get,set)	:Float; // [-1.0, 1.0]
-	public var pitchBendRange		:Float = 200; // cents
-	
+	public var pitchBend			(get,set):Float; // [-1.0, 1.0]
+	public var pitchBendRange		:Float = 1200; // cents (1 Octave)
 	
 	// Amplitude Envelope Generator
-	public var adsr(default, null):ADSR;
-	
+	public var adsr					(default, null):ADSR;
 	
 	// fx
-	public var filter			(default, null):BiquadFilter;
-	public var distortionGroup	(default, null):DistortionGroup;
-	public var delay			(default, null):FeedbackDelay;
-	
+	public var filter				(default, null):BiquadFilter;
+	public var distortionGroup		(default, null):DistortionGroup;
+	public var delay				(default, null):FeedbackDelay;
 	
 	// output
-	public var outputGain		(default, null):GainNode;
+	public var outputGain			(default, null):GainNode;
 	
 	
-	// TODOS: these LFOses.... apparently we can connect output of LFO (or any node...) as input to an AudioParam
+	// TODO: (later) Some LFOses.... apparently can connect output of LFO (or any node...) as input to an AudioParam
 	//var OscPhase_LFO		:OscillatorGroup;
 	//var FilterFreq_LFO	:OscillatorGroup;
 	//var FM_LFO			:OscillatorGroup;
@@ -119,7 +116,6 @@ class MonoSynth implements ParameterObserver { //
 		context = destination.context;
 		
 		// set up audio process chain in reverse
-		
 		outputGain = context.createGain();
 		outputGain.connect(destination);
 		outputGain.gain.value = 1;
@@ -132,16 +128,7 @@ class MonoSynth implements ParameterObserver { //
 		filter	= new BiquadFilter(FilterType.LOWPASS, 1, 1, context, null, distortionGroup.input);
 		adsr 	= new ADSR(context, null, filter.biquad);
 		
-		//var gain = context.createGain();
-		//AM_LFO 	= new OscillatorGroup(context, cast adsr.node.node.gain);
-		////AM_LFO.oscillator.node.start(context.currentTime);
-		//AM_LFO.oscillator.setType(OscillatorType.SINE);
-		//AM_LFO.oscillatorNode.frequency.value = 1;
-		//
 		setupOscillators();
-		
-		//
-		// todo: LFO(s) AM/FM/Filter, Ouput-AnalyserNode (VU Bars etc...)
 	}
 	
 	
@@ -290,21 +277,17 @@ class MonoSynth implements ParameterObserver { //
 			case 'osc1Detune'		: osc1_detuneCents = Std.int(val);
 			case 'osc1Random'		: osc1_randomCents = val;
 			
-			case 'oscPhase'			: phase 	= val;
-			case 'pitchBend'		: pitchBend = val;
+			case 'oscPhase'			: phase 		= val;
 			
-			//ADSR
+			case 'pitchBend'		: pitchBend 	= val;
+			
+			// ADSR
 			case 'adsrAttack'		: adsr.attack 	= val;
 			case 'adsrDecay'		: adsr.decay 	= val;
 			case 'adsrSustain'		: adsr.sustain 	= val;
 			case 'adsrRelease'		: adsr.release 	= val;
 			
-			// AM  LFO
-			case 'am_lfo_type'		:
-			case 'am_lfo_freq'		:
-			case 'am_lfo_depth'		:
-			
-			//Filter
+			// Filter
 			case 'filterType'		: filter.type 		= Std.int(val) == 0 ? FilterType.LOWPASS : FilterType.HIGHPASS;
 			case 'filterFrequency'	: filter.frequency 	= val;
 			case 'filterQ'			: filter.q 			= val;
@@ -312,13 +295,13 @@ class MonoSynth implements ParameterObserver { //
 			case 'filterRelease'	: filter.envRelease = val;
 			case 'filterRange'		: filter.envRange 	= val;
 			
-			//Distortion
+			// Distortion
 			case 'distortionPregain' 			: distortionGroup.pregain.gain.setValueAtTime(1 + val, now); //
 			case 'distortionWaveshaperAmount'	: distortionGroup.waveshaper.amount = val;
 			case 'distortionBits'				: distortionGroup.crusher.bits = val;
 			case 'distortionRateReduction'		: distortionGroup.crusher.rateReduction = val;
 			
-			//Delay
+			// Delay
 			case 'delayTime'		: delay.time.setValueAtTime(val, now);
 			case 'delayLevel'		: delay.level.setValueAtTime(val, now);
 			case 'delayFeedback'	: delay.feedback.setValueAtTime(val, now);

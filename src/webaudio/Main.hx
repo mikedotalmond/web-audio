@@ -83,12 +83,6 @@ import webaudio.utils.KeyboardNotes;
 	}	
 	
 	
-	function onWavEncoded(b:Blob) {
-		AudioNodeRecorder.forceDownload(b);
-		recorder.clear();
-	}
-	
-	
     function assetsReady (pack:AssetPack) {
 		
 		Fonts.setup(pack);
@@ -103,7 +97,7 @@ import webaudio.utils.KeyboardNotes;
 		monoSynthUI	= new MonoSynthUI(textureAtlas, keyboardNotes);
 		scene.addChild(new Entity().add(monoSynthUI));	
 		
-		initAudio();
+		monoSynth = new MonoSynth(audioContext.destination, keyboardNotes.noteFreq);
 		
 		initControl();
 		
@@ -117,6 +111,12 @@ import webaudio.utils.KeyboardNotes;
 			recorder.encodeWAV();
 		}, 5000);
 		*/
+	}
+	
+	
+	function onWavEncoded(b:Blob) {
+		AudioNodeRecorder.forceDownload(b);
+		recorder.clear();
 	}
 	
 	
@@ -165,112 +165,65 @@ import webaudio.utils.KeyboardNotes;
 	}
 	
 	
-	
-	function initAudio() {
-		
-		var destination = audioContext.destination;
-		
-		// set up monosynth test
-		monoSynth = new MonoSynth(destination, keyboardNotes.noteFreq);
-		monoSynth.osc0.type = OscillatorType.SQUARE; // TRIANGLE; SQUARE
-		monoSynth.osc1.type = OscillatorType.SQUARE; // TRIANGLE; SQUARE
-		monoSynth.phase = .333;
-		
-		monoSynth.pitchBendRange = 700;
-		
-		monoSynth.osc0_portamentoTime = .15; //1.0
-		monoSynth.osc1_portamentoTime = .15; //1.0
-		
-		monoSynth.osc0_detuneCents = 0;
-		monoSynth.osc1_detuneCents = 0;
-		
-		monoSynth.osc0_randomCents = 30;
-		monoSynth.osc1_randomCents = 30;
-		
-		monoSynth.osc0Pan.pan = -.01;
-		monoSynth.osc1Pan.pan = .01;
-		
-		// Env		
-		monoSynth.adsr.attack = .025;
-		monoSynth.adsr.decay = .1;
-		monoSynth.adsr.sustain = 0.8;
-		monoSynth.adsr.release = .08;
-		
-		// Filter
-		monoSynth.filter.q = 1;
-		monoSynth.filter.frequency= .8;
-		monoSynth.filter.envAttack = 0;
-		monoSynth.filter.envRelease = 1;
-		
-		// Distortion
-		monoSynth.distortionGroup.pregain.gain.value 	= 1;
-		monoSynth.distortionGroup.waveshaper.amount 	= .125;
-		monoSynth.distortionGroup.crusher.bits 			= 12;
-		monoSynth.distortionGroup.crusher.rateReduction = 1;
-		
-		// Delay
-		monoSynth.delay.time.value = .3;
-		monoSynth.delay.level.value = .1;
-		monoSynth.delay.feedback.value = .33;
-		monoSynth.delay.lpfFrequency.value = 6000;
-	}
-	
-	
-	
+	/**
+	 * Add synth as a ui parameter observer, and set up (trigger default values)
+	 */
 	function initControl() {
 		
 		initKeyboardInputs();
 		
 		// monoSynth observes changes on ui parameters...
+		monoSynthUI.output.outputLevel.value.addObserver(monoSynth, true);
 		
-		monoSynthUI.outputLevel.value.addObserver(monoSynth);
-		
-		monoSynthUI.pitchBend.returnToDefault = true;
-		monoSynthUI.pitchBend.value.addObserver(monoSynth);
-		monoSynthUI.pitchBend.labelFormatter = function(val) return monoSynthUI.pitchBend.defaultLabelFormatter((val * monoSynth.pitchBendRange) / 100);
-		
+		// for some reason I've put pitch bend in the output panel for now...  meh.
+		var pb = monoSynthUI.output.pitchBend;
+		pb.returnToDefault = true;
+		pb.labelFormatter = function(val) return pb.defaultLabelFormatter((val * monoSynth.pitchBendRange) / 100);
+		pb.value.addObserver(monoSynth, true);
 		
 		var osc = monoSynthUI.oscillators;
-		osc.osc0Level.value.addObserver(monoSynth);
-		osc.osc0Pan.value.addObserver(monoSynth);
-		osc.osc0Slide.value.addObserver(monoSynth);
-		osc.osc0Random.value.addObserver(monoSynth);
-		osc.osc0Detune.value.addObserver(monoSynth);
+		osc.osc0Type.value.addObserver(monoSynth, true);
+		osc.osc0Level.value.addObserver(monoSynth, true);
+		osc.osc0Pan.value.addObserver(monoSynth, true);
+		osc.osc0Slide.value.addObserver(monoSynth, true);
+		osc.osc0Random.value.addObserver(monoSynth, true);
+		osc.osc0Detune.value.addObserver(monoSynth, true);
 		//
-		osc.osc1Level.value.addObserver(monoSynth);
-		osc.osc1Pan.value.addObserver(monoSynth);
-		osc.osc1Slide.value.addObserver(monoSynth);
-		osc.osc1Random.value.addObserver(monoSynth);
-		osc.osc1Detune.value.addObserver(monoSynth);
+		osc.osc1Type.value.addObserver(monoSynth, true);
+		osc.osc1Level.value.addObserver(monoSynth, true);
+		osc.osc1Pan.value.addObserver(monoSynth, true);
+		osc.osc1Slide.value.addObserver(monoSynth, true);
+		osc.osc1Random.value.addObserver(monoSynth, true);
+		osc.osc1Detune.value.addObserver(monoSynth, true);
 		//
-		osc.oscPhase.value.addObserver(monoSynth);
+		osc.oscPhase.value.addObserver(monoSynth, true);
 		
 		var adsr = monoSynthUI.adsr;
-		adsr.attack.value.addObserver(monoSynth);
-		adsr.decay.value.addObserver(monoSynth);
-		adsr.sustain.value.addObserver(monoSynth);
-		adsr.release.value.addObserver(monoSynth);
+		adsr.attack.value.addObserver(monoSynth, true);
+		adsr.decay.value.addObserver(monoSynth, true);
+		adsr.sustain.value.addObserver(monoSynth, true);
+		adsr.release.value.addObserver(monoSynth, true);
 		
 		var filter = monoSynthUI.filter;
-		filter.type.value.addObserver(monoSynth);
-		filter.frequency.value.addObserver(monoSynth);
-		filter.Q.value.addObserver(monoSynth);
-		filter.attack.value.addObserver(monoSynth);
-		filter.release.value.addObserver(monoSynth);
-		filter.range.value.addObserver(monoSynth);
+		filter.type.value.addObserver(monoSynth, true);
+		filter.frequency.value.addObserver(monoSynth, true);
+		filter.Q.value.addObserver(monoSynth, true);
+		filter.attack.value.addObserver(monoSynth, true);
+		filter.release.value.addObserver(monoSynth, true);
+		filter.range.value.addObserver(monoSynth, true);
 		
 		var distortion = monoSynthUI.distortion;
-		distortion.pregain.value.addObserver(monoSynth);
-		distortion.waveshaperAmount.value.addObserver(monoSynth);
-		distortion.bits.value.addObserver(monoSynth);
-		distortion.rateReduction.value.addObserver(monoSynth);
+		distortion.pregain.value.addObserver(monoSynth, true);
+		distortion.waveshaperAmount.value.addObserver(monoSynth, true);
+		distortion.bits.value.addObserver(monoSynth, true);
+		distortion.rateReduction.value.addObserver(monoSynth, true);
 		
 		var delay = monoSynthUI.delay;
-		delay.level.value.addObserver(monoSynth);
-		delay.time.value.addObserver(monoSynth);
-		delay.feedback.value.addObserver(monoSynth);
-		delay.lfpFreq.value.addObserver(monoSynth);
-		delay.lfpQ.value.addObserver(monoSynth);
+		delay.level.value.addObserver(monoSynth, true);
+		delay.time.value.addObserver(monoSynth, true);
+		delay.feedback.value.addObserver(monoSynth, true);
+		delay.lfpFreq.value.addObserver(monoSynth, true);
+		delay.lfpQ.value.addObserver(monoSynth, true);
 	}
 	
 	
