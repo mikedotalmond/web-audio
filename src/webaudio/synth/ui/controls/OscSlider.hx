@@ -117,7 +117,20 @@ class OscSlider extends NumericControl {
 	 * @param	value (normalised position value)
 	 */
 	inline function setPosition(value:Int) {
-		var px 		= value/3 * display.getNaturalWidth();
+		
+		sine.setTint(1,1,1);
+		square.setTint(1,1,1);
+		sawtooth.setTint(1,1,1);
+		triangle.setTint(1,1,1);
+		
+		switch(value) {
+			case OscillatorType.SINE: sine.setTint(1.2,1.52,1.66);
+			case OscillatorType.SQUARE: square.setTint(1.2,1.52,1.66);
+			case OscillatorType.SAWTOOTH: sawtooth.setTint(1.2,1.52,1.66);
+			case OscillatorType.TRIANGLE: triangle.setTint(1.2,1.52,1.66);
+		}
+		
+		var px 		= value / 3 * display.getNaturalWidth();
 		thumb.x._	= px;
 	}
 	
