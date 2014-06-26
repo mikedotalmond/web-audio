@@ -23,6 +23,7 @@ class OscSlider extends NumericControl {
 	var maxX			:Float;
 	
 	var display			:Sprite; //track
+	var knobHash		:Sprite;
 	
 	var thumb			:Sprite;
 	
@@ -51,6 +52,12 @@ class OscSlider extends NumericControl {
 		thumb = sprites.get(Sprite).centerAnchor();
 		thumb.pointerEnabled = true;
 		thumb.y._ = 6;
+		
+		sprites = sprites.next;
+		knobHash= sprites.get(Sprite).centerAnchor();
+		knobHash.y._ = 3;
+		knobHash.alpha._ = 0;
+		knobHash.setTint(.6, 1.2, 1.8);
 		
 		var iconX = -17;
 		var iconSpace = 37;
@@ -84,6 +91,16 @@ class OscSlider extends NumericControl {
 		
 		thumb.pointerDown.connect(pointerDown);
 		super.onAdded();
+	}
+	
+	override function pointerDown(e:PointerEvent) {
+		knobHash.alpha.animateTo(1, .5, Ease.quadOut);
+		super.pointerDown(e);
+	}
+	
+	override function pointerUp(e:PointerEvent) {
+		knobHash.alpha.animateTo(0, .5, Ease.quadOut);
+		super.pointerUp(e);
 	}
 	
 	
@@ -138,7 +155,9 @@ class OscSlider extends NumericControl {
 		
 		getIcon(value).setTint(1.2, 1.52, 1.66, .25, Ease.quadOut);
 		
-		thumb.x.animateTo(value / 3 * display.getNaturalWidth(), .1, Ease.quadOut);
+		var px = value / 3 * display.getNaturalWidth();
+		thumb.x.animateTo(px, .1, Ease.quadOut);
+		knobHash.x.animateTo(px, .1, Ease.quadOut);
 		
 		lastPosition = value;
 	}
@@ -156,6 +175,7 @@ class OscSlider extends NumericControl {
 		
 		ent	.add(new ImageSprite(textures.get('OscSliderTrack')))
 			.addChild(new Entity().add(new ImageSprite(textures.get('slider-thumb_50%'))))
+			.addChild(new Entity().add(new ImageSprite(textures.get('knob-hash_25%')).disablePointer()))
 			.addChild(new Entity().add(new ImageSprite(textures.get('Icon_Sine')).disablePointer()))
 			.addChild(new Entity().add(new ImageSprite(textures.get('Icon_Square')).disablePointer()))
 			.addChild(new Entity().add(new ImageSprite(textures.get('Icon_Sawtooth')).disablePointer()))

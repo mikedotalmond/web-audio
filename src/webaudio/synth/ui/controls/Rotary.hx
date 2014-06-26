@@ -4,6 +4,7 @@ import audio.parameter.mapping.MapFactory;
 import audio.parameter.mapping.Mapping;
 import audio.parameter.ParameterObserver;
 import audio.parameter.Parameter;
+import flambe.animation.Ease;
 import flambe.display.Sprite;
 import flambe.display.ImageSprite;
 import flambe.display.TextSprite;
@@ -35,6 +36,7 @@ class Rotary extends NumericControl {
 	
 	var display		:Sprite;
 	var knobDot		:Sprite;
+	var knobHash	:Sprite;
 	var valueLabel	:TextSprite;
 	
 	public var labelFormatter:Float->String;
@@ -62,14 +64,24 @@ class Rotary extends NumericControl {
 		centreX = display.anchorX._;
 		centreY = display.anchorY._;
 		
+		var sprites = owner.firstChild;
+		
 		// knob nipple-dot setup..
-		knobDot = owner.firstChild.get(Sprite)
+		knobDot = sprites.get(Sprite)
 			.centerAnchor()
 			.disablePixelSnapping()
 			.disablePointer();
 		
+		sprites = sprites.next;
+		knobHash = sprites.get(Sprite);
+		knobHash.x._ = 6;
+		knobHash.y._ = 6;
+		knobHash.alpha._ = 0;
+		knobHash.setTint(.6, 1.2, 1.8);
+		
 		// value label
-		valueLabel = owner.firstChild.next.get(TextSprite);
+		sprites = sprites.next;
+		valueLabel = sprites.get(TextSprite);
 		if (Std.is(valueLabel, TextSprite)) {
 			valueLabel.centerAnchor();
 			valueLabel.y._ = centreY + display.getNaturalHeight() / 2 + 7;
@@ -80,6 +92,21 @@ class Rotary extends NumericControl {
 		super.onAdded();
 	}
 	
+	override function pointerDown(e:PointerEvent) {
+		knobHash.alpha.animateTo(.8, .5, Ease.quadOut);
+		super.pointerDown(e);
+	}
+	
+	override function pointerUp(e:PointerEvent) {
+		super.pointerUp(e);
+		if (doubleClicked) {
+			knobHash.alpha._ = 1;
+			knobHash.alpha.animateTo(0, 1, Ease.quadOut);
+		} else {
+			knobHash.alpha.animateTo(0, .5, Ease.quadOut);
+		}
+		
+	}
 	
 	// triggered onParameterChange
 	override function updateDisplay() {
@@ -130,7 +157,8 @@ class Rotary extends NumericControl {
 		var ent 		= new Entity();
 		
 		ent	.add(new ImageSprite(textures.get('knob_${small?"25":"50"}%')))
-			.addChild(new Entity().add(new ImageSprite(textures.get('knob-nipple_50%'))));
+			.addChild(new Entity().add(new ImageSprite(textures.get('knob-nipple_50%'))))
+			.addChild(new Entity().add(new ImageSprite(textures.get('knob-hash_50%'))));
 			
 		if (showLabel) ent.addChild(new Entity().add(Fonts.getField(Fonts.Prime13, '0.00', 0x212133)));
 		
