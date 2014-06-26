@@ -68,10 +68,10 @@ class OscillatorsModule {
 		
 		panelY += 42;
 		
-		_osc0Type.get(Sprite).x._ = panelX+32;
-		_osc0Type.get(Sprite).y._ = panelY+8;
+		_osc0Type.get(Sprite).x._ = panelX+38;
+		_osc0Type.get(Sprite).y._ = panelY+12;
 		
-		panelX += 192;
+		panelX += 210;
 		
 		_osc0Level.get(Sprite).x._ = panelX;
 		_osc0Level.get(Sprite).y._ = panelY;
@@ -79,7 +79,7 @@ class OscillatorsModule {
 		_osc0Pan.get(Sprite).x._ = panelX += rotarySpace;
 		_osc0Pan.get(Sprite).y._ = panelY;
 		
-		_osc0Slide.get(Sprite).x._ = panelX += rotarySpace;
+		_osc0Slide.get(Sprite).x._ = panelX += rotarySpace+16;
 		_osc0Slide.get(Sprite).y._ = panelY;
 		
 		_osc0Detune.get(Sprite).x._ = panelX += rotarySpace;
@@ -89,7 +89,7 @@ class OscillatorsModule {
 		_osc0Random.get(Sprite).y._ = panelY;
 		
 		//
-		_oscPhase.get(Sprite).x._ = panelX += rotarySpace+rotarySpace/2;
+		_oscPhase.get(Sprite).x._ = panelX += rotarySpace+rotarySpace/4;
 		_oscPhase.get(Sprite).y._ = panelY + 54;
 		//
 		
@@ -97,10 +97,10 @@ class OscillatorsModule {
 		panelX = 24;
 		panelY += 96;
 		
-		_osc1Type.get(Sprite).x._ = panelX+32;
-		_osc1Type.get(Sprite).y._ = panelY+8;
+		_osc1Type.get(Sprite).x._ = panelX+38;
+		_osc1Type.get(Sprite).y._ = panelY+12;
 		
-		panelX += 192;
+		panelX += 210;
 		
 		_osc1Level.get(Sprite).x._ = panelX;
 		_osc1Level.get(Sprite).y._ = panelY;
@@ -108,7 +108,7 @@ class OscillatorsModule {
 		_osc1Pan.get(Sprite).x._ = panelX += rotarySpace;
 		_osc1Pan.get(Sprite).y._ = panelY;
 		
-		_osc1Slide.get(Sprite).x._ = panelX += rotarySpace;
+		_osc1Slide.get(Sprite).x._ = panelX += rotarySpace+16;
 		_osc1Slide.get(Sprite).y._ = panelY;
 		
 		_osc1Detune.get(Sprite).x._ = panelX += rotarySpace;

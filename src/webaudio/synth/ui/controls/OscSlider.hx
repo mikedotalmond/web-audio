@@ -2,12 +2,14 @@ package webaudio.synth.ui.controls;
 
 import audio.parameter.mapping.MapFactory;
 import audio.parameter.mapping.Mapping;
+import flambe.animation.Ease;
 import flambe.display.ImageSprite;
 import flambe.display.Sprite;
 import flambe.display.TextSprite;
 import flambe.Entity;
 import flambe.input.PointerEvent;
 import flambe.math.FMath;
+import flambe.math.Rectangle;
 import flambe.System;
 import webaudio.synth.generator.Oscillator.OscillatorType;
 
@@ -47,9 +49,8 @@ class OscSlider extends NumericControl {
 		var sprites = owner.firstChild;
 		
 		thumb = sprites.get(Sprite).centerAnchor();
-		thumb.y._ = 6;
-		//thumb.alpha._ = .5;
 		thumb.pointerEnabled = true;
+		thumb.y._ = 6;
 		
 		var iconX = -17;
 		var iconSpace = 37;
@@ -81,15 +82,15 @@ class OscSlider extends NumericControl {
 		minX = 0;
 		maxX = display.getNaturalWidth();
 		
-		
 		thumb.pointerDown.connect(pointerDown);
-		value.addObserver(this, true);
+		super.onAdded();
 	}
+	
 	
 	override function pointerMove(e:PointerEvent) {
 		
 		if (e.viewX != pX || e.viewY != pY) {
-		
+			
 			var dX = pX - e.viewX;
 			var dY = pY - e.viewY;
 			
@@ -113,25 +114,33 @@ class OscSlider extends NumericControl {
 		setPosition(Math.round(value.getValue()));
 	}
 	
+	
+	function getIcon(type:Int):Sprite {
+		return switch(type) {
+			case OscillatorType.SINE	: sine;
+			case OscillatorType.SQUARE	: square;
+			case OscillatorType.SAWTOOTH: sawtooth;
+			case OscillatorType.TRIANGLE: triangle;
+			default						: null;
+		}
+	}
+	
+	var lastPosition:Int = -1;
+	
 	/**
 	 * @param	value (normalised position value)
 	 */
 	inline function setPosition(value:Int) {
 		
-		sine.setTint(1,1,1);
-		square.setTint(1,1,1);
-		sawtooth.setTint(1,1,1);
-		triangle.setTint(1,1,1);
-		
-		switch(value) {
-			case OscillatorType.SINE: sine.setTint(1.2,1.52,1.66);
-			case OscillatorType.SQUARE: square.setTint(1.2,1.52,1.66);
-			case OscillatorType.SAWTOOTH: sawtooth.setTint(1.2,1.52,1.66);
-			case OscillatorType.TRIANGLE: triangle.setTint(1.2,1.52,1.66);
+		if (lastPosition != -1) {
+			getIcon(lastPosition).setTint(1, 1, 1, .5, Ease.quartOut);
 		}
 		
-		var px 		= value / 3 * display.getNaturalWidth();
-		thumb.x._	= px;
+		getIcon(value).setTint(1.2, 1.52, 1.66, .25, Ease.quadOut);
+		
+		thumb.x.animateTo(value / 3 * display.getNaturalWidth(), .1, Ease.quadOut);
+		
+		lastPosition = value;
 	}
 	
 	
