@@ -1,31 +1,32 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <TextureAtlas imagePath="sprites.png">
-	<SubTexture name="BlackKey" x="1956" y="85" width="31" height="110"/>
-	<SubTexture name="Icon_Sawtooth" x="2002" y="269" width="25" height="23"/>
-	<SubTexture name="Icon_Sine" x="2017" y="60" width="25" height="23"/>
-	<SubTexture name="Icon_Square" x="1975" y="243" width="25" height="25"/>
-	<SubTexture name="Icon_Triangle" x="2017" y="33" width="25" height="25"/>
+	<SubTexture name="BlackKey" x="1990" y="85" width="31" height="110"/>
+	<SubTexture name="Icon_Sawtooth" x="1914" y="292" width="25" height="23"/>
+	<SubTexture name="Icon_Sine" x="1830" y="301" width="25" height="23"/>
+	<SubTexture name="Icon_Square" x="2017" y="2" width="25" height="25"/>
+	<SubTexture name="Icon_Triangle" x="2017" y="29" width="25" height="25"/>
 	<SubTexture name="InnerPanel" x="1765" y="85" width="82" height="178"/>
 	<SubTexture name="InnerPanelBg" x="1264" y="166" width="499" height="162"/>
+	<SubTexture name="OscSliderTrack" x="1914" y="282" width="112" height="8"/>
+	<SubTexture name="PitchBendBg" x="1895" y="85" width="32" height="120"/>
 	<SubTexture name="WhiteKey" x="1849" y="85" width="44" height="168"/>
-	<SubTexture name="knob-hash_25%" x="2002" y="243" width="24" height="24"/>
-	<SubTexture name="knob-hash_50%" x="1895" y="147" width="48" height="47"/>
-	<SubTexture name="knob-nipple" x="2025" y="194" width="14" height="14"/>
-	<SubTexture name="knob-nipple_25%" x="1945" y="156" width="4" height="4"/>
-	<SubTexture name="knob-nipple_50%" x="1945" y="147" width="7" height="7"/>
-	<SubTexture name="knob_25%" x="2017" y="2" width="27" height="29" />
-	<SubTexture name="knob_50%" x="1895" y="85" width="59" height="60"/>
+	<SubTexture name="knob-hash_25%" x="2017" y="56" width="24" height="24"/>
+	<SubTexture name="knob-hash_50%" x="1956" y="233" width="48" height="47"/>
+	<SubTexture name="knob-nipple" x="1895" y="238" width="14" height="14"/>
+	<SubTexture name="knob-nipple_25%" x="1911" y="247" width="4" height="4"/>
+	<SubTexture name="knob-nipple_50%" x="1911" y="238" width="7" height="7"/>
+	<SubTexture name="knob_25%" x="1895" y="207" width="29" height="29"/>
+	<SubTexture name="knob_50%" x="1929" y="85" width="59" height="60"/>
 	<SubTexture name="main-panel-bg" x="2" y="2" width="1260" height="566"/>
 	<SubTexture name="panel-bg" x="1264" y="2" width="499" height="162"/>
 	<SubTexture name="panel-bg_50%" x="1765" y="2" width="250" height="81"/>
-	<SubTexture name="slider-thumb_25%" x="1955" y="243" width="18" height="20"/>
-	<SubTexture name="slider-thumb_50%" x="1989" y="85" width="36" height="40"/>
-	<SubTexture name="slider-track_25%" x="1849" y="255" width="104" height="8"/>
-	<SubTexture name="slider-track_50%" x="1765" y="265" width="208" height="16"/>
-	<SubTexture name="toggle-bg_25%" x="1989" y="175" width="40" height="17"/>
-	<SubTexture name="toggle-bg_50%" x="1765" y="283" width="81" height="34"/>
-	<SubTexture name="toggle-thumb-2_25%" x="1989" y="151" width="32" height="22"/>
-	<SubTexture name="toggle-thumb-2_50%" x="1960" y="197" width="63" height="44"/>
-	<SubTexture name="toggle-thumb_25%" x="1989" y="127" width="32" height="22"/>
-	<SubTexture name="toggle-thumb_50%" x="1895" y="197" width="63" height="44"/>
+	<SubTexture name="PitchBendWheel" x="1929" y="147" width="25" height="114"/>
+	<SubTexture name="slider-thumb_25%" x="2023" y="82" width="18" height="20"/>
+	<SubTexture name="slider-thumb_50%" x="2006" y="233" width="36" height="40"/>
+	<SubTexture name="toggle-bg_25%" x="1914" y="263" width="40" height="17"/>
+	<SubTexture name="toggle-bg_50%" x="1956" y="197" width="81" height="34"/>
+	<SubTexture name="toggle-thumb-2_25%" x="1956" y="171" width="32" height="22"/>
+	<SubTexture name="toggle-thumb-2_50%" x="1765" y="265" width="63" height="44"/>
+	<SubTexture name="toggle-thumb_25%" x="1956" y="147" width="32" height="22"/>
+	<SubTexture name="toggle-thumb_50%" x="1849" y="255" width="63" height="44"/>
 </TextureAtlas>

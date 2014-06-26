@@ -6,6 +6,7 @@ import flambe.display.Sprite;
 import flambe.display.SubTexture;
 import flambe.Entity;
 import flambe.math.FMath;
+import webaudio.synth.ui.controls.NumericControl;
 
 import webaudio.synth.ui.controls.Rotary;
 
@@ -53,11 +54,11 @@ class DelayModule {
 				.addChild(_lfpFreq).addChild(_lfpQ)
 		);
 		
-		level 	= _level.get(Rotary);
-		time	= _time.get(Rotary);
-		feedback= _feedback.get(Rotary);
-		lfpFreq = _lfpFreq.get(Rotary);
-		lfpQ 	= _lfpQ.get(Rotary);
+		level 	= cast _level.get(NumericControl);
+		time	= cast _time.get(NumericControl);
+		feedback= cast _feedback.get(NumericControl);
+		lfpFreq = cast _lfpFreq.get(NumericControl);
+		lfpQ 	= cast _lfpQ.get(NumericControl);
 	}
 	
 	

@@ -5,6 +5,7 @@ import flambe.display.Sprite;
 import flambe.display.SubTexture;
 import flambe.Entity;
 import flambe.math.FMath;
+import webaudio.synth.ui.controls.NumericControl;
 import webaudio.synth.ui.controls.Rotary;
 
 /**
@@ -74,9 +75,9 @@ class ADSRModule {
 				.addChild(_release)
 		);
 		
-		attack = _attack.get(Rotary);		
-		decay = _decay.get(Rotary);		
-		sustain = _sustain.get(Rotary);		
-		release = _release.get(Rotary);
+		attack = cast _attack.get(NumericControl);		
+		decay = cast _decay.get(NumericControl);		
+		sustain = cast _sustain.get(NumericControl);		
+		release = cast _release.get(NumericControl);
 	}	
 }

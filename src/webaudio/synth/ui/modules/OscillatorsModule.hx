@@ -3,7 +3,8 @@ package webaudio.synth.ui.modules;
 import audio.parameter.mapping.MapFactory;
 import audio.parameter.mapping.MapFactory.MapType;
 import flambe.display.Sprite;
-import webaudio.synth.ui.controls.Slider;
+import webaudio.synth.ui.controls.NumericControl;
+import webaudio.synth.ui.controls.OscSlider;
 
 import flambe.display.NineSlice;
 import flambe.display.SubTexture;
@@ -34,14 +35,14 @@ class OscillatorsModule {
 	
 	var _oscPanel:NineSlice;
 	
-	public var osc0Type		(default, null):Rotary;
+	public var osc0Type		(default, null):OscSlider;
 	public var osc0Level	(default, null):Rotary;
 	public var osc0Pan		(default, null):Rotary;
 	public var osc0Slide	(default, null):Rotary;
 	public var osc0Detune	(default, null):Rotary;
 	public var osc0Random	(default, null):Rotary;
 	
-	public var osc1Type		(default, null):Rotary;
+	public var osc1Type		(default, null):OscSlider;
 	public var osc1Level	(default, null):Rotary;
 	public var osc1Pan		(default, null):Rotary;
 	public var osc1Slide	(default, null):Rotary;
@@ -67,8 +68,8 @@ class OscillatorsModule {
 		
 		panelY += 42;
 		
-		_osc0Type.get(Sprite).x._ = panelX+37;
-		_osc0Type.get(Sprite).y._ = panelY;
+		_osc0Type.get(Sprite).x._ = panelX+32;
+		_osc0Type.get(Sprite).y._ = panelY+8;
 		
 		panelX += 192;
 		
@@ -96,8 +97,8 @@ class OscillatorsModule {
 		panelX = 24;
 		panelY += 96;
 		
-		_osc1Type.get(Sprite).x._ = panelX+37;
-		_osc1Type.get(Sprite).y._ = panelY;
+		_osc1Type.get(Sprite).x._ = panelX+32;
+		_osc1Type.get(Sprite).y._ = panelY+8;
 		
 		panelX += 192;
 		
@@ -121,14 +122,14 @@ class OscillatorsModule {
 	
 	function init(owner:Entity, textureAtlas) {
 		
-		_osc0Type 	= Rotary.create(MapFactory.getMapping(MapType.INT, 0, 3), 1,'osc0Type');
+		_osc0Type 	= OscSlider.create('osc0Type');
 		_osc0Level 	= Rotary.create(MapFactory.getMapping(MapType.FLOAT, 0, 1), .5, 'osc0Level');
 		_osc0Pan 	= Rotary.create(MapFactory.getMapping(MapType.FLOAT, -1, 1), 0.0, 'osc0Pan');
 		_osc0Slide 	= Rotary.create(MapFactory.getMapping(MapType.FLOAT, 0.001, 1), 0.1, 'osc0Slide');
 		_osc0Detune = Rotary.create(MapFactory.getMapping(MapType.FLOAT, -200, 200), 0.0, 'osc0Detune');
 		_osc0Random = Rotary.create(MapFactory.getMapping(MapType.FLOAT, 0, 100), 0.0, 'osc0Random');
 		
-		_osc1Type 	= Rotary.create(MapFactory.getMapping(MapType.INT, 0, 3), 1, 'osc1Type');
+		_osc1Type 	= OscSlider.create('osc1Type');
 		_osc1Level 	= Rotary.create(MapFactory.getMapping(MapType.FLOAT, 0, 1), .5, 'osc1Level');
 		_osc1Pan 	= Rotary.create(MapFactory.getMapping(MapType.FLOAT, -1, 1), 0.0,'osc1Pan');
 		_osc1Slide 	= Rotary.create(MapFactory.getMapping(MapType.FLOAT, 0.001, 1), 0.1, 'osc1Slide');
@@ -146,21 +147,21 @@ class OscillatorsModule {
 				.addChild(_oscPhase)
 		);
 		
-		osc0Type = _osc0Type.get(Rotary);
-		osc0Level = _osc0Level.get(Rotary);
-		osc0Pan = _osc0Pan.get(Rotary);		
-		osc0Slide = _osc0Slide.get(Rotary);		
-		osc0Detune = _osc0Detune.get(Rotary);		
-		osc0Random	= _osc0Random.get(Rotary);		
+		osc0Type = cast _osc0Type.get(NumericControl);
+		osc0Level = cast _osc0Level.get(NumericControl);
+		osc0Pan = cast _osc0Pan.get(NumericControl);		
+		osc0Slide = cast _osc0Slide.get(NumericControl);		
+		osc0Detune = cast _osc0Detune.get(NumericControl);		
+		osc0Random	= cast _osc0Random.get(NumericControl);		
 		//
-		osc1Type = _osc1Type.get(Rotary);		
-		osc1Level = _osc1Level.get(Rotary);
-		osc1Pan = _osc1Pan.get(Rotary);
-		osc1Slide = _osc1Slide.get(Rotary);
-		osc1Detune = _osc1Detune.get(Rotary);
-		osc1Random = _osc1Random.get(Rotary);
+		osc1Type = cast _osc1Type.get(NumericControl);		
+		osc1Level = cast _osc1Level.get(NumericControl);
+		osc1Pan = cast _osc1Pan.get(NumericControl);
+		osc1Slide = cast _osc1Slide.get(NumericControl);
+		osc1Detune = cast _osc1Detune.get(NumericControl);
+		osc1Random = cast _osc1Random.get(NumericControl);
 		
 		//
-		oscPhase = _oscPhase.get(Rotary);
+		oscPhase = cast _oscPhase.get(NumericControl);
 	}	
 }

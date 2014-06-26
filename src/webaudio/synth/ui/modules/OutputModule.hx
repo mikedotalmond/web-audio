@@ -6,6 +6,7 @@ import flambe.display.Sprite;
 import flambe.display.SubTexture;
 import flambe.Entity;
 import flambe.math.FMath;
+import webaudio.synth.ui.controls.NumericControl;
 import webaudio.synth.ui.controls.Rotary;
 
 /**
@@ -34,9 +35,8 @@ class OutputModule {
 				.addChild(_pitchBend)
 		);
 		
-		outputLevel = _outputLevel.get(Rotary);
-		pitchBend 	= _pitchBend.get(Rotary);
-		
+		outputLevel = cast _outputLevel.get(NumericControl);
+		pitchBend 	= cast _pitchBend.get(NumericControl);
 		
 		var panelX 	= 23;
 		var panelY 	= 296;

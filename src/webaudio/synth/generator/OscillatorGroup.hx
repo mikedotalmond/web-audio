@@ -14,6 +14,7 @@ class OscillatorGroup {
 	var _type	:Int;
 	var _output	:AudioNode;
 	var osc		:Map<Int, Oscillator>;
+	var connected:Bool;
 	
 	public var type(get, set)	:Int;
 	public var output(get, set)	:AudioNode;
@@ -30,13 +31,17 @@ class OscillatorGroup {
 		osc.set(OscillatorType.TRIANGLE, new Oscillator(context, null, OscillatorType.TRIANGLE));
 		_type  = 0;
 		_output = output;
+		connected = false;
 	}
 	
 	
 	inline function get_type() return _type;
 	function set_type(value:Int) {
-		osc.get(_type).node.disconnect(0);
-		osc.get(value).node.connect(output);
+		if (_type != value || !connected) {
+			connected = true;
+			osc.get(_type).node.disconnect(0);
+			osc.get(value).node.connect(output);
+		}
 		return _type = value;
 	}
 	

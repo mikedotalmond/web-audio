@@ -5,6 +5,7 @@ import flambe.display.Sprite;
 import flambe.display.SubTexture;
 import flambe.Entity;
 import flambe.math.FMath;
+import webaudio.synth.ui.controls.NumericControl;
 import webaudio.synth.ui.controls.Rotary;
 
 /**
@@ -50,10 +51,10 @@ class DistortionModule {
 				.addChild(_rateReduction)
 		);
 		
-		pregain 		= _pregain.get(Rotary);
-		waveshaperAmount= _waveshaperAmount.get(Rotary);
-		bits 			= _bits.get(Rotary);
-		rateReduction 	= _rateReduction.get(Rotary);
+		pregain 		= cast _pregain.get(NumericControl);
+		waveshaperAmount= cast _waveshaperAmount.get(NumericControl);
+		bits 			= cast _bits.get(NumericControl);
+		rateReduction 	= cast _rateReduction.get(NumericControl);
 	}	
 	
 	

@@ -5,6 +5,7 @@ import flambe.display.Sprite;
 import flambe.display.SubTexture;
 import flambe.Entity;
 import flambe.math.FMath;
+import webaudio.synth.ui.controls.NumericControl;
 import webaudio.synth.ui.controls.Rotary;
 
 /**
@@ -103,13 +104,13 @@ class FilterModule {
 				.addChild(_range)
 		);
 		
-		type 		= _type.get(Rotary);
-		frequency 	= _frequency.get(Rotary);
-		Q 			= _Q.get(Rotary);
+		type 		= cast _type.get(NumericControl);
+		frequency 	= cast _frequency.get(NumericControl);
+		Q 			= cast _Q.get(NumericControl);
 		
-		attack 		= _attack.get(Rotary);		
-		release 	= _release.get(Rotary);		
-		range 		= _range.get(Rotary);
+		attack 		= cast _attack.get(NumericControl);		
+		release 	= cast _release.get(NumericControl);		
+		range 		= cast _range.get(NumericControl);
 	}	
 	
 }
