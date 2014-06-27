@@ -78,6 +78,7 @@ import webaudio.utils.KeyboardNotes;
 	var recorder			:AudioNodeRecorder;
 	
 	var paramSerialiser		:ParameterSerialiser;
+	var settings			:Settings;
 	
 	function new() {
 		trace('MonoSynth');
@@ -173,8 +174,8 @@ import webaudio.utils.KeyboardNotes;
 	 */
 	function initControl() {
 		
-		var settings 	= new Settings();
-		paramSerialiser = new ParameterSerialiser();
+		settings 		= new Settings();
+		paramSerialiser = new ParameterSerialiser(settings);
 		var observers 	= [monoSynth, paramSerialiser];
 		
 		initKeyboardInputs();
@@ -231,6 +232,8 @@ import webaudio.utils.KeyboardNotes;
 		delay.feedback.value.addObservers(observers, true);
 		delay.lfpFreq.value.addObservers(observers, true);
 		delay.lfpQ.value.addObservers(observers, true);
+		
+		paramSerialiser.restoreSession();
 	}
 	
 	

@@ -49,5 +49,11 @@ class Settings {
 	
 	inline public function getSessionData(name:String):String return session.getItem(name);
 	inline public function getLocalData(name:String):String return local.getItem(name);
+	inline public function getLocalDataCount():Int return local.length;
+	inline public function getLocalDataAt(index:Int) return local.getItem(local.key(index));
+	inline public function getLocalDataKeys():Array<String> {
+		var n = getLocalDataCount();
+		return [for (i in 0...n) local.key(i)];
+	}
 
 }
