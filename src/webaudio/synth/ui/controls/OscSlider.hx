@@ -121,7 +121,7 @@ class OscSlider extends NumericControl {
 	}
 	
 	override function dragDelta(dX:Float, dY:Float) {
-		var val = value.getValue(true) - dX/display.getNaturalWidth();
+		var val = value.getValue(true) - dX / display.getNaturalWidth();
 		value.setValue(val > 1 ? 1 : (val < 0 ? 0 : val), true);
 	}
 	

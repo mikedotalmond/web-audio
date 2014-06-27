@@ -31,14 +31,29 @@ class Parameter {
 		change = new Signal1<Parameter>();
 		observers = new Map<ParameterObserver,SignalConnection>();
 		
-		this.name 			= name;
-		this.defaultValue	= defaultValue;
-		this.mapping		= mapping;
+		this.name 	 = name;
+		this.mapping = mapping;
 		
-		normalisedValue = 0;
-		setValue(defaultValue);
-		normalisedDefaultValue = normalisedValue;
+		setDefault(defaultValue);
 	}
+	
+	
+	public function setDefault(value:Float, normalised:Bool = false) {
+		var nv;
+		
+		if (normalised) {
+			nv	  = value;
+			value = mapping.map(nv);
+		} else {
+			nv = mapping.mapInverse(value);
+		}
+		
+		normalisedDefaultValue 	= nv;
+		defaultValue 			= value;
+		
+		setValue(nv, true);
+	}
+	
 	
 	public function setValue(value:Float, normalised:Bool = false, forced:Bool = false):Void {
 		
@@ -68,6 +83,13 @@ class Parameter {
 			change.emit(this);
 		}
 	}
+	
+	public function addObservers(observers:Array<ParameterObserver>, triggerImmediately = false, once = false) {
+		for (observer in observers) {
+			addObserver(observer, triggerImmediately, once);
+		}
+	}
+	
 	
 	public function addObserver(observer:ParameterObserver, triggerImmediately=false, once=false) {
 		if (!observers.exists(observer)) {

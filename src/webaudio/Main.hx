@@ -16,6 +16,7 @@ import flambe.input.Key;
 import flambe.input.KeyboardEvent;
 import flambe.platform.html.WebAudioSound;
 import flambe.platform.KeyCodes;
+import webaudio.utils.ParameterSerialiser;
 
 import flambe.System;
 import flambe.util.Promise;
@@ -75,6 +76,7 @@ import webaudio.utils.KeyboardNotes;
 	var monoSynthUI			:MonoSynthUI;
 	var recorder			:AudioNodeRecorder;
 	
+	var paramSerialiser		:ParameterSerialiser;
 	
 	function new() {
 		trace('MonoSynth');
@@ -170,60 +172,63 @@ import webaudio.utils.KeyboardNotes;
 	 */
 	function initControl() {
 		
+		paramSerialiser = new ParameterSerialiser();
+		var observers = [monoSynth, paramSerialiser];
+		
 		initKeyboardInputs();
 		
 		// monoSynth observes changes on ui parameters...
-		monoSynthUI.output.outputLevel.value.addObserver(monoSynth, true);
+		monoSynthUI.output.outputLevel.value.addObservers(observers, true);
 		
 		// for some reason I've put pitch bend in the output panel for now...  meh.
 		var pb = monoSynthUI.output.pitchBend;
 		pb.returnToDefault = true;
 		pb.labelFormatter = function(val) return pb.defaultLabelFormatter((val * monoSynth.pitchBendRange) / 100);
-		pb.value.addObserver(monoSynth, true);
+		pb.value.addObservers(observers, true);
 		
 		var osc = monoSynthUI.oscillators;
-		osc.osc0Type.value.addObserver(monoSynth, true);
-		osc.osc0Level.value.addObserver(monoSynth, true);
-		osc.osc0Pan.value.addObserver(monoSynth, true);
-		osc.osc0Slide.value.addObserver(monoSynth, true);
-		osc.osc0Random.value.addObserver(monoSynth, true);
-		osc.osc0Detune.value.addObserver(monoSynth, true);
+		osc.osc0Type.value.addObservers(observers, true);
+		osc.osc0Level.value.addObservers(observers, true);
+		osc.osc0Pan.value.addObservers(observers, true);
+		osc.osc0Slide.value.addObservers(observers, true);
+		osc.osc0Random.value.addObservers(observers, true);
+		osc.osc0Detune.value.addObservers(observers, true);
 		//
-		osc.osc1Type.value.addObserver(monoSynth, true);
-		osc.osc1Level.value.addObserver(monoSynth, true);
-		osc.osc1Pan.value.addObserver(monoSynth, true);
-		osc.osc1Slide.value.addObserver(monoSynth, true);
-		osc.osc1Random.value.addObserver(monoSynth, true);
-		osc.osc1Detune.value.addObserver(monoSynth, true);
+		osc.osc1Type.value.addObservers(observers, true);
+		osc.osc1Level.value.addObservers(observers, true);
+		osc.osc1Pan.value.addObservers(observers, true);
+		osc.osc1Slide.value.addObservers(observers, true);
+		osc.osc1Random.value.addObservers(observers, true);
+		osc.osc1Detune.value.addObservers(observers, true);
 		//
-		osc.oscPhase.value.addObserver(monoSynth, true);
+		osc.oscPhase.value.addObservers(observers, true);
 		
 		var adsr = monoSynthUI.adsr;
-		adsr.attack.value.addObserver(monoSynth, true);
-		adsr.decay.value.addObserver(monoSynth, true);
-		adsr.sustain.value.addObserver(monoSynth, true);
-		adsr.release.value.addObserver(monoSynth, true);
+		adsr.attack.value.addObservers(observers, true);
+		adsr.decay.value.addObservers(observers, true);
+		adsr.sustain.value.addObservers(observers, true);
+		adsr.release.value.addObservers(observers, true);
 		
 		var filter = monoSynthUI.filter;
-		filter.type.value.addObserver(monoSynth, true);
-		filter.frequency.value.addObserver(monoSynth, true);
-		filter.Q.value.addObserver(monoSynth, true);
-		filter.attack.value.addObserver(monoSynth, true);
-		filter.release.value.addObserver(monoSynth, true);
-		filter.range.value.addObserver(monoSynth, true);
+		filter.type.value.addObservers(observers, true);
+		filter.frequency.value.addObservers(observers, true);
+		filter.Q.value.addObservers(observers, true);
+		filter.attack.value.addObservers(observers, true);
+		filter.release.value.addObservers(observers, true);
+		filter.range.value.addObservers(observers, true);
 		
 		var distortion = monoSynthUI.distortion;
-		distortion.pregain.value.addObserver(monoSynth, true);
-		distortion.waveshaperAmount.value.addObserver(monoSynth, true);
-		distortion.bits.value.addObserver(monoSynth, true);
-		distortion.rateReduction.value.addObserver(monoSynth, true);
+		distortion.pregain.value.addObservers(observers, true);
+		distortion.waveshaperAmount.value.addObservers(observers, true);
+		distortion.bits.value.addObservers(observers, true);
+		distortion.rateReduction.value.addObservers(observers, true);
 		
 		var delay = monoSynthUI.delay;
-		delay.level.value.addObserver(monoSynth, true);
-		delay.time.value.addObserver(monoSynth, true);
-		delay.feedback.value.addObserver(monoSynth, true);
-		delay.lfpFreq.value.addObserver(monoSynth, true);
-		delay.lfpQ.value.addObserver(monoSynth, true);
+		delay.level.value.addObservers(observers, true);
+		delay.time.value.addObservers(observers, true);
+		delay.feedback.value.addObservers(observers, true);
+		delay.lfpFreq.value.addObservers(observers, true);
+		delay.lfpQ.value.addObservers(observers, true);
 	}
 	
 	
@@ -240,6 +245,8 @@ import webaudio.utils.KeyboardNotes;
 			
 			case Key.NumpadAdd		: camera.controller.zoom.animateBy(.2, .25, Ease.quadOut);
 			case Key.NumpadSubtract	: camera.controller.zoom.animateBy(-.2, .25, Ease.quadOut);
+			
+			case Key.Number1		: trace(paramSerialiser.serialise());
 			
 			default:
 				// trace(e.key);
