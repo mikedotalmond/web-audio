@@ -1,27 +1,24 @@
 package webaudio.synth;
 
-import audio.parameter.ParameterObserver;
 import audio.parameter.Parameter;
-import haxe.ds.ObjectMap;
+import audio.parameter.ParameterObserver;
 import js.html.audio.AudioContext;
 import js.html.audio.AudioNode;
-import js.html.audio.AudioParam;
-import js.html.audio.BiquadFilterNode;
-import js.html.audio.ChannelMergerNode;
 import js.html.audio.DelayNode;
 import js.html.audio.GainNode;
-import js.html.audio.OscillatorNode;
 
 import webaudio.synth.generator.ADSR;
-import webaudio.synth.generator.Oscillator.OscillatorType;
 import webaudio.synth.generator.OscillatorGroup;
+
+import webaudio.synth.processor.Biquad.BiquadFilter;
+import webaudio.synth.processor.Biquad.FilterType;
 import webaudio.synth.processor.DistortionGroup;
 import webaudio.synth.processor.FeedbackDelay;
 import webaudio.synth.processor.LRPanner;
-import webaudio.synth.processor.Waveshaper;
+
 import webaudio.utils.NoteFrequencyUtil;
 
-import webaudio.synth.processor.Biquad;
+
 
 /**
  * A (fairly) simple monosynth
@@ -111,6 +108,7 @@ class MonoSynth implements ParameterObserver { //
 	 * @param	freqUtil
 	 */
 	public function new(destination:AudioNode, freqUtil:NoteFrequencyUtil) {
+				
 		this.freqUtil = freqUtil;
 		
 		context = destination.context;

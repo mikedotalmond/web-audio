@@ -39,7 +39,6 @@ class MonoSynthUI extends Sprite {
 	var keyboardContainer	:Sprite;
 	var keyboardMask		:Sprite;
 	
-	var ouputPanel			:Entity;
 	var background			:NineSlice;
 	
 	public var keyboard		(default,null):KeyboardUI;
@@ -67,13 +66,16 @@ class MonoSynthUI extends Sprite {
 		setupBackground();
 		setupKeyboard();
 		setupPanels();
-	}
-	
+	}	
 	
 	
 	function setupBackground(){
 		
 		owner.addChild(new Entity().add(background = NineSlice.fromSubTexture(textureAtlas.get('panel-bg_50%'))));
+		
+		//TODO: combine pb wheel + bg and seperate the 'grabber' bit - consider ui animation
+		owner.addChild(new Entity().add(new ImageSprite(textureAtlas.get('PitchBendBg')).disablePointer().setXY(17, 549)));
+		owner.addChild(new Entity().add(new ImageSprite(textureAtlas.get('PitchBendWheel')).disablePointer().setXY(20, 552)));
 		
 		background.width  = 1240;
 		background.height = 680;

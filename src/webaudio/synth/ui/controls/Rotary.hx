@@ -98,14 +98,14 @@ class Rotary extends NumericControl {
 	}
 	
 	override function pointerUp(e:PointerEvent) {
+		knobHash.alpha.animateTo(0, .5, Ease.quadOut);
 		super.pointerUp(e);
-		if (doubleClicked) {
-			knobHash.alpha._ = 1;
-			knobHash.alpha.animateTo(0, 1, Ease.quadOut);
-		} else {
-			knobHash.alpha.animateTo(0, .5, Ease.quadOut);
-		}
-		
+	}
+	
+	override function doubleClicked() {
+		knobHash.alpha._ = 1;
+		knobHash.alpha.animateTo(0, 1, Ease.quartOut);
+		super.doubleClicked();
 	}
 	
 	// triggered onParameterChange

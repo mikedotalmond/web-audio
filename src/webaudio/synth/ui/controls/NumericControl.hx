@@ -119,9 +119,11 @@ class NumericControl extends Component implements ParameterObserver {
 		value.setValue(val > 1 ? 1 : (val < 0 ? 0 : val), true);
 	}
 	
-	var doubleClicked:Bool = false;
+	function doubleClicked() {
+		value.setValue(value.defaultValue);
+	}
+	
 	function pointerUp(e:PointerEvent) {
-		doubleClicked = false;
 		
 		if (moveConnection != null) {
 			moveConnection.dispose();
@@ -132,10 +134,7 @@ class NumericControl extends Component implements ParameterObserver {
 		if (!pointerHasMoved) {
 			var t = System.time;
 			var dt = t - lastTime;
-			if (dt < .5) {
-				value.setValue(value.defaultValue);
-				doubleClicked = true;
-			}
+			if (dt < .5) doubleClicked();
 			lastTime = t;
 		} else if(returnToDefault) {
 			returningToDefault = true;

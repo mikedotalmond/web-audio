@@ -16,7 +16,8 @@ import flambe.input.Key;
 import flambe.input.KeyboardEvent;
 import flambe.platform.html.WebAudioSound;
 import flambe.platform.KeyCodes;
-import webaudio.utils.ParameterSerialiser;
+import webaudio.synth.data.ParameterSerialiser;
+import webaudio.synth.data.Settings;
 
 import flambe.System;
 import flambe.util.Promise;
@@ -172,8 +173,9 @@ import webaudio.utils.KeyboardNotes;
 	 */
 	function initControl() {
 		
+		var settings 	= new Settings();
 		paramSerialiser = new ParameterSerialiser();
-		var observers = [monoSynth, paramSerialiser];
+		var observers 	= [monoSynth, paramSerialiser];
 		
 		initKeyboardInputs();
 		
@@ -246,7 +248,8 @@ import webaudio.utils.KeyboardNotes;
 			case Key.NumpadAdd		: camera.controller.zoom.animateBy(.2, .25, Ease.quadOut);
 			case Key.NumpadSubtract	: camera.controller.zoom.animateBy(-.2, .25, Ease.quadOut);
 			
-			case Key.Number1		: trace(paramSerialiser.serialise());
+			// TODO: store some presets and recall via the F-Keys 
+			case Key.F1				: trace(paramSerialiser.serialise());
 			
 			default:
 				// trace(e.key);
@@ -299,8 +302,7 @@ import webaudio.utils.KeyboardNotes;
 		keyboardInputs.noteOff.connect(handleNoteOff);
 	}
 	
-	
-	
+		
 	inline function keyIsDown(code:Int):Bool return activeKeys[code];
 	
 	
@@ -312,7 +314,7 @@ import webaudio.utils.KeyboardNotes;
 	
 	/* Entry point */
     static function main () {
-			
+		
         System.init();
 		
 		var noAudio = Browser.document.getElementById("noWebAudio");
