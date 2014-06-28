@@ -15,7 +15,7 @@ abstract ScriptProcessor(ScriptProcessorNode) from ScriptProcessorNode to Script
 		this = try {
 			context.createScriptProcessor(); //ff
 		} catch (err:Dynamic) {
-			context.createScriptProcessor(2048); //chrome
+			context.createScriptProcessor(4096); //chrome
 		}
 		
 		if (input != null) input.connect(this);
@@ -25,8 +25,6 @@ abstract ScriptProcessor(ScriptProcessorNode) from ScriptProcessorNode to Script
 
 
 class Crusher {
-	
-	static inline function lerp(a:Float, b:Float, f:Float):Float return b + (a - b) * f;
 	
 	var exp:Float;
 	var iexp:Float;
@@ -64,45 +62,33 @@ class Crusher {
 		var inR		= e.inputBuffer.getChannelData(1);
 		var outL	= e.outputBuffer.getChannelData(0);
 		var outR	= e.outputBuffer.getChannelData(1);
-		var n 		= inL.length;
+		var n 		= outR.length;
 		var e 		= exp;
 		var ie 		= iexp;
 		
 		// bit-crusher + samplerate reduction
 		
-		var ditherLevel:Float = .1;
+		var ditherLevel:Float = .002;
 		var dL:Float = 0;
 		var dR:Float = 0;
 	
-		var l:Float = 0, r:Float = 0;
-		
 		for (i in 0...n) {
 		
 			sampleCount++;
 			
+			// resample
 			if (sampleCount >= samplesPerCycle) {
-				
-				var dS = (sampleCount - samplesPerCycle) / samplesPerCycle;
-				
 				sampleCount = 0;
 				
+				// crush
 				dL = ditherLevel * (Math.random()-.5);
 				dR = ditherLevel * (Math.random()-.5);
-				
-				var tx, ty;
-				
-				tx = ie * Std.int(e * inL[i] + dL);
-				tempLeft = lerp(tempLeft, tx, dS);
-				
-				ty = ie * Std.int(e * inR[i] + dR);
-				tempRight = lerp(tempRight, ty, dS);
+				tempLeft  = ie * Std.int(e * inL[i] + dL);
+				tempRight = ie * Std.int(e * inR[i] + dR);
 			}
 			
-			l = tempLeft;
-			r = tempRight;
-			
-			outL[i] = l;
-			outR[i] = r;
+			outL[i] = tempLeft;
+			outR[i] = tempRight;
 		}
 	} 
 	

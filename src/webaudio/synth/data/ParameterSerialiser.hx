@@ -74,6 +74,15 @@ class ParameterSerialiser implements ParameterObserver {
 		if(!map.exists(parameter.name)) map.set(parameter.name, parameter);
 	}
 	
+	public function randomiseAll(amount:Float=1) {
+		for (key in map.keys()) {
+			var p = map.get(key);
+			var v = p.getValue(true);
+			v += (Math.random() - .5) * amount * 2;
+			v = v < 0 ? -v : (v > 1 ? v-1 : v);
+			p.setValue(v, true);
+		}
+	}
 	
 	/**
 	 * Store all the current parameter values
@@ -117,4 +126,14 @@ class ParameterSerialiser implements ParameterObserver {
 		}
 		return out;
 	}
+}
+
+
+class Presets {
+	
+	static var GentleBen:String = '"outputLevel":0.6799999999999998, "pitchBend":0.5, "osc0Type":0.37500000000000006, "osc0Level":0.5, "osc0Pan":0.43999999999999995, "osc0Slide":0.0990990990990991, "osc0Random":0.20000000000000004, "osc0Detune":0.5, "osc1Type":0.598214285714286, "osc1Level":0.5, "osc1Pan":0.56, "osc1Slide":0.0990990990990991, "osc1Random":0.2, "osc1Detune":0.5, "oscPhase":0.17999999999999997, "adsrAttack":0.03750352374993505, "adsrDecay":1, "adsrSustain":1, "adsrRelease":0.2919280948873624, "filterType":0, "filterFrequency":0.1599999999999993, "filterQ":0.8, "filterAttack":0.6719280948873626, "filterRelease":0.21496250072115589, "filterRange":0.9000000000000005, "distortionPregain":0, "distortionWaveshaperAmount":0.8600000000000003, "distortionBits":0.4782608695652174, "distortionRateReduction":0, "delayLevel":0.15999999999999995, "delayTime":0.16293329332933287, "delayFeedback":0.49999999999999956, "delayLFPFreq":1, "delayLFPQ":0.0999909999099991 }';
+	static var WTFTW:String = '{"outputLevel":0.4399999999999996,"pitchBend":0.5,"osc0Type":0.9464285714285714,"osc0Level":0.4668754586018622,"osc0Pan":0.434224143885076,"osc0Slide":0.09999999999999999,"osc0Random":0.1353575261309743,"osc0Detune":0.5,"osc1Type":0,"osc1Level":0.55,"osc1Pan":0.5818778711184858,"osc1Slide":0.7860790734147436,"osc1Random":0.4989718380384147,"osc1Detune":0.5,"oscPhase":0.6322048523835839,"adsrAttack":0.17999999999999947,"adsrDecay":0.5345427193678916,"adsrSustain":0.9099999999999999,"adsrRelease":0.3135172767948372,"filterType":0,"filterFrequency":0.7800000000000007,"filterQ":0.94,"filterAttack":0.3699999999999995,"filterRelease":0.9243289259783327,"filterRange":0.48999999999999955,"distortionPregain":0.49999999999999956,"distortionWaveshaperAmount":0.8739709560014308,"distortionBits":0.21000000000000005,"distortionRateReduction":0.2,"delayLevel":0.09999999999999974,"delayTime":0.33131938935235605,"delayFeedback":0.0666541256941855,"delayLFPFreq":0.43000000000000005,"delayLFPQ":0}';
+	static var OwOwOw:String = '{"outputLevel":0.4404992213845257,"pitchBend":0.5,"osc0Type":0.53176956916494,"osc0Level":0.2848998922854662,"osc0Pan":0.6553399509564042,"osc0Slide":0.3345249738357958,"osc0Random":0.3254045475460585,"osc0Detune":0.48,"osc1Type":0.5856871545048695,"osc1Level":0.34120628116652374,"osc1Pan":0.274271479975432,"osc1Slide":0.19665794456058805,"osc1Random":0.27338116569444537,"osc1Detune":0.46399999999999997,"oscPhase":0.5367797849141063,"adsrAttack":0.13585058337077552,"adsrDecay":0.4118536375463009,"adsrSustain":0.7993384519033133,"adsrRelease":0.24872226793430885,"filterType":0.9169524870812893,"filterFrequency":0.04,"filterQ":1,"filterAttack":0.13216184906661455,"filterRelease":0.6764560150503516,"filterRange":0.2090064475871618,"distortionPregain":0.16845860145986036,"distortionWaveshaperAmount":0.7897845552489162,"distortionBits":0.15361713754013176,"distortionRateReduction":0.47468311311677097,"delayLevel":0.3756582126766443,"delayTime":0.5380281316579925,"delayFeedback":0.18479999119415877,"delayLFPFreq":0.8414817627705634,"delayLFPQ":0.6816484755836427}';
+	static var Leadish:String = '{"outputLevel":0.38295858133584215,"pitchBend":0.5,"osc0Type":0.5938830460155663,"osc0Level":0.5741079380363225,"osc0Pan":0.5,"osc0Slide":0.048732493184506884,"osc0Random":0.19387254383414923,"osc0Detune":0.5,"osc1Type":0.3392857142857143,"osc1Level":0.2815980485267937,"osc1Pan":0.5117302227392793,"osc1Slide":0.10685698390325825,"osc1Random":0.01588528836145997,"osc1Detune":0.499,"oscPhase":0.14331354821100817,"adsrAttack":0.15529628787189734,"adsrDecay":0.7664752448908985,"adsrSustain":0.6781206807121636,"adsrRelease":0.4241326441790896,"filterType":0,"filterFrequency":0.12000000000000001,"filterQ":0.5797061326913537,"filterAttack":0.4112402198649936,"filterRelease":0.3100000000000001,"filterRange":0.9099999999999999,"distortionPregain":0.6008890603668984,"distortionWaveshaperAmount":0.13999999999999999,"distortionBits":0.1382608695652172,"distortionRateReduction":0,"delayLevel":0.14624362844973773,"delayTime":0.12053697529227002,"delayFeedback":0.311054561883211,"delayLFPFreq":0.35068133769556864,"delayLFPQ":0.12999999999999995}';
+	
 }

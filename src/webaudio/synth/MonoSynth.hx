@@ -123,8 +123,10 @@ class MonoSynth implements ParameterObserver { //
 		
 		setupDistortion();
 		
-		filter	= new BiquadFilter(FilterType.LOWPASS, 1, 1, context, null, distortionGroup.input);
-		adsr 	= new ADSR(context, null, filter.biquad);
+		adsr 	= new ADSR(context, null, distortionGroup.input);
+		
+		filter	= new BiquadFilter(FilterType.LOWPASS, 1, 1, context, distortionGroup.output, outputGain);
+		filter.biquad.node.connect(delay.input);
 		
 		setupOscillators();
 	}
@@ -133,8 +135,8 @@ class MonoSynth implements ParameterObserver { //
 	function setupDistortion():Void {
 		distortionGroup = new DistortionGroup(context);		
 		distortionGroup.pregain.gain.value = 1.0;		
-		distortionGroup.output.connect(delay.input); // send to delay
-		distortionGroup.output.connect(outputGain);  // master output
+		//distortionGroup.output.connect(delay.input); // send to delay
+		//distortionGroup.output.connect(outputGain);  // master output
 	}
 	
 	
