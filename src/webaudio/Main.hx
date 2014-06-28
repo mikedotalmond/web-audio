@@ -254,6 +254,7 @@ import webaudio.utils.KeyboardNotes;
 			// TODO: store some presets and recall via the F-Keys 
 			case Key.F1				: trace(paramSerialiser.serialise());
 			case Key.F2				: paramSerialiser.randomiseAll();
+			case Key.F3				: paramSerialiser.resetAll();
 			
 			default:
 				// trace(e.key);
