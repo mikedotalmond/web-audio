@@ -6,6 +6,13 @@
  */
 class MapFloatExponential implements Mapping {
 	
+	
+	public var min:Float;
+	public var max:Float;
+	
+	public var range(get, never):Float;
+	inline function get_range() return max - min;
+	
 	var _min:Float;
 	var _max:Float;
 	var _t0	:Float;
@@ -14,6 +21,9 @@ class MapFloatExponential implements Mapping {
 
 	public function new(min = .0, max = 1.0 ){
 
+		this.min = min;
+		this.max = max;
+		
 		_t2 = 0;
 		if (min <= 0) _t2 = 1 + min * -1;
 		
@@ -44,5 +54,5 @@ class MapFloatExponential implements Mapping {
 	
 	
 	public function toString()
-		return '[MapFloatExponential] min:${_min}, max:${_max}';
+		return '[MapFloatExponential] min:${min}, max:${max}';
 }

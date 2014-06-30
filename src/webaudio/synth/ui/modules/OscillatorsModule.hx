@@ -35,6 +35,8 @@ class OscillatorsModule {
 	
 	var _oscPanel:NineSlice;
 	
+	var owner:Entity;
+	
 	public var osc0Type		(default, null):OscSlider;
 	public var osc0Level	(default, null):Rotary;
 	public var osc0Pan		(default, null):Rotary;
@@ -53,15 +55,26 @@ class OscillatorsModule {
 	
 	
 	public function new(owner:Entity, textureAtlas:Map<String,SubTexture>) {
+	
+		this.owner = owner;
 		
 		init(owner, textureAtlas);
 		
 		position(24, 96);		
+		
 	}
 	
 	function position(panelX:Float,panelY:Float) {
 		
 		var rotarySpace = 64;
+		var labelY = 192;
+		var labelColour = 0x323232;
+		var labelAlpha = 0.55;
+		var label;
+		
+		label = Fonts.getField(Fonts.Prime20, "waveform", labelColour).setAlpha(labelAlpha).centerAnchor();
+		owner.addChild(new Entity().add(label));
+		label.x._ = panelX+94; label.y._ = labelY-2;
 		
 		_oscPanel.x = panelX;
 		_oscPanel.y = panelY;
@@ -75,22 +88,40 @@ class OscillatorsModule {
 		
 		_osc0Level.get(Sprite).x._ = panelX;
 		_osc0Level.get(Sprite).y._ = panelY;
+		label = Fonts.getField(Fonts.Prime20, "level", labelColour).setAlpha(labelAlpha).centerAnchor();
+		owner.addChild(new Entity().add(label));
+		label.x._ = panelX; label.y._ = labelY;
 		
 		_osc0Pan.get(Sprite).x._ = panelX += rotarySpace;
 		_osc0Pan.get(Sprite).y._ = panelY;
+		label = Fonts.getField(Fonts.Prime20, "pan", labelColour).setAlpha(labelAlpha).centerAnchor();
+		owner.addChild(new Entity().add(label));
+		label.x._ = panelX; label.y._ = labelY;
 		
 		_osc0Slide.get(Sprite).x._ = panelX += rotarySpace+16;
 		_osc0Slide.get(Sprite).y._ = panelY;
+		label = Fonts.getField(Fonts.Prime20, "slide", labelColour).setAlpha(labelAlpha).centerAnchor();
+		owner.addChild(new Entity().add(label));
+		label.x._ = panelX; label.y._ = labelY;
 		
 		_osc0Detune.get(Sprite).x._ = panelX += rotarySpace;
 		_osc0Detune.get(Sprite).y._ = panelY;
+		label = Fonts.getField(Fonts.Prime20, "detune", labelColour).setAlpha(labelAlpha).centerAnchor();
+		owner.addChild(new Entity().add(label));
+		label.x._ = panelX; label.y._ = labelY;
 		
 		_osc0Random.get(Sprite).x._ = panelX += rotarySpace;
 		_osc0Random.get(Sprite).y._ = panelY;
+		label = Fonts.getField(Fonts.Prime20, "random", labelColour).setAlpha(labelAlpha).centerAnchor();
+		owner.addChild(new Entity().add(label));
+		label.x._ = panelX; label.y._ = labelY;
 		
 		//
 		_oscPhase.get(Sprite).x._ = panelX += rotarySpace+rotarySpace/4;
 		_oscPhase.get(Sprite).y._ = panelY + 54;
+		label = Fonts.getField(Fonts.Prime20, "phase", labelColour).setAlpha(labelAlpha).centerAnchor();
+		owner.addChild(new Entity().add(label));
+		label.x._ = panelX; label.y._ = labelY+54;
 		//
 		
 		

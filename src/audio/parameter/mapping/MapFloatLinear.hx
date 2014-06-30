@@ -6,12 +6,15 @@
  */
 class MapFloatLinear implements Mapping {
 	
-	var _min:Float;
-	var _max:Float;
-
+	public var min:Float;
+	public var max:Float;
+	
+	public var range(get, never):Float;
+	inline function get_range() return max - min;
+	
 	public function new(min:Float = 0, max:Float = 1 ){
-		_min = min;
-		_max = max;
+		this.min = min;
+		this.max = max;
 	}
 	
 	/**
@@ -20,7 +23,7 @@ class MapFloatLinear implements Mapping {
 	 * @return	A mapped value in the range of min-max
 	 */
 	public function map(normalisedValue:Float)
-		return _min + normalisedValue * ( _max - _min );
+		return min + normalisedValue * range;
 	
 	
 	/**
@@ -29,11 +32,11 @@ class MapFloatLinear implements Mapping {
 	 * @return	Normalised value (0-1)
 	 */
 	public function mapInverse(value:Float)
-		return ( value - _min ) / ( _max - _min );
+		return ( value - min ) / range;
 	
 		
 	
 	public function toString()
-		return '[MapFloatLinear] min:' + _min + ', max:' + _max;
+		return '[MapFloatLinear] min:' + min + ', max:' + max;
 	
 }

@@ -9,22 +9,25 @@ import math.Tools;
 
 class MapIntLinear implements Mapping {
 	
-	var _min:Int;
-	var _max:Int;
+	public var min:Float;
+	public var max:Float;
+	
+	public var range(get, never):Float;
+	inline function get_range() return max - min;
 	
 	public function new(min:Int = 0, max:Int = 1 ){
-		_min = min;
-		_max = max;
+		this.min = min;
+		this.max = max;
 	}
 	
 	public function map(normalisedValue:Float)
-		return Math.round(_min + normalisedValue * ( _max - _min ));
+		return Math.round(min + normalisedValue * range);
 	
 	
 	public function mapInverse(value:Float)
-		return (value - _min ) / ( _max - _min );
+		return (value - min ) / range;
 	
 	
 	public function toString()
-		return '[MapIntLinear] min:${_min}, max:${_max}';
+		return '[MapIntLinear] min:${min}, max:${max}';
 }

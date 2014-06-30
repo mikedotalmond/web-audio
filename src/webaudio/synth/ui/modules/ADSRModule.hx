@@ -1,5 +1,6 @@
 package webaudio.synth.ui.modules;
 import audio.parameter.mapping.MapFactory;
+import flambe.display.ImageSprite;
 import flambe.display.NineSlice;
 import flambe.display.Sprite;
 import flambe.display.SubTexture;
@@ -20,6 +21,7 @@ class ADSRModule {
 	var _release:Entity;
 	
 	var _panel	:NineSlice;
+	var _diagram:flambe.display.ImageSprite;
 	
 	
 	public var attack		(default, null):Rotary;
@@ -35,6 +37,33 @@ class ADSRModule {
 		position(648, 96);		
 	}
 	
+	function init(owner:Entity, textureAtlas) {
+		
+		_attack = Rotary.create(MapFactory.getMapping(MapType.FLOAT_EXPONENTIAL, 0, 1), .1, 'adsrAttack');
+		_decay 	= Rotary.create(MapFactory.getMapping(MapType.FLOAT_EXPONENTIAL, 0, 1), 1.0, 'adsrDecay');
+		_sustain= Rotary.create(MapFactory.getMapping(MapType.FLOAT, 0, 1), 1.0, 'adsrSustain');
+		_release= Rotary.create(MapFactory.getMapping(MapType.FLOAT_EXPONENTIAL, 0, 1), 0.25, 'adsrRelease');
+		
+		_panel 	= NineSlice.fromSubTexture(textureAtlas.get('InnerPanelBg'), 8, 8, 280, 192);
+		
+		_diagram = new ImageSprite(textureAtlas.get('ADSRDiagram'));
+		
+		owner.addChild(
+			new Entity().add(_panel)
+				.addChild(_attack)
+				.addChild(_decay)
+				.addChild(_sustain)
+				.addChild(_release)
+				.addChild(new Entity().add(_diagram))
+		);
+		
+		attack = cast _attack.get(NumericControl);		
+		decay = cast _decay.get(NumericControl);		
+		sustain = cast _sustain.get(NumericControl);		
+		release = cast _release.get(NumericControl);
+	}	
+	
+	
 	function position(panelX:Float,panelY:Float) {
 		
 		var rotarySpace = 64;
@@ -44,6 +73,9 @@ class ADSRModule {
 
 		panelX += 43;
 		panelY += 132;
+		
+		_diagram.x._ = panelX;
+		_diagram.y._ = panelY-92;
 		
 		_attack.get(Sprite).x._ = panelX;
 		_attack.get(Sprite).y._ = panelY;
@@ -57,27 +89,4 @@ class ADSRModule {
 		_release.get(Sprite).x._ = panelX += rotarySpace;
 		_release.get(Sprite).y._ = panelY;		
 	}
-	
-	function init(owner:Entity, textureAtlas) {
-		
-		_attack = Rotary.create(MapFactory.getMapping(MapType.FLOAT_EXPONENTIAL, 0, 1), .1, 'adsrAttack');
-		_decay 	= Rotary.create(MapFactory.getMapping(MapType.FLOAT_EXPONENTIAL, 0, 1), 1.0, 'adsrDecay');
-		_sustain= Rotary.create(MapFactory.getMapping(MapType.FLOAT, 0, 1), 1.0, 'adsrSustain');
-		_release= Rotary.create(MapFactory.getMapping(MapType.FLOAT_EXPONENTIAL, 0, 1), 0.25, 'adsrRelease');
-		
-		_panel 	= NineSlice.fromSubTexture(textureAtlas.get('InnerPanelBg'), 8, 8, 280, 192);
-		
-		owner.addChild(
-			new Entity().add(_panel)
-				.addChild(_attack)
-				.addChild(_decay)
-				.addChild(_sustain)
-				.addChild(_release)
-		);
-		
-		attack = cast _attack.get(NumericControl);		
-		decay = cast _decay.get(NumericControl);		
-		sustain = cast _sustain.get(NumericControl);		
-		release = cast _release.get(NumericControl);
-	}	
 }

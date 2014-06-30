@@ -110,8 +110,9 @@ class Rotary extends NumericControl {
 	
 	// triggered onParameterChange
 	override function updateDisplay() {
-		setKnobPosition(value.getValue(true));
+		setKnobPosition();
 		updateLabel();
+		lastUpdate = System.time;
 	}
 	
 	
@@ -120,6 +121,21 @@ class Rotary extends NumericControl {
 			valueLabel.text = labelFormatter(value.getValue());
 			valueLabel.centerAnchor();
 			valueLabel.x._ = centreX;
+			valueLabel.alpha._ = .7;
+			labelUpdated = true;
+		}
+	}
+	
+	var lastUpdate:Float;
+	var labelUpdated:Bool=false;
+	
+	override public function onUpdate(dt:Float) {
+		super.onUpdate(dt);
+		if (labelUpdated) {
+			if(System.time - lastUpdate > 2.5) {
+				labelUpdated = false;
+				valueLabel.alpha.animateTo(.2, 2, Ease.quadOut);
+			}
 		}
 	}
 	
@@ -127,18 +143,29 @@ class Rotary extends NumericControl {
 	/**
 	 * @param	value (normalised position value)
 	 */
-	inline function setKnobPosition(value:Float) {
-		
-		if (value > 1) value = 1;
-		if (value < 0) value = 0;
+	inline function setKnobPosition() {
+		var norm 	= value.getValue(true);
 		
 		var range 	= Math.abs(maxAngle - minAngle);
-		var angle 	= minAngle + value * range;
+		var angle 	= minAngle + norm * range;
 		
 		var px 		= centreX + Math.cos(angle - FMath.PI / 2) * radius;
 		var py 		= centreY + Math.sin(angle - FMath.PI / 2) * radius;
 		
 		knobDot.setXY(px, py);
+		
+		
+		var m = value.mapping;
+		if (m.min < 0 && m.max > 0) {
+			if (norm < .5) {
+				norm = 1 - norm * 2;
+			} else {
+				norm = (norm - .5) * 2;
+			}
+		}
+		
+		knobHash.setTint(.6 + norm * 1, 1.2 - norm * .8, 1.8 - norm);
+		
 	}
 	
 	
@@ -160,7 +187,7 @@ class Rotary extends NumericControl {
 			.addChild(new Entity().add(new ImageSprite(textures.get('knob-nipple_50%'))))
 			.addChild(new Entity().add(new ImageSprite(textures.get('knob-hash_50%'))));
 			
-		if (showLabel) ent.addChild(new Entity().add(Fonts.getField(Fonts.Prime13, '0.00', 0x212133)));
+		if (showLabel) ent.addChild(new Entity().add(Fonts.getField(Fonts.Prime13, '0.00', 0x212133).setAlpha(.75)));
 		
 		ent.add(new Rotary(name, defaultValue, parameterMapping, minAngle, maxAngle, small ? 5.25 : 12));
 		
