@@ -40,9 +40,9 @@ extern class AudioParam
 
 	function cancelScheduledValues( startTime : Float ) : Void;
 
-	function exponentialRampToValueAtTime( value : Float, time : Float ) : Void;
+	function exponentialRampToValueAtTime( value : Float, endTime : Float ) : Void;
 
-	function linearRampToValueAtTime( value : Float, time : Float ) : Void;
+	function linearRampToValueAtTime( value : Float, endTime : Float ) : Void;
 
 	function setTargetAtTime( target : Float, time : Float, timeConstant : Float ) : Void;
 

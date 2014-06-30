@@ -53,6 +53,8 @@ abstract ADSRNode(GainNode) from GainNode to GainNode {
 		if (input != null) input.connect(this);
 		if (destination != null) this.connect(destination);
 	}
+	
+	
 	/**
 	 * @param	when = time (audio context) to trigger at
 	 * @param	level = 1.0
@@ -60,18 +62,25 @@ abstract ADSRNode(GainNode) from GainNode to GainNode {
 	 * @param	decayTime=0.0
 	 * @param	sustainLevel=1.0
 	 */
-	inline public function trigger(when=.0, level = 1.0, attackTime=0.2, decayTime = 0.001, sustainLevel=1.0, retrigger:Bool=false) {
+	inline public function trigger(when=.0, level = 1.0, attackTime=0.2, decayTime = 0.0001, sustainLevel=1.0, retrigger:Bool=false) {
 		
-		this.gain.cancelScheduledValues(when);
+		attackTime 	= attackTime < 0.0001 ? 0.0001 : attackTime;
+		decayTime 	= decayTime < 0.0001 ? 0.0001 : decayTime;
 		
-		// start sequence 
+		//this.gain.cancelScheduledValues(when);
 		if(retrigger) this.gain.setValueAtTime(0, when);
 		
 		// Attack
-		this.gain.setTargetAtTime(level, when, rExp(attackTime));
+		this.gain.setTargetAtTime(level, when, getTimeConstant(attackTime));
 		
-		//Decay->Sustain
-		if (sustainLevel != 1.0) this.gain.setTargetAtTime(level * sustainLevel, when + attackTime, rExp(decayTime));
+		// Decay->Sustain
+		if (sustainLevel != 1.0) {
+			if (decayTime > 0) {
+				this.gain.setTargetAtTime(level * sustainLevel, when + attackTime, getTimeConstant(decayTime));
+			} else {
+				this.gain.setValueAtTime(level * sustainLevel, when + attackTime);
+			}
+		}
 	}
 	
 	
@@ -81,15 +90,13 @@ abstract ADSRNode(GainNode) from GainNode to GainNode {
 	 * @param	releaseDuration=.5
 	 * @return 	the time when release will complete and the gain is zero
 	 */
-	inline public function release(when=.0, releaseDuration=.5):Float {
-		var er = Math.exp(releaseDuration);
-		this.gain.cancelScheduledValues(when);
-		this.gain.setValueAtTime(this.gain.value, when);
-		this.gain.setTargetAtTime(0, when, 1-1/er);
-		return when + er;
+	inline public function release(when = .0, releaseDuration = .5):Float {
+		releaseDuration = releaseDuration < 0.0001 ? 0.0001 : releaseDuration;
+		this.gain.setTargetAtTime(0, when, getTimeConstant(releaseDuration));
+		return when + releaseDuration;
 	}
 	
-	static inline function rExp(v) {
-		return  1 - 1 / Math.exp(v);
-	}
+	static inline var TimeConstDivider = 4.605170185988092; // Math.log(100);
+	static inline function getTimeConstant(time:Float) return Math.log(time + 1.0) / TimeConstDivider;
+	static inline function rExp(v) return 1.0 - 1.0 / Math.exp(v);
 }

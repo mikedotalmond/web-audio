@@ -30,11 +30,11 @@ import webaudio.utils.NoteFrequencyUtil;
  *  
  * ADSR-->
  * 
- * Filter [BiQuad]-->
- * 
  * Distortion[WaveShaper + Crusher]-->
  * 
- * Delay[level+feedback]-->
+ * Filter [BiQuad]-->
+ * 
+ * FeedbackDelay [mix+feedback]-->
  * 
  * Output Gain
  * 
@@ -108,12 +108,15 @@ class MonoSynth implements ParameterObserver { //
 	 * @param	freqUtil
 	 */
 	public function new(destination:AudioNode, freqUtil:NoteFrequencyUtil) {
-				
+		
 		this.freqUtil = freqUtil;
 		
 		context = destination.context;
 		
+		// osc - adsr - distortion - filter - delay - output
+		
 		// set up audio process chain in reverse
+		
 		outputGain = context.createGain();
 		outputGain.connect(destination);
 		outputGain.gain.value = 1;
@@ -121,23 +124,18 @@ class MonoSynth implements ParameterObserver { //
 		delay = new FeedbackDelay(context);
 		delay.output.connect(outputGain);	
 		
-		setupDistortion();
-		
-		adsr 	= new ADSR(context, null, distortionGroup.input);
-		
-		filter	= new BiquadFilter(FilterType.LOWPASS, 1, 1, context, distortionGroup.output, outputGain);
+		filter	= new BiquadFilter(FilterType.LOWPASS, context);
 		filter.biquad.node.connect(delay.input);
+		filter.biquad.node.connect(outputGain);
+		
+		distortionGroup = new DistortionGroup(context);		
+		distortionGroup.output.connect(filter.biquad);
+		
+		adsr = new ADSR(context, null, distortionGroup.input);
 		
 		setupOscillators();
 	}
 	
-	
-	function setupDistortion():Void {
-		distortionGroup = new DistortionGroup(context);		
-		distortionGroup.pregain.gain.value = 1.0;		
-		//distortionGroup.output.connect(delay.input); // send to delay
-		//distortionGroup.output.connect(outputGain);  // master output
-	}
 	
 	
 	function setupOscillators():Void {

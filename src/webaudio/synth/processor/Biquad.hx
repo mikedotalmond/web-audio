@@ -41,7 +41,7 @@ class BiquadFilter {
 	public var gain		(get, set):Float; // only relevant to peak/shelving modes, not lp/hp
 	
 	
-	public function new(type:Int, freq:Float=350.0, q:Float=1.0, context:AudioContext, ?input:AudioNode, ?destination:AudioNode) {
+	public function new(type:Int, freq:Float=8000.0, q:Float=1.0, context:AudioContext, ?input:AudioNode, ?destination:AudioNode) {
 		_frequency 	= freq;
 		_q 			= q;
 		_gain 		= 1.0;
@@ -99,6 +99,7 @@ class BiquadFilter {
 	
 	inline function get_type():Int return cast biquad.node.type;
 	inline function set_type(value:Int):Int return cast biquad.node.type = FilterType.get(value);
+	
 }
 
 
@@ -109,7 +110,8 @@ class BiquadFilter {
  */
 abstract Biquad(BiquadFilterNode) from BiquadFilterNode to BiquadFilterNode {
 	
-	inline public function new(type:Int, f:Float=350.0, q:Float=1.0, context:AudioContext, ?input:AudioNode, ?destination:AudioNode) {
+	inline public function new(type:Int, f:Float=10000.0, q:Float=1.0, context:AudioContext, ?input:AudioNode, ?destination:AudioNode) {
+		
 		this 					= context.createBiquadFilter();
 		this.type 				= FilterType.get(type);
 		this.frequency.value 	= f;
@@ -137,9 +139,15 @@ abstract Biquad(BiquadFilterNode) from BiquadFilterNode to BiquadFilterNode {
 	 * @param	retrigger
 	 */
 	inline public function trigger(when:Float, startFreq:Float, attackTime:Float, sustainFreq:Float, retrigger:Bool=false) {
-		startFreq = retrigger ? this.frequency.value : startFreq;
-		rampToFreqAtTime(when, attackTime, startFreq, sustainFreq);
+		
+		attackTime 	= attackTime < 0.0001 ? 0.0001 : attackTime;
+		
+		if (retrigger) this.frequency.setValueAtTime(startFreq, when);
+		else this.frequency.setValueAtTime(this.frequency.value, when);		
+		
+		this.frequency.setTargetAtTime(sustainFreq, when, getTimeConstant(attackTime));
 	}
+	
 	
 	/**
 	 * 
@@ -148,17 +156,16 @@ abstract Biquad(BiquadFilterNode) from BiquadFilterNode to BiquadFilterNode {
 	 * @param	releaseDuration=.5
 	 * @return
 	 */
-	inline public function release(when=.0, destinationFreq=350.0, releaseDuration=.5):Float {
-		rampToFreqAtTime(when, releaseDuration, this.frequency.value, destinationFreq);
+	inline public function release(when=.0, destinationFreq=20.0, releaseDuration=.5):Float {
+		releaseDuration = releaseDuration < 0.0001 ? 0.0001 : releaseDuration;
+		
+		this.frequency.setTargetAtTime(destinationFreq, when, getTimeConstant(releaseDuration));
+		
 		return when + releaseDuration;
 	}
 	
-	
-	inline function rampToFreqAtTime(when, duration, startFreq, destFreq) {
-		this.frequency.cancelScheduledValues(when);
-		this.frequency.setValueAtTime(startFreq, when);
-		this.frequency.exponentialRampToValueAtTime(destFreq, when + duration);
-	}
+	static inline var TimeConstDivider = 4.605170185988092; // Math.log(100);
+	static inline function getTimeConstant(time:Float) return Math.log(time + 1.0) / TimeConstDivider;
 }
 
 
