@@ -41,7 +41,7 @@ class DelayModule {
 		
 		_level 		= Rotary.create(MapFactory.getMapping(MapType.FLOAT, 0, 1), 0.25, 'delayLevel');
 		_time 		= Rotary.create(MapFactory.getMapping(MapType.FLOAT, 0.0001, 1), .333, 'delayTime');
-		_feedback 	= Rotary.create(MapFactory.getMapping(MapType.FLOAT, 0, 1), 0.25, 'delayFeedback');
+		_feedback 	= Rotary.create(MapFactory.getMapping(MapType.FLOAT, 0, 0.9999), 0.25, 'delayFeedback');
 		_lfpFreq 	= Rotary.create(MapFactory.getMapping(MapType.FLOAT, 20, 8000), 8000, 'delayLFPFreq');
 		_lfpQ 		= Rotary.create(MapFactory.getMapping(MapType.FLOAT, 0.0001, 10), 1, 'delayLFPQ');
 		

@@ -85,12 +85,12 @@ class FilterModule {
 	function init(owner:Entity, textureAtlas) {
 		
 		_type 		= Rotary.create(MapFactory.getMapping(MapType.INT, 0, 1), 0, 'filterType');
-		_frequency 	= Rotary.create(MapFactory.getMapping(MapType.FLOAT_EXPONENTIAL, 20, 8000), 8000.0, 'filterFrequency');
-		_Q 			= Rotary.create(MapFactory.getMapping(MapType.FLOAT_EXPONENTIAL, 0.0001, 10), 1.0, 'filterQ');
+		_frequency 	= Rotary.create(MapFactory.getMapping(MapType.FLOAT, 20, 8000), 8000.0, 'filterFrequency');
+		_Q 			= Rotary.create(MapFactory.getMapping(MapType.FLOAT, 0.0001, 10), 1.0, 'filterQ');
 		
-		_attack 	= Rotary.create(MapFactory.getMapping(MapType.FLOAT_EXPONENTIAL, 0, 1), 0.25, 'filterAttack');
-		_release 	= Rotary.create(MapFactory.getMapping(MapType.FLOAT_EXPONENTIAL, 0, 1), 0.5, 'filterRelease');
-		_range	 	= Rotary.create(MapFactory.getMapping(MapType.FLOAT_EXPONENTIAL, 0, 1), 0.0, 'filterRange');
+		_attack 	= Rotary.create(MapFactory.getMapping(MapType.FLOAT, 0, 10), 0.25, 'filterAttack');
+		_release 	= Rotary.create(MapFactory.getMapping(MapType.FLOAT, 0, 10), 0.5, 'filterRelease');
+		_range	 	= Rotary.create(MapFactory.getMapping(MapType.FLOAT, 0, 1), 0.0, 'filterRange');
 		
 		_panel 		= NineSlice.fromSubTexture(textureAtlas.get('InnerPanelBg'), 8, 8, 470, 192);
 		
