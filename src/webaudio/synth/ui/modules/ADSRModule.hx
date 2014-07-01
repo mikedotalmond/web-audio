@@ -35,7 +35,7 @@ class ADSRModule {
 		
 		init(owner, textureAtlas);
 		
-		position(648, 96);		
+		position(651, 96);		
 	}
 	
 	function init(owner:Entity, textureAtlas) {

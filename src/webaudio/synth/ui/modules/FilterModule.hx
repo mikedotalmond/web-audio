@@ -39,7 +39,7 @@ class FilterModule {
 		
 		init(owner, textureAtlas);
 		
-		position(700, 312);		
+		position(791, 296);		
 	}
 	
 	function position(panelX:Float,panelY:Float) {
@@ -49,7 +49,7 @@ class FilterModule {
 		_panel.x = panelX;
 		_panel.y = panelY;
 
-		panelX += 61;
+		panelX += 43;
 		panelY += 132;
 		
 		_type.get(Sprite).x._ = panelX;
@@ -92,7 +92,7 @@ class FilterModule {
 		_release 	= Rotary.create(MapFactory.getMapping(MapType.FLOAT, 0, 10), 0.5, 'filterRelease');
 		_range	 	= Rotary.create(MapFactory.getMapping(MapType.FLOAT, 0, 1), 0.0, 'filterRange');
 		
-		_panel 		= NineSlice.fromSubTexture(textureAtlas.get('InnerPanelBg'), 8, 8, 470, 192);
+		_panel 		= NineSlice.fromSubTexture(textureAtlas.get('InnerPanelBg'), 8, 8, 424, 192);
 		
 		owner.addChild(
 			new Entity().add(_panel)

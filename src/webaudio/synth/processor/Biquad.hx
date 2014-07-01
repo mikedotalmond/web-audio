@@ -3,6 +3,7 @@ package webaudio.synth.processor;
  * ...
  * @author Mike Almond - https://github.com/mikedotalmond
  */
+import flambe.math.FMath;
 import js.Browser;
 
 import js.html.audio.BiquadFilterNode;
@@ -53,7 +54,6 @@ class BiquadFilter {
 		var dest  = Math.min(_frequency + envRange * (MaxFreq - _frequency), MaxFreq);
 		biquad.trigger(when, _frequency, envAttack, dest, retrigger);
 	}
-	
 	
 	public function off(when:Float):Float {
 		return biquad.release(when, _frequency, envRelease);
@@ -129,7 +129,6 @@ abstract Biquad(BiquadFilterNode) from BiquadFilterNode to BiquadFilterNode {
 		this.type = FilterType.get(type);
 	}
 	
-	
 	/**
 	 * 
 	 * @param	when=.0 time (audio context) to trigger at
@@ -142,10 +141,15 @@ abstract Biquad(BiquadFilterNode) from BiquadFilterNode to BiquadFilterNode {
 		
 		attackTime 	= attackTime < 0.0001 ? 0.0001 : attackTime;
 		
-		if (retrigger) this.frequency.setValueAtTime(startFreq, when);
-		else this.frequency.setValueAtTime(this.frequency.value, when);		
+		this.frequency.cancelScheduledValues(when);	
 		
-		this.frequency.setTargetAtTime(sustainFreq, when, getTimeConstant(attackTime));
+		if (retrigger) {
+			this.frequency.setValueAtTime(startFreq, when);
+		} else {
+			this.frequency.setValueAtTime(this.frequency.value, when);		
+		}
+		
+		this.frequency.exponentialRampToValueAtTime(sustainFreq, when + attackTime);
 	}
 	
 	
@@ -159,6 +163,8 @@ abstract Biquad(BiquadFilterNode) from BiquadFilterNode to BiquadFilterNode {
 	inline public function release(when=.0, destinationFreq=20.0, releaseDuration=.5):Float {
 		releaseDuration = releaseDuration < 0.0001 ? 0.0001 : releaseDuration;
 		
+		this.frequency.cancelScheduledValues(when);		
+		this.frequency.setValueAtTime(this.frequency.value, when);
 		this.frequency.setTargetAtTime(destinationFreq, when, getTimeConstant(releaseDuration));
 		
 		return when + releaseDuration;

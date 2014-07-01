@@ -30,7 +30,7 @@ class DistortionModule {
 	
 	public function new(owner:Entity, textureAtlas:Map<String,SubTexture>) {
 		init(owner, textureAtlas);
-		position(940, 96);		
+		position(943, 96);		
 	}
 	
 	

@@ -33,7 +33,7 @@ class DelayModule {
 	
 	public function new(owner:Entity, textureAtlas:Map<String,SubTexture>) {
 		init(owner, textureAtlas);
-		position(348, 312);		
+		position(420, 296);		
 	}
 	
 	
@@ -45,7 +45,7 @@ class DelayModule {
 		_lfpFreq 	= Rotary.create(MapFactory.getMapping(MapType.FLOAT, 20, 8000), 8000, 'delayLFPFreq');
 		_lfpQ 		= Rotary.create(MapFactory.getMapping(MapType.FLOAT, 0.0001, 10), 1, 'delayLFPQ');
 		
-		_panel 		= NineSlice.fromSubTexture(textureAtlas.get('InnerPanelBg'), 8, 8, 332, 192);
+		_panel 		= NineSlice.fromSubTexture(textureAtlas.get('InnerPanelBg'), 8, 8, 360, 192);
 		
 		owner.addChild(
 			new Entity().add(_panel)
@@ -69,7 +69,7 @@ class DelayModule {
 		_panel.x = panelX;
 		_panel.y = panelY;
 
-		panelX += 37;
+		panelX += 43;
 		panelY += 132;
 		
 		_level.get(Sprite).x._ = panelX;
@@ -83,7 +83,7 @@ class DelayModule {
 		_feedback.get(Sprite).x._ = panelX;
 		_feedback.get(Sprite).y._ = panelY;
 		
-		panelX += rotarySpace;
+		panelX += rotarySpace+16;
 		_lfpFreq.get(Sprite).x._ = panelX;
 		_lfpFreq.get(Sprite).y._ = panelY;
 		

@@ -67,8 +67,8 @@ abstract ADSRNode(GainNode) from GainNode to GainNode {
 		attackTime 	= attackTime < 0.0001 ? 0.0001 : attackTime;
 		decayTime 	= decayTime < 0.0001 ? 0.0001 : decayTime;
 		
-		//this.gain.cancelScheduledValues(when);
-		if(retrigger) this.gain.setValueAtTime(0, when);
+		this.gain.cancelScheduledValues(when);
+		if(retrigger) this.gain.setValueAtTime(this.gain.value, when);
 		
 		// Attack
 		this.gain.setTargetAtTime(level, when, getTimeConstant(attackTime));
@@ -92,6 +92,8 @@ abstract ADSRNode(GainNode) from GainNode to GainNode {
 	 */
 	inline public function release(when = .0, releaseDuration = .5):Float {
 		releaseDuration = releaseDuration < 0.0001 ? 0.0001 : releaseDuration;
+		this.gain.cancelScheduledValues(when);
+		this.gain.setValueAtTime(this.gain.value, when);
 		this.gain.setTargetAtTime(0, when, getTimeConstant(releaseDuration));
 		return when + releaseDuration;
 	}
