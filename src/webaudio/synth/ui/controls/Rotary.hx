@@ -39,9 +39,6 @@ class Rotary extends NumericControl {
 	var knobHash	:Sprite;
 	var valueLabel	:TextSprite;
 	
-	public var labelFormatter:Float->String;
-	
-	
 	/**
 	 *
 	 * @param	controlName
@@ -54,7 +51,6 @@ class Rotary extends NumericControl {
 		this.minAngle 	= minAngle;
 		this.maxAngle 	= maxAngle;
 		this.radius 	= radius;
-		labelFormatter 	= defaultLabelFormatter;
 	}
 	
 	

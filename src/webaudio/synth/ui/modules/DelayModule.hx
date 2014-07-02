@@ -93,7 +93,7 @@ class DelayModule {
 		panelX += rotarySpace;
 		_time.get(Sprite).x._ = panelX;
 		_time.get(Sprite).y._ = panelY;
-		label = Fonts.getField(Fonts.Prime20, "length", labelColour).setAlpha(labelAlpha).centerAnchor();
+		label = Fonts.getField(Fonts.Prime20, "time", labelColour).setAlpha(labelAlpha).centerAnchor();
 		owner.addChild(new Entity().add(label));
 		label.x._ = panelX; label.y._ = labelY;
 		

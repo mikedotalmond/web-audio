@@ -277,7 +277,7 @@ class MonoSynth implements ParameterObserver { //
 			
 			case 'oscPhase'			: phase 		= val;
 			
-			case 'pitchBend'		: pitchBend 	= val;
+			case 'pitchBend'		: pitchBend 	= -val;
 			
 			// ADSR
 			case 'adsrAttack'		: adsr.attack 	= val;

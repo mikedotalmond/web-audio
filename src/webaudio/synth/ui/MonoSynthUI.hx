@@ -73,8 +73,8 @@ class MonoSynthUI extends Sprite {
 		
 		owner.addChild(new Entity().add(background = NineSlice.fromSubTexture(textureAtlas.get('panel-bg_50%'))));
 		
-		owner.addChild(new Entity().add(new ImageSprite(textureAtlas.get('PitchBendBg')).disablePointer().setXY(17, 549)));
-		owner.addChild(new Entity().add(new ImageSprite(textureAtlas.get('PitchBendDrag')).disablePointer().setXY(22, 595)));
+		//owner.addChild(new Entity().add(new ImageSprite(textureAtlas.get('PitchBendBg')).disablePointer().setXY(17, 549)));
+		//owner.addChild(new Entity().add(new ImageSprite(textureAtlas.get('PitchBendDrag')).disablePointer().setXY(22, 595)));
 		
 		background.width  = 1240;
 		background.height = 680;

@@ -37,6 +37,12 @@ class NumericControl extends Component implements ParameterObserver {
 	public var returnToDefaultSpeed	:Float = 16;
 	public var returnToDefaultMin	:Float = 1e-6; // min abs normalised value
 	
+	public var normalAccuracy 	= 0.01;
+	public var highAccuracy 	= 0.001;
+	
+	public var labelFormatter:Float->String;
+	
+	
 	
 	/**
 	 *
@@ -45,7 +51,8 @@ class NumericControl extends Component implements ParameterObserver {
 	 * @param	parameterMapping
 	 */
 	public function new(name:String, defaultValue:Float, parameterMapping:Mapping) {
-		value = new Parameter(name, defaultValue, parameterMapping);
+		value 			= new Parameter(name, defaultValue, parameterMapping);
+		labelFormatter 	= defaultLabelFormatter;
 	}
 	
 	
@@ -89,7 +96,6 @@ class NumericControl extends Component implements ParameterObserver {
 		System.pointer.up.connect(pointerUp).once();
 	}
 	
-	
 	function pointerMove(e:PointerEvent) {
 		
 		// hmm. something has changed (in Chrome at least) - mouse-down fires off a mosue-move immediately afterward, without moving...
@@ -106,8 +112,8 @@ class NumericControl extends Component implements ParameterObserver {
 			
 			var accuracy = System.keyboard.isDown(Key.Control);
 			
-			dX *= (accuracy ? .001 : .01);
-			dY *= (accuracy ? .001 : .01);
+			dX *= (accuracy ? highAccuracy : normalAccuracy);
+			dY *= (accuracy ? highAccuracy : normalAccuracy);
 			
 			dragDelta(dX, dY);
 		}
