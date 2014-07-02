@@ -69,15 +69,14 @@ class ADSRModule {
 	function position(panelX:Float,panelY:Float) {
 		
 		var rotarySpace = 64;
-		var labelY = panelY+22;
+		var labelY = panelY+12;
 		var labelColour = 0x323232;
 		var labelAlpha = 0.55;
 		var label;
 		
-		label = Fonts.getField(Fonts.Prime20, "AEG", labelColour).setAlpha(labelAlpha).centerAnchor();
+		label = Fonts.getField(Fonts.Prime20, "AEG", labelColour).setAlpha(labelAlpha);
 		owner.addChild(new Entity().add(label));
-		label.x._ = panelX+28; label.y._ = labelY;
-		
+		label.x._ = panelX+12; label.y._ = labelY;
 		
 		_panel.x = panelX;
 		_panel.y = panelY;

@@ -20,6 +20,7 @@ class DistortionModule {
 	var _rateReduction		:Entity;
 	
 	var _panel				:NineSlice;
+	var owner				:Entity;
 	
 	
 	public var pregain			(default, null):Rotary;
@@ -29,8 +30,9 @@ class DistortionModule {
 	
 	
 	public function new(owner:Entity, textureAtlas:Map<String,SubTexture>) {
+		this.owner = owner;
 		init(owner, textureAtlas);
-		position(943, 96);		
+		position(937, 96);		
 	}
 	
 	
@@ -61,29 +63,51 @@ class DistortionModule {
 	function position(panelX:Float,panelY:Float) {
 		
 		var rotarySpace = 64;
+		var labelY = panelY+12;
+		var labelColour = 0x323232;
+		var labelAlpha = 0.55;
+		var label;
+		
+		label = Fonts.getField(Fonts.Prime20, "Distortion", labelColour).setAlpha(labelAlpha);
+		owner.addChild(new Entity().add(label));
+		label.x._ = panelX+12; label.y._ = labelY;
 		
 		_panel.x = panelX;
 		_panel.y = panelY;
 
-		panelX += 37;
-		panelY += 132;
+		panelX += 43;
+		panelY += 116;
+		labelY = panelY + 54;
 		
 		_pregain.get(Sprite).x._ = panelX;
 		_pregain.get(Sprite).y._ = panelY;
+		label = Fonts.getField(Fonts.Prime20, "gain", labelColour).setAlpha(labelAlpha).centerAnchor();
+		owner.addChild(new Entity().add(label));
+		label.x._ = panelX; label.y._ = labelY;
 		
 		panelX += rotarySpace;
 		
 		_waveshaperAmount.get(Sprite).x._ = panelX;
 		_waveshaperAmount.get(Sprite).y._ = panelY;
+		label = Fonts.getField(Fonts.Prime20, "shape", labelColour).setAlpha(labelAlpha).centerAnchor();
+		owner.addChild(new Entity().add(label));
+		label.x._ = panelX; label.y._ = labelY;
 		
 		panelX += rotarySpace;
 		
 		_bits.get(Sprite).x._ = panelX;
 		_bits.get(Sprite).y._ = panelY;
+		label = Fonts.getField(Fonts.Prime20, "crush", labelColour).setAlpha(labelAlpha).centerAnchor();
+		owner.addChild(new Entity().add(label));
+		label.x._ = panelX; label.y._ = labelY;
 		
 		panelX += rotarySpace;
 		
 		_rateReduction.get(Sprite).x._ = panelX;
 		_rateReduction.get(Sprite).y._ = panelY;
+		label = Fonts.getField(Fonts.Prime20, "reduce", labelColour).setAlpha(labelAlpha).centerAnchor();
+		owner.addChild(new Entity().add(label));
+		label.x._ = panelX; label.y._ = labelY;
+		
 	}
 }

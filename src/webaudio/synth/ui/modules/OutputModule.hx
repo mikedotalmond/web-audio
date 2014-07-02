@@ -30,7 +30,7 @@ class OutputModule {
 		_pitchBend 		= Rotary.create(MapFactory.getMapping(MapType.FLOAT, -1, 1), 0.0, 'pitchBend');
 	
 		owner.addChild(
-			(_panel = new Entity().add(NineSlice.fromSubTexture(textureAtlas.get('InnerPanelBg'), 16, 16, 152, 192/2)))
+			(_panel = new Entity().add(NineSlice.fromSubTexture(textureAtlas.get('InnerPanelBg'), 16, 16, 320, 192)))
 				.addChild(_outputLevel)
 				.addChild(_pitchBend)
 		);
@@ -44,12 +44,26 @@ class OutputModule {
 		_panel.get(NineSlice).x = panelX;
 		_panel.get(NineSlice).y = panelY;
 		
-		panelY += 42;
+		var labelY = panelY+12;
+		var labelColour = 0x323232;
+		var labelAlpha = 0.55;
+		var label;
 		
-		_pitchBend.get(Sprite).x._ = panelX + 40;
+		label = Fonts.getField(Fonts.Prime20, "Output", labelColour).setAlpha(labelAlpha);
+		owner.addChild(new Entity().add(label));
+		label.x._ = panelX+12; label.y._ = labelY;
+		
+		panelX += 43;
+		panelY += 116;
+		labelY = panelY + 54;
+		
+		_pitchBend.get(Sprite).x._ = panelX;
 		_pitchBend.get(Sprite).y._ = panelY;
 		
-		_outputLevel.get(Sprite).x._ = panelX + 108;
+		_outputLevel.get(Sprite).x._ = panelX+=64;
 		_outputLevel.get(Sprite).y._ = panelY;
+		label = Fonts.getField(Fonts.Prime20, "level", labelColour).setAlpha(labelAlpha).centerAnchor();
+		owner.addChild(new Entity().add(label));
+		label.x._ = panelX; label.y._ = labelY;
 	}
 }

@@ -24,6 +24,7 @@ class FilterModule {
 	var _Q			:Entity;
 	
 	var _panel		:NineSlice;
+	var owner:Entity;
 	
 	
 	public var type			(default, null):Rotary;
@@ -36,6 +37,7 @@ class FilterModule {
 	
 	
 	public function new(owner:Entity, textureAtlas:Map<String,SubTexture>) {
+		this.owner = owner;
 		
 		init(owner, textureAtlas);
 		
@@ -45,41 +47,69 @@ class FilterModule {
 	function position(panelX:Float,panelY:Float) {
 		
 		var rotarySpace = 64;
+		var labelY = panelY+12;
+		var labelColour = 0x323232;
+		var labelAlpha = 0.55;
+		var label;
+		
+		label = Fonts.getField(Fonts.Prime20, "Filter", labelColour).setAlpha(labelAlpha);
+		owner.addChild(new Entity().add(label));
+		label.x._ = panelX+12; label.y._ = labelY;
 		
 		_panel.x = panelX;
 		_panel.y = panelY;
 
 		panelX += 43;
-		panelY += 132;
+		panelY += 116;
+		labelY = panelY + 54;
 		
 		_type.get(Sprite).x._ = panelX;
 		_type.get(Sprite).y._ = panelY;
+		label = Fonts.getField(Fonts.Prime20, "lp/hp", labelColour).setAlpha(labelAlpha).centerAnchor();
+		owner.addChild(new Entity().add(label));
+		label.x._ = panelX; label.y._ = labelY;
 		
 		panelX += rotarySpace;
 		
 		_frequency.get(Sprite).x._ = panelX;
 		_frequency.get(Sprite).y._ = panelY;
+		label = Fonts.getField(Fonts.Prime20, "freq", labelColour).setAlpha(labelAlpha).centerAnchor();
+		owner.addChild(new Entity().add(label));
+		label.x._ = panelX; label.y._ = labelY;
 		
 		panelX += rotarySpace;
 		
 		_Q.get(Sprite).x._ = panelX;
 		_Q.get(Sprite).y._ = panelY;
+		label = Fonts.getField(Fonts.Prime20, "q", labelColour).setAlpha(labelAlpha).centerAnchor();
+		owner.addChild(new Entity().add(label));
+		label.x._ = panelX; label.y._ = labelY;
 		
 		panelX += 16;
 		panelX += rotarySpace;
 		
 		_attack.get(Sprite).x._ = panelX;
 		_attack.get(Sprite).y._ = panelY;
+		label = Fonts.getField(Fonts.Prime20, "attack", labelColour).setAlpha(labelAlpha).centerAnchor();
+		owner.addChild(new Entity().add(label));
+		label.x._ = panelX; label.y._ = labelY;
 		
 		panelX += rotarySpace;
 		
 		_release.get(Sprite).x._ = panelX;
 		_release.get(Sprite).y._ = panelY;
+		label = Fonts.getField(Fonts.Prime20, "release", labelColour).setAlpha(labelAlpha).centerAnchor();
+		owner.addChild(new Entity().add(label));
+		label.x._ = panelX; label.y._ = labelY;
 		
 		panelX += rotarySpace;
 		
 		_range.get(Sprite).x._ = panelX;
-		_range.get(Sprite).y._ = panelY;		
+		_range.get(Sprite).y._ = panelY;	
+		label = Fonts.getField(Fonts.Prime20, "range", labelColour).setAlpha(labelAlpha).centerAnchor();
+		owner.addChild(new Entity().add(label));
+		label.x._ = panelX; label.y._ = labelY;
+		
 	}
 	
 	function init(owner:Entity, textureAtlas) {
