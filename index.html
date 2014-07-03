@@ -1,13 +1,53 @@
-<!DOCTYPE html>
-<html lang="en">
+<!doctype html>
+<html>
 <head>
-	<meta charset="utf-8"/>
-	<title>Web Audio ~ MonoSynth</title>
-	<meta name="description" content="" />
-	<link rel="stylesheet" media="screen,projection,tv" href="synth.min.css">
+	<meta charset="utf-8">
+	<title>m o n o s y n t h</title>
+
+	<meta name="description" content="A Monosynth made usung the Haxe, Flambe, and the WebAudio APIs">
+	<meta name="keywords" content="Monosynth, Synthesiser, Experiment, Chrome, WebGL, Canvas, Web-Audio, WebAudio, Haxe, Flambe, @mikedotalmond, Mike Almond">
+	
+	<meta name="viewport" content="width=device-width, height=device-height, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+	<meta name="format-detection" content="telephone=no">
+	<meta name="apple-mobile-web-app-capable" content="yes">
+	<meta name="apple-mobile-web-app-status-bar-style" content="black">
+
+	<link rel="apple-touch-icon-precomposed" sizes="57x57" href="icons/57x57.png">
+	<link rel="apple-touch-icon-precomposed" sizes="72x72" href="icons/72x72.png">
+	<link rel="apple-touch-icon-precomposed" sizes="114x114" href="icons/114x114.png">
+	<link rel="apple-touch-icon-precomposed" sizes="144x144" href="icons/144x144.png">
+	
+	<link rel="stylesheet" type="text/css" href="styles.min.css" />
 </head>
-<!-- https://github.com/mikedotalmond/web-audio-->
 <body>
-	<script src="audios.js"></script>
+
+	<div id="content">
+		<div id="noWebAudio" class="no-display">
+			<h1>Ack! Nothing to hear... here.</h1>
+			<h2>You'll need to use a <a href="https://www.google.com/chrome/browser/">different</a> browser.</h2>
+		</div>
+	</div>
+	
+	<script src="flambe.js"></script>
+	<script> flambe.embed(["targets/main-html.js"], "content");</script>
+	
+	<footer class="no-mobile">
+		<p><a title="Monosynth on github" href="https://github.com/mikedotalmond/web-audio">Monosynth</a> ~ made by <a href="https://twitter.com/mikedotalmond">Mike</a></p>
+		<p>Built with <a href="http://haxe.org/" title="haxe.org">Haxe</a>, using <a href="https://github.com/aduros/flambe" title="Flambe">Flambe</a>
+		and the <a href="http://www.w3.org/TR/webaudio/" title="webaudio API">Web Audio</a> APIs</p>
+	</footer>
+	
+	<!--a href="https://github.com/mikedotalmond/web-audio">
+		<img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_red_aa0000.png" alt="Fork on GitHub">
+	</a-->
+	
+	<script>
+	  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+	  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+	  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+	  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+	  ga('create', 'UA-52516507-1', 'auto');
+	  ga('send', 'pageview');
+	</script>
 </body>
 </html>
