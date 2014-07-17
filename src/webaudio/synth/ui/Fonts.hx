@@ -10,19 +10,11 @@ import flambe.display.TextSprite;
 class Fonts {
 	
 	static public var Prime13(default, null):Font;
-	static public var Prime14(default, null):Font;
-	static public var Prime24(default, null):Font;
-	static public var Prime22(default, null):Font;
 	static public var Prime20(default, null):Font;
-	static public var Prime32(default, null):Font;
 	
 	static public function setup(pack:AssetPack) {
 		Prime13 = new Font(pack, "font/Prime13");
-		Prime14 = new Font(pack, "font/Prime14");
-		Prime24 = new Font(pack, "font/Prime24");
-		Prime22 = new Font(pack, "font/Prime22");
 		Prime20 = new Font(pack, "font/Prime20");
-		Prime32 = new Font(pack, "font/Prime32");
 	}
 	
 	public static function getField(font:Font, text:String="Pack my box with five dozen liquor jugs.", colour:Int=0x000000):TextSprite {
