@@ -39,7 +39,7 @@ import webaudio.utils.NoteFrequencyUtil;
  * Output Gain
  * 
  */
-
+ 
 class MonoSynth implements ParameterObserver { //
 	
 	public var noteIsOn				(default, null):Bool = false;
@@ -109,9 +109,9 @@ class MonoSynth implements ParameterObserver { //
 	 */
 	public function new(destination:AudioNode, freqUtil:NoteFrequencyUtil) {
 		
-		this.freqUtil = freqUtil;
+		this.freqUtil 	= freqUtil;
 		
-		context = destination.context;
+		context 		= destination.context;
 		
 		// osc - adsr - distortion - filter - delay - output
 		
@@ -229,7 +229,7 @@ class MonoSynth implements ParameterObserver { //
 	 * @param	when
 	 */
 	public function noteOff(when) {
-		if (noteIsOn) {
+		//if (noteIsOn) {
 			
 			var r = adsr.off(when);
 			
@@ -240,7 +240,7 @@ class MonoSynth implements ParameterObserver { //
 			phaseDelay.delayTime.cancelScheduledValues(r);
 			
 			noteIsOn = false;
-		}
+		//}
 	}
 	
 	

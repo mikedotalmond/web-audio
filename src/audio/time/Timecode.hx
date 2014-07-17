@@ -58,5 +58,6 @@ typedef TimecodeData = {
 	var time	:Float;
 	var bar		:Int;
 	var beat	:Int;
+	@:optional 
 	var ticks	:Int;
 }

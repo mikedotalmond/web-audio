@@ -8,9 +8,9 @@ import flambe.util.Signal0;
 @:allow(audio.time)
 class TimeSignature {
 	
-	var barLength(get, never):Float;
-	var beatLength(get, never):Float;
-	var quarterNotesPerBeat(get, never):Float;
+	public var barLength(get, never):Float;
+	public var beatLength(get, never):Float;
+	public var quarterNotesPerBeat(get, never):Float;
 	
 	public var beatsPerBar(get, set):Int;
 	public var beatNoteValue(get, set):Int;

@@ -79,6 +79,8 @@ import webaudio.utils.KeyboardNotes;
 	
 	var paramSerialiser		:ParameterSerialiser;
 	var settings			:Settings;
+	var presetIndex			:Int;
+	var presetNames			:Array<String>;
 	
 	function new() {
 		trace('MonoSynth');
@@ -155,9 +157,10 @@ import webaudio.utils.KeyboardNotes;
 		//setupCamera
 		cameraMouseControl = new MouseControlBehaviour(camera);
 		camera.behaviours.push(cameraMouseControl);
+		cameraMouseControl.scrollZoom = false;
 		cameraMouseControl.enabled = true;
 		
-		cameraZoomLimit = new ZoomLimitBehaviour(camera, .25, 1);
+		cameraZoomLimit = new ZoomLimitBehaviour(camera, .5, 1);
 		camera.behaviours.push(cameraZoomLimit);
 		cameraZoomLimit.enabled = true;
 		
@@ -234,10 +237,23 @@ import webaudio.utils.KeyboardNotes;
 		delay.lfpFreq.value.addObservers(observers, true);
 		delay.lfpQ.value.addObservers(observers, true);
 		
-		paramSerialiser.restoreSession();
+		
+		presetIndex = -1;
+		presetNames = [for (name in Presets.names) name];
+		
+		// if there's a session - restore it, otherwise, default to preset 0 - 'Squasaw'
+		if (!paramSerialiser.restoreSession()) {
+			paramSerialiser.deserialise(Presets.get(presetNames[presetIndex=0]));
+		}
 	}
 	
-	
+	function nextPreset(direction:Int) {
+		presetIndex += direction;
+		if (presetIndex < 0) presetIndex = presetNames.length - 1;
+		else if (presetIndex >= presetNames.length) presetIndex = 0;
+		paramSerialiser.deserialise(Presets.get(presetNames[presetIndex]));
+		trace('Restored preset "${presetNames[presetIndex]}"');
+	}
 	
 	function onKeyDown(e:KeyboardEvent) {
 		
@@ -256,6 +272,9 @@ import webaudio.utils.KeyboardNotes;
 			case Key.F1				: trace(paramSerialiser.serialise());
 			case Key.F2				: paramSerialiser.randomiseAll();
 			case Key.F3				: paramSerialiser.resetAll();
+			
+			case Key.Up				: nextPreset(1);
+			case Key.Down			: nextPreset(-1);
 			
 			default:
 				// trace(e.key);

@@ -3,11 +3,13 @@ package audio.time;
 import audio.time.Timecode;
 import audio.time.Timecode.TimecodeData;
 import audio.time.TimeSignature;
+import webaudio.Main;
 
 import flambe.Component;
 import flambe.util.Signal0;
 import flambe.util.Signal1;
 
+import js.html.audio.AudioContext;
 /**
  * ...
  * @author Mike Almond - https://github.com/mikedotalmond
@@ -23,6 +25,9 @@ class Clock extends Component {
 	var pulseDuration	:Float = 0;
 	
 	var _bpm:Float;
+	var audioContext:AudioContext;
+	var lastContextTime:Float = 0;
+	
 	public var bpm(get, set):Float;
 	public var bps(get, set):Float;
 	
@@ -37,19 +42,22 @@ class Clock extends Component {
 	public var timeSignature(default, null)	:TimeSignature;
 	
 	
-	public function new(bpm:Float = 120, timeSignature:TimeSignature = null) {
+	public function new(audioContext:AudioContext, bpm:Float = 120, timeSignature:TimeSignature = null) {
+		
+		this.audioContext 	= audioContext;
 		
 		tick 				= new Signal1<TimecodeData>();
 		started 			= new Signal0();
 		stopped 			= new Signal0();
 		
 		this.timeSignature 	= timeSignature == null ? new TimeSignature() : timeSignature;
+		this.timeSignature.change.connect(set_bpm.bind(_bpm));
+		
 		timecode 			= new Timecode(this.timeSignature);
 		
 		set_bpm(bpm);
 		goto(0);
 		
-		this.timeSignature.change.connect(set_bpm.bind(_bpm));
 	}
 	
 	
@@ -87,7 +95,11 @@ class Clock extends Component {
 	override public function onUpdate(dt:Float) {
 		if (running) {
 			
-			time += dt;
+			var now 	= audioContext.currentTime;
+			var delta 	= now - lastContextTime;
+			lastContextTime = now;
+			
+			time += delta;
 			
 			var steps = Math.floor((time - lastTickedAt) / pulseDuration);
 			if (steps > 0) lastTickedAt = time;
@@ -109,6 +121,12 @@ class Clock extends Component {
 	
 	override public function onRemoved() {
 		stopped.emit();
+	}
+	
+	public function getTimeAt(bars:Float, beats:Float, sixteenthBeats:Float=0):Float {
+		return 	timeSignature.barLength * bars + 
+				timeSignature.beatLength * beats + 
+				(timeSignature.beatLength / 16) * sixteenthBeats;
 	}
 	
 	

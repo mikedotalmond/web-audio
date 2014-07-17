@@ -11,6 +11,7 @@ default_platform: html
 
 # Additional flags to pass to the Haxe compiler
 # haxe_flags: -lib nape -D foobar
+haxe_flags: -D flambe_webgl_enable_mipmapping
 
 # Additional paths to include in the build
 # extra_paths:
