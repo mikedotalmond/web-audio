@@ -140,6 +140,9 @@ Std.__name__ = true;
 Std["is"] = function(v,t) {
 	return js_Boot.__instanceof(v,t);
 };
+Std.instance = function(value,c) {
+	if((value instanceof c)) return value; else return null;
+};
 Std.string = function(s) {
 	return js_Boot.__string_rec(s,"");
 };
@@ -532,7 +535,11 @@ audio_parameter_mapping_MapIntLinear.prototype = {
 var flambe_util_Disposable = function() { };
 $hxClasses["flambe.util.Disposable"] = flambe_util_Disposable;
 flambe_util_Disposable.__name__ = true;
-var flambe_Component = function() { };
+var flambe_Component = function() {
+	this._flags = 0;
+	this.next = null;
+	this.owner = null;
+};
 $hxClasses["flambe.Component"] = flambe_Component;
 flambe_Component.__name__ = true;
 flambe_Component.__interfaces__ = [flambe_util_Disposable];
@@ -541,6 +548,10 @@ flambe_Component.prototype = {
 	}
 	,onRemoved: function() {
 	}
+	,onStart: function() {
+	}
+	,onStop: function() {
+	}
 	,onUpdate: function(dt) {
 	}
 	,dispose: function() {
@@ -548,13 +559,6 @@ flambe_Component.prototype = {
 	}
 	,get_name: function() {
 		return null;
-	}
-	,init: function(owner,next) {
-		this.owner = owner;
-		this.next = next;
-	}
-	,setNext: function(next) {
-		this.next = next;
 	}
 	,__class__: flambe_Component
 	,__properties__: {get_name:"get_name"}
@@ -582,8 +586,9 @@ flambe_Entity.prototype = {
 			tail = p;
 			p = p.next;
 		}
-		if(tail != null) tail.setNext(component); else this.firstComponent = component;
-		component.init(this,null);
+		if(tail != null) tail.next = component; else this.firstComponent = component;
+		component.owner = this;
+		component.next = null;
 		component.onAdded();
 		return this;
 	}
@@ -593,10 +598,18 @@ flambe_Entity.prototype = {
 		while(p != null) {
 			var next = p.next;
 			if(p == component) {
-				if(prev == null) this.firstComponent = next; else prev.init(this,next);
+				if(prev == null) this.firstComponent = next; else {
+					prev.owner = this;
+					prev.next = next;
+				}
 				delete(this._compMap[p.get_name()]);
+				if(flambe_util_BitSets.contains(p._flags,1)) {
+					p.onStop();
+					p._flags = flambe_util_BitSets.remove(p._flags,1);
+				}
 				p.onRemoved();
-				p.init(null,null);
+				p.owner = null;
+				p.next = null;
 				return true;
 			}
 			prev = p;
@@ -1251,7 +1264,7 @@ flambe_SpeedAdjuster.__name__ = true;
 flambe_SpeedAdjuster.__super__ = flambe_Component;
 flambe_SpeedAdjuster.prototype = $extend(flambe_Component.prototype,{
 	get_name: function() {
-		return "SpeedAdjuster_10";
+		return "SpeedAdjuster_13";
 	}
 	,onUpdate: function(dt) {
 		if(this._realDt > 0) {
@@ -1488,6 +1501,7 @@ flambe_asset_Manifest.prototype = {
 	,__properties__: {get_remoteBase:"get_remoteBase",set_localBase:"set_localBase",get_localBase:"get_localBase"}
 };
 var flambe_camera_Camera = function(container) {
+	flambe_Component.call(this);
 	this.container = container;
 	this.behaviours = new Array();
 	this.change = new flambe_util_Signal0();
@@ -1505,11 +1519,12 @@ flambe_camera_Camera.__name__ = true;
 flambe_camera_Camera.__super__ = flambe_Component;
 flambe_camera_Camera.prototype = $extend(flambe_Component.prototype,{
 	get_name: function() {
-		return "Camera_7";
+		return "Camera_9";
 	}
 	,onAdded: function() {
 		this.container = this.owner;
-		this.rootSprite = this.container.getComponent("Sprite_0");
+		var component = this.container.getComponent("Sprite_0");
+		this.rootSprite = component;
 		if(this.rootSprite == null) throw "Uh-oh! No Sprite found in the container Entity " + Std.string(this.container);
 		this.owner.add(this.controller = new flambe_camera_CameraController(this));
 		this.stageResized = flambe_System.get_stage().resize.connect($bind(this,this.onStageResized),true);
@@ -1630,6 +1645,7 @@ flambe_camera_Camera.prototype = $extend(flambe_Component.prototype,{
 });
 var flambe_camera_CameraController = function(camera) {
 	this.camera = null;
+	flambe_Component.call(this);
 	this.camera = camera;
 };
 $hxClasses["flambe.camera.CameraController"] = flambe_camera_CameraController;
@@ -1637,7 +1653,7 @@ flambe_camera_CameraController.__name__ = true;
 flambe_camera_CameraController.__super__ = flambe_Component;
 flambe_camera_CameraController.prototype = $extend(flambe_Component.prototype,{
 	get_name: function() {
-		return "CameraController_6";
+		return "CameraController_8";
 	}
 	,onAdded: function() {
 		this.panX = new flambe_animation_AnimatedFloat(this.camera.get_panX());
@@ -1704,6 +1720,7 @@ flambe_camera_behaviours_CameraControlBehaviour.prototype = {
 	,__properties__: {set_enabled:"set_enabled"}
 };
 var flambe_camera_behaviours_MouseControlBehaviour = function(camera,bounds) {
+	this.scrollZoom = true;
 	this.mouseMoved = false;
 	this.y = .0;
 	this.x = .0;
@@ -1779,7 +1796,7 @@ flambe_camera_behaviours_MouseControlBehaviour.prototype = $extend(flambe_camera
 		}
 	}
 	,onMouseScroll: function(direction) {
-		if(this._enabled) {
+		if(this._enabled && this.scrollZoom) {
 			var c = this.controller;
 			if(flambe_System.get_keyboard().isDown(flambe_input_Key.Shift)) c.rotation.animateBy(direction > 0?-22.5:22.5,.25,flambe_animation_Ease.quadOut); else {
 				var z;
@@ -1858,10 +1875,11 @@ var flambe_display_Sprite = function() {
 	this.scissor = null;
 	this.blendMode = null;
 	var _g = this;
-	this._flags = 1 | 2 | 8 | 128;
+	flambe_Component.call(this);
+	this._flags = flambe_util_BitSets.add(this._flags,2 | 4 | 16 | 32);
 	this._localMatrix = new flambe_math_Matrix();
 	var dirtyMatrix = function(_,_1) {
-		_g._flags = flambe_util_BitSets.add(_g._flags,4 | 8);
+		_g._flags = flambe_util_BitSets.add(_g._flags,8 | 16);
 	};
 	this.x = new flambe_animation_AnimatedFloat(0,dirtyMatrix);
 	this.y = new flambe_animation_AnimatedFloat(0,dirtyMatrix);
@@ -1878,9 +1896,11 @@ var flambe_display_Sprite = function() {
 $hxClasses["flambe.display.Sprite"] = flambe_display_Sprite;
 flambe_display_Sprite.__name__ = true;
 flambe_display_Sprite.hitTest = function(entity,x,y) {
-	var sprite = entity.getComponent("Sprite_0");
+	var sprite;
+	var component = entity.getComponent("Sprite_0");
+	sprite = component;
 	if(sprite != null) {
-		if(!flambe_util_BitSets.containsAll(sprite._flags,1 | 2)) return null;
+		if(!flambe_util_BitSets.containsAll(sprite._flags,2 | 4)) return null;
 		if(sprite.getLocalMatrix().inverseTransform(x,y,flambe_display_Sprite._scratchPoint)) {
 			x = flambe_display_Sprite._scratchPoint.x;
 			y = flambe_display_Sprite._scratchPoint.y;
@@ -1893,7 +1913,9 @@ flambe_display_Sprite.hitTest = function(entity,x,y) {
 	if(sprite != null && sprite.containsLocal(x,y)) return sprite; else return null;
 };
 flambe_display_Sprite.render = function(entity,g) {
-	var sprite = entity.getComponent("Sprite_0");
+	var sprite;
+	var component = entity.getComponent("Sprite_0");
+	sprite = component;
 	if(sprite != null) {
 		var alpha = sprite.alpha.get__();
 		if(!sprite.get_visible() || alpha <= 0) return;
@@ -1916,7 +1938,9 @@ flambe_display_Sprite.render = function(entity,g) {
 		if(scissor != null) g.applyScissor(scissor.x,scissor.y,scissor.width,scissor.height);
 		sprite.draw(g);
 	}
-	var director = entity.getComponent("Director_8");
+	var director;
+	var component1 = entity.getComponent("Director_10");
+	director = component1;
 	if(director != null) {
 		var scenes = director.occludedScenes;
 		var _g = 0;
@@ -1969,8 +1993,8 @@ flambe_display_Sprite.prototype = $extend(flambe_Component.prototype,{
 		return localX >= 0 && localX < this.getNaturalWidth() && localY >= 0 && localY < this.getNaturalHeight();
 	}
 	,getLocalMatrix: function() {
-		if(flambe_util_BitSets.contains(this._flags,4)) {
-			this._flags = flambe_util_BitSets.remove(this._flags,4);
+		if(flambe_util_BitSets.contains(this._flags,8)) {
+			this._flags = flambe_util_BitSets.remove(this._flags,8);
 			this._localMatrix.compose(this.x.get__(),this.y.get__(),this.scaleX.get__(),this.scaleY.get__(),flambe_math_FMath.toRadians(this.rotation.get__()));
 			this._localMatrix.translate(-this.anchorX.get__(),-this.anchorY.get__());
 		}
@@ -2009,7 +2033,7 @@ flambe_display_Sprite.prototype = $extend(flambe_Component.prototype,{
 		return this;
 	}
 	,onAdded: function() {
-		if(flambe_util_BitSets.contains(this._flags,256)) this.connectHover();
+		if(flambe_util_BitSets.contains(this._flags,64)) this.connectHover();
 	}
 	,onRemoved: function() {
 		if(this._hoverConnection != null) {
@@ -2036,7 +2060,9 @@ flambe_display_Sprite.prototype = $extend(flambe_Component.prototype,{
 		if(this.owner == null) return null;
 		var entity = this.owner.parent;
 		while(entity != null) {
-			var sprite = entity.getComponent("Sprite_0");
+			var sprite;
+			var component = entity.getComponent("Sprite_0");
+			sprite = component;
 			if(sprite != null) return sprite;
 			entity = entity.parent;
 		}
@@ -2067,24 +2093,24 @@ flambe_display_Sprite.prototype = $extend(flambe_Component.prototype,{
 				if(hit == _g) return;
 				hit = hit.getParentSprite();
 			}
-			if(_g._pointerOut != null && flambe_util_BitSets.contains(_g._flags,256)) _g._pointerOut.emit(event);
-			_g._flags = flambe_util_BitSets.remove(_g._flags,256);
+			if(_g._pointerOut != null && flambe_util_BitSets.contains(_g._flags,64)) _g._pointerOut.emit(event);
+			_g._flags = flambe_util_BitSets.remove(_g._flags,64);
 			_g._hoverConnection.dispose();
 			_g._hoverConnection = null;
 		});
 	}
 	,get_visible: function() {
-		return flambe_util_BitSets.contains(this._flags,1);
+		return flambe_util_BitSets.contains(this._flags,2);
 	}
 	,set_pointerEnabled: function(pointerEnabled) {
-		this._flags = flambe_util_BitSets.set(this._flags,2,pointerEnabled);
+		this._flags = flambe_util_BitSets.set(this._flags,4,pointerEnabled);
 		return pointerEnabled;
 	}
 	,get_pixelSnapping: function() {
-		return flambe_util_BitSets.contains(this._flags,128);
+		return flambe_util_BitSets.contains(this._flags,32);
 	}
 	,set_pixelSnapping: function(pixelSnapping) {
-		this._flags = flambe_util_BitSets.set(this._flags,128,pixelSnapping);
+		this._flags = flambe_util_BitSets.set(this._flags,32,pixelSnapping);
 		return pixelSnapping;
 	}
 	,onPointerDown: function(event) {
@@ -2096,8 +2122,8 @@ flambe_display_Sprite.prototype = $extend(flambe_Component.prototype,{
 		if(this._pointerMove != null) this._pointerMove.emit(event);
 	}
 	,onHover: function(event) {
-		if(flambe_util_BitSets.contains(this._flags,256)) return;
-		this._flags = flambe_util_BitSets.add(this._flags,256);
+		if(flambe_util_BitSets.contains(this._flags,64)) return;
+		this._flags = flambe_util_BitSets.add(this._flags,64);
 		if(this._pointerIn != null || this._pointerOut != null) {
 			if(this._pointerIn != null) this._pointerIn.emit(event);
 			this.connectHover();
@@ -2109,8 +2135,8 @@ flambe_display_Sprite.prototype = $extend(flambe_Component.prototype,{
 			switch(Type.enumIndex(_g)) {
 			case 1:
 				var point = _g[2];
-				if(this._pointerOut != null && flambe_util_BitSets.contains(this._flags,256)) this._pointerOut.emit(event);
-				this._flags = flambe_util_BitSets.remove(this._flags,256);
+				if(this._pointerOut != null && flambe_util_BitSets.contains(this._flags,64)) this._pointerOut.emit(event);
+				this._flags = flambe_util_BitSets.remove(this._flags,64);
 				if(this._hoverConnection != null) {
 					this._hoverConnection.dispose();
 					this._hoverConnection = null;
@@ -2586,6 +2612,7 @@ var flambe_display_NineSlice = function(parts) {
 	this._x = 0;
 	this._height = 0;
 	this._width = 0;
+	flambe_Component.call(this);
 	this.parts = parts;
 	if(parts.length != 9) throw "Expected exactly 9 parts, but got " + parts.length;
 	this.xOffset = parts[8].getNaturalWidth();
@@ -2624,7 +2651,7 @@ flambe_display_NineSlice.prototype = $extend(flambe_Component.prototype,{
 		while(_g < _g1.length) {
 			var part = _g1[_g];
 			++_g;
-			this.owner.addChild(new flambe_Entity().add(part));
+			this.owner.addChild(new flambe_Entity().add(part.disablePointer()));
 		}
 	}
 	,setTint: function(r,g,b) {
@@ -2715,9 +2742,9 @@ var flambe_display_TextSprite = function(font,text) {
 	this._font = font;
 	this._text = text;
 	this._align = flambe_display_TextAlign.Left;
-	this._flags = flambe_util_BitSets.add(this._flags,64);
+	this._flags = flambe_util_BitSets.add(this._flags,128);
 	var dirtyText = function(_,_1) {
-		_g._flags = flambe_util_BitSets.add(_g._flags,64);
+		_g._flags = flambe_util_BitSets.add(_g._flags,128);
 	};
 	this.wrapWidth = new flambe_animation_AnimatedFloat(0,dirtyText);
 	this.letterSpacing = new flambe_animation_AnimatedFloat(0,dirtyText);
@@ -2748,7 +2775,7 @@ flambe_display_TextSprite.prototype = $extend(flambe_display_Sprite.prototype,{
 	,set_text: function(text) {
 		if(text != this._text) {
 			this._text = text;
-			this._flags = flambe_util_BitSets.add(this._flags,64);
+			this._flags = flambe_util_BitSets.add(this._flags,128);
 		}
 		return text;
 	}
@@ -2759,10 +2786,10 @@ flambe_display_TextSprite.prototype = $extend(flambe_display_Sprite.prototype,{
 		var reloadCount = this._font.checkReload();
 		if(reloadCount != this._lastReloadCount) {
 			this._lastReloadCount = reloadCount;
-			this._flags = flambe_util_BitSets.add(this._flags,64);
+			this._flags = flambe_util_BitSets.add(this._flags,128);
 		}
-		if(flambe_util_BitSets.contains(this._flags,64)) {
-			this._flags = flambe_util_BitSets.remove(this._flags,64);
+		if(flambe_util_BitSets.contains(this._flags,128)) {
+			this._flags = flambe_util_BitSets.remove(this._flags,128);
 			this._layout = this.get_font().layoutText(this._text,this._align,this.wrapWidth.get__(),this.letterSpacing.get__(),this.lineSpacing.get__());
 		}
 	}
@@ -3594,7 +3621,9 @@ flambe_platform_BasicPointer.prototype = {
 		if(hit != null) {
 			var entity = hit.owner;
 			do {
-				var sprite = entity.getComponent("Sprite_0");
+				var sprite;
+				var component = entity.getComponent("Sprite_0");
+				sprite = component;
 				if(sprite != null) chain.push(sprite);
 				entity = entity.parent;
 			} while(entity != null);
@@ -3616,7 +3645,9 @@ flambe_platform_BasicPointer.prototype = {
 		if(hit != null) {
 			var entity = hit.owner;
 			do {
-				var sprite = entity.getComponent("Sprite_0");
+				var sprite;
+				var component = entity.getComponent("Sprite_0");
+				sprite = component;
 				if(sprite != null) chain.push(sprite);
 				entity = entity.parent;
 			} while(entity != null);
@@ -3640,7 +3671,9 @@ flambe_platform_BasicPointer.prototype = {
 		if(hit != null) {
 			var entity = hit.owner;
 			do {
-				var sprite = entity.getComponent("Sprite_0");
+				var sprite;
+				var component = entity.getComponent("Sprite_0");
+				sprite = component;
 				if(sprite != null) chain.push(sprite);
 				entity = entity.parent;
 			} while(entity != null);
@@ -4368,7 +4401,9 @@ var flambe_platform_MainLoop = function() {
 $hxClasses["flambe.platform.MainLoop"] = flambe_platform_MainLoop;
 flambe_platform_MainLoop.__name__ = true;
 flambe_platform_MainLoop.updateEntity = function(entity,dt) {
-	var speed = entity.getComponent("SpeedAdjuster_10");
+	var speed;
+	var component = entity.getComponent("SpeedAdjuster_13");
+	speed = component;
 	if(speed != null) {
 		speed._realDt = dt;
 		dt *= speed.scale.get__();
@@ -4380,6 +4415,10 @@ flambe_platform_MainLoop.updateEntity = function(entity,dt) {
 	var p = entity.firstComponent;
 	while(p != null) {
 		var next = p.next;
+		if(!flambe_util_BitSets.contains(p._flags,1)) {
+			p._flags = flambe_util_BitSets.add(p._flags,1);
+			p.onStart();
+		}
 		p.onUpdate(dt);
 		p = next;
 	}
@@ -5737,7 +5776,7 @@ var flambe_platform_html_WebGLTextureRoot = function(renderer,width,height) {
 	gl.texParameteri(3553,10242,33071);
 	gl.texParameteri(3553,10243,33071);
 	gl.texParameteri(3553,10240,9729);
-	gl.texParameteri(3553,10241,9728);
+	gl.texParameteri(3553,10241,9985);
 };
 $hxClasses["flambe.platform.html.WebGLTextureRoot"] = flambe_platform_html_WebGLTextureRoot;
 flambe_platform_html_WebGLTextureRoot.__name__ = true;
@@ -5763,6 +5802,7 @@ flambe_platform_html_WebGLTextureRoot.prototype = $extend(flambe_platform_BasicA
 		this._renderer.batcher.bindTexture(this.nativeTexture);
 		var gl = this._renderer.gl;
 		gl.texImage2D(3553,0,6408,6408,5121,image);
+		gl.generateMipmap(3553);
 	}
 	,copyFrom: function(that) {
 		this.nativeTexture = that.nativeTexture;
@@ -5972,7 +6012,7 @@ flambe_scene_Director.__name__ = true;
 flambe_scene_Director.__super__ = flambe_Component;
 flambe_scene_Director.prototype = $extend(flambe_Component.prototype,{
 	get_name: function() {
-		return "Director_8";
+		return "Director_10";
 	}
 	,onAdded: function() {
 		this.owner.addChild(this._root);
@@ -5998,14 +6038,18 @@ flambe_scene_Director.prototype = $extend(flambe_Component.prototype,{
 		if(ll > 0) return this.scenes[ll - 1]; else return null;
 	}
 	,show: function(scene) {
-		var events = scene.getComponent("Scene_9");
+		var events;
+		var component = scene.getComponent("Scene_12");
+		events = component;
 		if(events != null) events.shown.emit();
 	}
 	,invalidateVisibility: function() {
 		var ii = this.scenes.length;
 		while(ii > 0) {
 			var scene = this.scenes[--ii];
-			var comp = scene.getComponent("Scene_9");
+			var comp;
+			var component = scene.getComponent("Scene_12");
+			comp = component;
 			if(comp == null || comp.opaque) break;
 		}
 		if(this.scenes.length > 0) this.occludedScenes = this.scenes.slice(ii,this.scenes.length - 1); else this.occludedScenes = [];
@@ -6041,7 +6085,7 @@ flambe_scene_Scene.__name__ = true;
 flambe_scene_Scene.__super__ = flambe_Component;
 flambe_scene_Scene.prototype = $extend(flambe_Component.prototype,{
 	get_name: function() {
-		return "Scene_9";
+		return "Scene_12";
 	}
 	,__class__: flambe_scene_Scene
 });
@@ -6793,8 +6837,9 @@ webaudio_Main.prototype = {
 		this.scene.add(this.sceneContainer).add(this.camera).addChild(this.sceneBackgroundLayer = new flambe_Entity()).addChild(this.sceneContentLayer = new flambe_Entity()).addChild(this.sceneUILayer = new flambe_Entity());
 		this.cameraMouseControl = new flambe_camera_behaviours_MouseControlBehaviour(this.camera);
 		this.camera.behaviours.push(this.cameraMouseControl);
+		this.cameraMouseControl.scrollZoom = false;
 		this.cameraMouseControl.set_enabled(true);
-		this.cameraZoomLimit = new flambe_camera_behaviours_ZoomLimitBehaviour(this.camera,.25,1);
+		this.cameraZoomLimit = new flambe_camera_behaviours_ZoomLimitBehaviour(this.camera,.5,1);
 		this.camera.behaviours.push(this.cameraZoomLimit);
 		this.cameraZoomLimit.set_enabled(true);
 		this.camera.controller.zoom.set__(1);
@@ -6851,7 +6896,21 @@ webaudio_Main.prototype = {
 		delay.feedback.value.addObservers(observers,true);
 		delay.lfpFreq.value.addObservers(observers,true);
 		delay.lfpQ.value.addObservers(observers,true);
-		this.paramSerialiser.restoreSession();
+		this.presetIndex = -1;
+		var _g1 = [];
+		var $it0 = webaudio_synth_data_Presets.get_names();
+		while( $it0.hasNext() ) {
+			var name = $it0.next();
+			_g1.push(name);
+		}
+		this.presetNames = _g1;
+		if(!this.paramSerialiser.restoreSession()) this.paramSerialiser.deserialise(webaudio_synth_data_Presets.get(this.presetNames[this.presetIndex = 0]));
+	}
+	,nextPreset: function(direction) {
+		this.presetIndex += direction;
+		if(this.presetIndex < 0) this.presetIndex = this.presetNames.length - 1; else if(this.presetIndex >= this.presetNames.length) this.presetIndex = 0;
+		this.paramSerialiser.deserialise(webaudio_synth_data_Presets.get(this.presetNames[this.presetIndex]));
+		console.log("Restored preset \"" + this.presetNames[this.presetIndex] + "\"");
 	}
 	,onKeyDown: function(e) {
 		var code = flambe_platform_KeyCodes.toKeyCode(e.key);
@@ -6878,6 +6937,12 @@ webaudio_Main.prototype = {
 			break;
 		case 54:
 			this.paramSerialiser.resetAll();
+			break;
+		case 68:
+			this.nextPreset(1);
+			break;
+		case 70:
+			this.nextPreset(-1);
 			break;
 		default:
 			if(!(this.keyIsDown(17) || this.keyIsDown(18))) this.keyboardInputs.onQwertyKeyDown(code);
@@ -7066,16 +7131,14 @@ webaudio_synth_MonoSynth.prototype = {
 		this.noteIsOn = true;
 	}
 	,noteOff: function(when) {
-		if(this.noteIsOn) {
-			var r = this.adsr.off(when);
-			this.filter.off(when);
-			var this1 = this.osc0.get_oscillator();
-			this1.frequency.cancelScheduledValues(r);
-			var this11 = this.osc1.get_oscillator();
-			this11.frequency.cancelScheduledValues(r);
-			this.phaseDelay.delayTime.cancelScheduledValues(r);
-			this.noteIsOn = false;
-		}
+		var r = this.adsr.off(when);
+		this.filter.off(when);
+		var this1 = this.osc0.get_oscillator();
+		this1.frequency.cancelScheduledValues(r);
+		var this11 = this.osc1.get_oscillator();
+		this11.frequency.cancelScheduledValues(r);
+		this.phaseDelay.delayTime.cancelScheduledValues(r);
+		this.noteIsOn = false;
 	}
 	,onParameterChange: function(parameter) {
 		console.log("[MonoSynth] " + parameter.name + " - value:" + parameter.getValue() + ", normalised:" + parameter.getValue(true));
@@ -7304,7 +7367,9 @@ webaudio_synth_data_ParameterSerialiser.prototype = {
 		if(session != null) {
 			console.log("Restoring parameters from previous session...");
 			this.deserialise(session);
+			return true;
 		}
+		return false;
 	}
 	,storeSession: function() {
 		this.settings.setSessionData("monosynth_sessionParameters",this.serialise());
@@ -7355,6 +7420,32 @@ webaudio_synth_data_ParameterSerialiser.prototype = {
 		}
 	}
 	,__class__: webaudio_synth_data_ParameterSerialiser
+};
+var webaudio_synth_data_Presets = function() { };
+$hxClasses["webaudio.synth.data.Presets"] = webaudio_synth_data_Presets;
+webaudio_synth_data_Presets.__name__ = true;
+webaudio_synth_data_Presets.__properties__ = {get_names:"get_names"}
+webaudio_synth_data_Presets.get_names = function() {
+	webaudio_synth_data_Presets.init();
+	return webaudio_synth_data_Presets.presets.keys();
+};
+webaudio_synth_data_Presets.get = function(name) {
+	webaudio_synth_data_Presets.init();
+	return webaudio_synth_data_Presets.presets.get(name);
+};
+webaudio_synth_data_Presets.init = function() {
+	if(webaudio_synth_data_Presets.presets == null) {
+		webaudio_synth_data_Presets.presets = new haxe_ds_StringMap();
+		webaudio_synth_data_Presets.presets.set("Squasaw","{\"outputLevel\":0.4599999999999995, \"pitchBend\":0.5, \"osc0Type\":0.6666666666666666, \"osc0Level\":0.43999999999999995, \"osc0Pan\":0.5, \"osc0Slide\":0.0990990990990991, \"osc0Random\":0.060000000000000005, \"osc0Detune\":0.5, \"osc1Type\":0.31250000000000006, \"osc1Level\":0.43999999999999995, \"osc1Pan\":0.5, \"osc1Slide\":0.05999999999999996, \"osc1Random\":0.059999999999999984, \"osc1Detune\":0.5, \"oscPhase\":0, \"adsrAttack\":0.01599999999999999, \"adsrDecay\":0.029999999999999968, \"adsrSustain\":0.5800000000000003, \"adsrRelease\":0.03500000000000001, \"filterType\":0, \"filterFrequency\":0.06000000000000005, \"filterQ\":0.39999999999999947, \"filterAttack\":0.02299999999999998, \"filterRelease\":0.03, \"filterRange\":1, \"distortionPregain\":0, \"distortionWaveshaperAmount\":0.7600000000000002, \"distortionBits\":0.4782608695652174, \"distortionRateReduction\":0, \"delayLevel\":0.44999999999999957, \"delayTime\":0.2329332933293329, \"delayFeedback\":0.30002500250025005, \"delayLFPFreq\":0.22999999999999926, \"delayLFPQ\":0 }");
+		webaudio_synth_data_Presets.presets.set("Wet Sine","{\"outputLevel\":1,\"pitchBend\":0.5,\"osc0Type\":0,\"osc0Level\":0.5,\"osc0Pan\":0.5,\"osc0Slide\":0.0990990990990991,\"osc0Random\":0.04,\"osc0Detune\":0.5,\"osc1Type\":0,\"osc1Level\":0.5,\"osc1Pan\":0.5,\"osc1Slide\":0.0990990990990991,\"osc1Random\":0.04,\"osc1Detune\":0.5,\"oscPhase\":0,\"adsrAttack\":0.07999999999999999,\"adsrDecay\":0.15,\"adsrSustain\":0.49999999999999956,\"adsrRelease\":1,\"filterType\":0,\"filterFrequency\":0.17999999999999935,\"filterQ\":0.8399999999999999,\"filterAttack\":0.13499999999999998,\"filterRelease\":0.7300000000000003,\"filterRange\":1,\"distortionPregain\":0.09999999999999999,\"distortionWaveshaperAmount\":0.7000000000000002,\"distortionBits\":0.13826086956521716,\"distortionRateReduction\":0,\"delayLevel\":0.14999999999999986,\"delayTime\":0.9729332933293332,\"delayFeedback\":0.4500250025002502,\"delayLFPFreq\":0.19999999999999982,\"delayLFPQ\":0}");
+		webaudio_synth_data_Presets.presets.set("Floppy Bits","{\"outputLevel\":0.4399999999999995,\"pitchBend\":0.5,\"osc0Type\":0,\"osc0Level\":1,\"osc0Pan\":0.5,\"osc0Slide\":0.0990990990990991,\"osc0Random\":0,\"osc0Detune\":0.5,\"osc1Type\":0,\"osc1Level\":1,\"osc1Pan\":0.5,\"osc1Slide\":0.0990990990990991,\"osc1Random\":0,\"osc1Detune\":0.5,\"oscPhase\":0,\"adsrAttack\":0.21000000000000002,\"adsrDecay\":0.15,\"adsrSustain\":0.8999999999999999,\"adsrRelease\":1,\"filterType\":0,\"filterFrequency\":1,\"filterQ\":0.4999999999999998,\"filterAttack\":1,\"filterRelease\":0.21999999999999942,\"filterRange\":1,\"distortionPregain\":0.29000000000000004,\"distortionWaveshaperAmount\":0.37,\"distortionBits\":0.13826086956521716,\"distortionRateReduction\":0,\"delayLevel\":0.09999999999999985,\"delayTime\":0.9729332933293332,\"delayFeedback\":0.4500250025002502,\"delayLFPFreq\":0.19999999999999982,\"delayLFPQ\":0}");
+		webaudio_synth_data_Presets.presets.set("Gentle Ben","{\"outputLevel\":0.6799999999999998, \"pitchBend\":0.5, \"osc0Type\":0.37500000000000006, \"osc0Level\":0.5, \"osc0Pan\":0.43999999999999995, \"osc0Slide\":0.0990990990990991, \"osc0Random\":0.20000000000000004, \"osc0Detune\":0.5, \"osc1Type\":0.598214285714286, \"osc1Level\":0.5, \"osc1Pan\":0.56, \"osc1Slide\":0.0990990990990991, \"osc1Random\":0.2, \"osc1Detune\":0.5, \"oscPhase\":0.17999999999999997, \"adsrAttack\":0.03750352374993505, \"adsrDecay\":1, \"adsrSustain\":1, \"adsrRelease\":0.2919280948873624, \"filterType\":0, \"filterFrequency\":0.1599999999999993, \"filterQ\":0.8, \"filterAttack\":0.6719280948873626, \"filterRelease\":0.21496250072115589, \"filterRange\":0.9000000000000005, \"distortionPregain\":0, \"distortionWaveshaperAmount\":0.8600000000000003, \"distortionBits\":0.4782608695652174, \"distortionRateReduction\":0, \"delayLevel\":0.15999999999999995, \"delayTime\":0.16293329332933287, \"delayFeedback\":0.49999999999999956, \"delayLFPFreq\":1, \"delayLFPQ\":0.0999909999099991}");
+		webaudio_synth_data_Presets.presets.set("WTFTW","{\"outputLevel\":0.4399999999999996,\"pitchBend\":0.5,\"osc0Type\":0.9464285714285714,\"osc0Level\":0.4668754586018622,\"osc0Pan\":0.434224143885076,\"osc0Slide\":0.09999999999999999,\"osc0Random\":0.1353575261309743,\"osc0Detune\":0.5,\"osc1Type\":0,\"osc1Level\":0.55,\"osc1Pan\":0.5818778711184858,\"osc1Slide\":0.7860790734147436,\"osc1Random\":0.4989718380384147,\"osc1Detune\":0.5,\"oscPhase\":0.6322048523835839,\"adsrAttack\":0.17999999999999947,\"adsrDecay\":0.5345427193678916,\"adsrSustain\":0.9099999999999999,\"adsrRelease\":0.3135172767948372,\"filterType\":0,\"filterFrequency\":0.7800000000000007,\"filterQ\":0.94,\"filterAttack\":0.3699999999999995,\"filterRelease\":0.9243289259783327,\"filterRange\":0.48999999999999955,\"distortionPregain\":0.49999999999999956,\"distortionWaveshaperAmount\":0.8739709560014308,\"distortionBits\":0.21000000000000005,\"distortionRateReduction\":0.2,\"delayLevel\":0.09999999999999974,\"delayTime\":0.33131938935235605,\"delayFeedback\":0.0666541256941855,\"delayLFPFreq\":0.43000000000000005,\"delayLFPQ\":0}");
+		webaudio_synth_data_Presets.presets.set("OwOwOw","{\"outputLevel\":0.4404992213845257,\"pitchBend\":0.5,\"osc0Type\":0.53176956916494,\"osc0Level\":0.2848998922854662,\"osc0Pan\":0.6553399509564042,\"osc0Slide\":0.3345249738357958,\"osc0Random\":0.3254045475460585,\"osc0Detune\":0.48,\"osc1Type\":0.5856871545048695,\"osc1Level\":0.34120628116652374,\"osc1Pan\":0.274271479975432,\"osc1Slide\":0.19665794456058805,\"osc1Random\":0.27338116569444537,\"osc1Detune\":0.46399999999999997,\"oscPhase\":0.5367797849141063,\"adsrAttack\":0.13585058337077552,\"adsrDecay\":0.4118536375463009,\"adsrSustain\":0.7993384519033133,\"adsrRelease\":0.24872226793430885,\"filterType\":0.9169524870812893,\"filterFrequency\":0.04,\"filterQ\":1,\"filterAttack\":0.13216184906661455,\"filterRelease\":0.6764560150503516,\"filterRange\":0.2090064475871618,\"distortionPregain\":0.16845860145986036,\"distortionWaveshaperAmount\":0.7897845552489162,\"distortionBits\":0.15361713754013176,\"distortionRateReduction\":0.47468311311677097,\"delayLevel\":0.3756582126766443,\"delayTime\":0.5380281316579925,\"delayFeedback\":0.18479999119415877,\"delayLFPFreq\":0.8414817627705634,\"delayLFPQ\":0.6816484755836427}");
+		webaudio_synth_data_Presets.presets.set("Leadish","{\"outputLevel\":0.38295858133584215,\"pitchBend\":0.5,\"osc0Type\":0.5938830460155663,\"osc0Level\":0.5741079380363225,\"osc0Pan\":0.5,\"osc0Slide\":0.048732493184506884,\"osc0Random\":0.19387254383414923,\"osc0Detune\":0.5,\"osc1Type\":0.3392857142857143,\"osc1Level\":0.2815980485267937,\"osc1Pan\":0.5117302227392793,\"osc1Slide\":0.10685698390325825,\"osc1Random\":0.01588528836145997,\"osc1Detune\":0.499,\"oscPhase\":0.14331354821100817,\"adsrAttack\":0.15529628787189734,\"adsrDecay\":0.7664752448908985,\"adsrSustain\":0.6781206807121636,\"adsrRelease\":0.4241326441790896,\"filterType\":0,\"filterFrequency\":0.12000000000000001,\"filterQ\":0.5797061326913537,\"filterAttack\":0.4112402198649936,\"filterRelease\":0.3100000000000001,\"filterRange\":0.9099999999999999,\"distortionPregain\":0.6008890603668984,\"distortionWaveshaperAmount\":0.13999999999999999,\"distortionBits\":0.1382608695652172,\"distortionRateReduction\":0,\"delayLevel\":0.14624362844973773,\"delayTime\":0.12053697529227002,\"delayFeedback\":0.311054561883211,\"delayLFPFreq\":0.35068133769556864,\"delayLFPQ\":0.12999999999999995}");
+		webaudio_synth_data_Presets.presets.set("Hubble","{\"outputLevel\":0.4673323092423374,\"pitchBend\":0.5,\"osc0Type\":0.32187723594584483,\"osc0Level\":0.5501569783687592,\"osc0Pan\":0.035873363725841045,\"osc0Slide\":0.46743601735681295,\"osc0Random\":0.5535920813307174,\"osc0Detune\":0.5,\"osc1Type\":0.8837717605887779,\"osc1Level\":0.7479439487121999,\"osc1Pan\":0.15710694646462797,\"osc1Slide\":0.42825166909342927,\"osc1Random\":0.648777486756444,\"osc1Detune\":0.48000000000000004,\"oscPhase\":0.7499087216891347,\"adsrAttack\":0.42545380499213925,\"adsrDecay\":0.055507498793303967,\"adsrSustain\":0.5419561782851814,\"adsrRelease\":0.6898205606464309,\"filterType\":0.2519419346936047,\"filterFrequency\":0.34113304095342756,\"filterQ\":0.40043697291985136,\"filterAttack\":0.6723704796470709,\"filterRelease\":0.7224151427485048,\"filterRange\":0.6672021801024675,\"distortionPregain\":0.48588421270251314,\"distortionWaveshaperAmount\":0.5391920240223409,\"distortionBits\":0.4782608695652174,\"distortionRateReduction\":0.06000000000000014,\"delayLevel\":0.31409743022173675,\"delayTime\":0.4189383636324062,\"delayFeedback\":0.626016280371696,\"delayLFPFreq\":0.5011918721720574,\"delayLFPQ\":0.20447118736803485}");
+		webaudio_synth_data_Presets.presets.set("Voyager","{\"outputLevel\":0.596160045024007,\"pitchBend\":0.48438319687767045,\"osc0Type\":0.4999197233202217,\"osc0Level\":0.18356056366115814,\"osc0Pan\":0.4514487967826426,\"osc0Slide\":0.5665156216174365,\"osc0Random\":0.6446686258167036,\"osc0Detune\":0.5682883285917342,\"osc1Type\":0.2984360323420594,\"osc1Level\":0.22554069174453617,\"osc1Pan\":0.4376573327369988,\"osc1Slide\":0.2393585837478034,\"osc1Random\":0.9832042241469026,\"osc1Detune\":0.7423076857998967,\"oscPhase\":0.4472648433037101,\"adsrAttack\":0.41782711129635564,\"adsrDecay\":0.20043661259114742,\"adsrSustain\":0.9824869338423012,\"adsrRelease\":0.93405529389046,\"filterType\":0,\"filterFrequency\":0.4091029983200133,\"filterQ\":0.7449476217851041,\"filterAttack\":0.09563750846311381,\"filterRelease\":0.7517979797534644,\"filterRange\":0.5817121911421419,\"distortionPregain\":0.34397339383140246,\"distortionWaveshaperAmount\":0.3808828432671727,\"distortionBits\":0.8468644326228811,\"distortionRateReduction\":0.55675847357139,\"delayLevel\":0.5397429227456447,\"delayTime\":0.20590351169019483,\"delayFeedback\":0.7042214359156789,\"delayLFPFreq\":0.34564317250624277,\"delayLFPQ\":0.09628216465935173}");
+	}
 };
 var webaudio_synth_data_Settings = function() {
 	this.local = js_Browser.getLocalStorage();
@@ -7752,11 +7843,7 @@ $hxClasses["webaudio.synth.ui.Fonts"] = webaudio_synth_ui_Fonts;
 webaudio_synth_ui_Fonts.__name__ = true;
 webaudio_synth_ui_Fonts.setup = function(pack) {
 	webaudio_synth_ui_Fonts.Prime13 = new flambe_display_Font(pack,"font/Prime13");
-	webaudio_synth_ui_Fonts.Prime14 = new flambe_display_Font(pack,"font/Prime14");
-	webaudio_synth_ui_Fonts.Prime24 = new flambe_display_Font(pack,"font/Prime24");
-	webaudio_synth_ui_Fonts.Prime22 = new flambe_display_Font(pack,"font/Prime22");
 	webaudio_synth_ui_Fonts.Prime20 = new flambe_display_Font(pack,"font/Prime20");
-	webaudio_synth_ui_Fonts.Prime32 = new flambe_display_Font(pack,"font/Prime32");
 };
 webaudio_synth_ui_Fonts.getField = function(font,text,colour) {
 	if(colour == null) colour = 0;
@@ -7782,6 +7869,7 @@ webaudio_synth_ui_KeySprite.prototype = $extend(flambe_display_ImageSprite.proto
 	__class__: webaudio_synth_ui_KeySprite
 });
 var webaudio_synth_ui_KeyboardUI = function(keyboardNotes,textureAtlas) {
+	flambe_Component.call(this);
 	this.keyboardNotes = keyboardNotes;
 	this.keyDown = new flambe_util_Signal1();
 	this.keyUp = new flambe_util_Signal1();
@@ -7796,7 +7884,8 @@ webaudio_synth_ui_KeyboardUI.prototype = $extend(flambe_Component.prototype,{
 		return "KeyboardUI_1";
 	}
 	,onAdded: function() {
-		this.container = this.owner.getComponent("Sprite_0");
+		var component = this.owner.getComponent("Sprite_0");
+		this.container = component;
 		var keyData = this.getKeysData(this.keyboardNotes.startOctave,4);
 		this.noteIndexToKey = new haxe_ds_IntMap();
 		var keyWidth = 40;
@@ -7973,6 +8062,7 @@ var webaudio_synth_ui_controls_NumericControl = function(name,defaultValue,param
 	this.pX = .0;
 	this.lastTime = 0.0;
 	this.pointerHasMoved = false;
+	flambe_Component.call(this);
 	this.value = new audio_parameter_Parameter(name,defaultValue,parameterMapping);
 	this.labelFormatter = $bind(this,this.defaultLabelFormatter);
 };
@@ -7994,7 +8084,9 @@ webaudio_synth_ui_controls_NumericControl.prototype = $extend(flambe_Component.p
 		return "NumericControl_2";
 	}
 	,onAdded: function() {
-		var display = this.owner.getComponent("Sprite_0");
+		var display;
+		var component = this.owner.getComponent("Sprite_0");
+		display = component;
 		display.get_pointerDown().connect($bind(this,this.pointerDown));
 		this.value.addObserver(this,true);
 	}
@@ -8080,13 +8172,24 @@ webaudio_synth_ui_controls_OscSlider.create = function(name) {
 webaudio_synth_ui_controls_OscSlider.__super__ = webaudio_synth_ui_controls_NumericControl;
 webaudio_synth_ui_controls_OscSlider.prototype = $extend(webaudio_synth_ui_controls_NumericControl.prototype,{
 	onAdded: function() {
-		this.display = this.owner.getComponent("Sprite_0");
+		var component = this.owner.getComponent("Sprite_0");
+		this.display = component;
 		var sprites = this.owner.firstChild;
-		this.thumb = sprites.getComponent("Sprite_0").centerAnchor();
+		this.thumb = ((function($this) {
+			var $r;
+			var component1 = sprites.getComponent("Sprite_0");
+			$r = component1;
+			return $r;
+		}(this))).centerAnchor();
 		this.thumb.set_pointerEnabled(true);
 		this.thumb.y.set__(6);
 		sprites = sprites.next;
-		this.knobHash = sprites.getComponent("Sprite_0").centerAnchor();
+		this.knobHash = ((function($this) {
+			var $r;
+			var component2 = sprites.getComponent("Sprite_0");
+			$r = component2;
+			return $r;
+		}(this))).centerAnchor();
 		this.knobHash.y.set__(3);
 		this.knobHash.alpha.set__(0);
 		this.knobHash.setTint(.6,1.2,1.8);
@@ -8094,22 +8197,26 @@ webaudio_synth_ui_controls_OscSlider.prototype = $extend(webaudio_synth_ui_contr
 		var iconSpace = 37;
 		var iconY = -32;
 		sprites = sprites.next;
-		this.sine = sprites.getComponent("Sprite_0");
+		var component3 = sprites.getComponent("Sprite_0");
+		this.sine = component3;
 		this.sine.x.set__(iconX);
 		this.sine.y.set__(iconY);
 		iconX += iconSpace;
 		sprites = sprites.next;
-		this.square = sprites.getComponent("Sprite_0");
+		var component4 = sprites.getComponent("Sprite_0");
+		this.square = component4;
 		this.square.x.set__(iconX);
 		this.square.y.set__(iconY - 2);
 		iconX += iconSpace;
 		sprites = sprites.next;
-		this.sawtooth = sprites.getComponent("Sprite_0");
+		var component5 = sprites.getComponent("Sprite_0");
+		this.sawtooth = component5;
 		this.sawtooth.x.set__(iconX + 1);
 		this.sawtooth.y.set__(iconY);
 		iconX += iconSpace;
 		sprites = sprites.next;
-		this.triangle = sprites.getComponent("Sprite_0");
+		var component6 = sprites.getComponent("Sprite_0");
+		this.triangle = component6;
 		this.triangle.x.set__(iconX + 1);
 		this.triangle.y.set__(iconY - 1);
 		this.minX = 0;
@@ -8186,10 +8293,13 @@ webaudio_synth_ui_controls_PitchBendWheel.create = function(name) {
 webaudio_synth_ui_controls_PitchBendWheel.__super__ = webaudio_synth_ui_controls_NumericControl;
 webaudio_synth_ui_controls_PitchBendWheel.prototype = $extend(webaudio_synth_ui_controls_NumericControl.prototype,{
 	onAdded: function() {
-		var display = this.owner.getComponent("Sprite_0");
+		var display;
+		var component = this.owner.getComponent("Sprite_0");
+		display = component;
 		this.thumbRange = display.getNaturalHeight() - this.minY - this.minY;
 		var sprites = this.owner.firstChild;
-		this.thumb = sprites.getComponent("Sprite_0");
+		var component1 = sprites.getComponent("Sprite_0");
+		this.thumb = component1;
 		this.thumb.x.set__(6);
 		this.thumb.anchorY.set__(this.thumb.getNaturalHeight() / 2);
 		webaudio_synth_ui_controls_NumericControl.prototype.onAdded.call(this);
@@ -8233,19 +8343,30 @@ webaudio_synth_ui_controls_Rotary.create = function(parameterMapping,defaultValu
 webaudio_synth_ui_controls_Rotary.__super__ = webaudio_synth_ui_controls_NumericControl;
 webaudio_synth_ui_controls_Rotary.prototype = $extend(webaudio_synth_ui_controls_NumericControl.prototype,{
 	onAdded: function() {
-		this.display = this.owner.getComponent("Sprite_0").centerAnchor();
+		this.display = ((function($this) {
+			var $r;
+			var component = $this.owner.getComponent("Sprite_0");
+			$r = component;
+			return $r;
+		}(this))).centerAnchor();
 		this.centreX = this.display.anchorX.get__();
 		this.centreY = this.display.anchorY.get__();
 		var sprites = this.owner.firstChild;
-		this.knobDot = sprites.getComponent("Sprite_0").centerAnchor().disablePixelSnapping().disablePointer();
+		this.knobDot = ((function($this) {
+			var $r;
+			var component1 = sprites.getComponent("Sprite_0");
+			$r = component1;
+			return $r;
+		}(this))).centerAnchor().disablePixelSnapping().disablePointer();
 		sprites = sprites.next;
-		this.knobHash = sprites.getComponent("Sprite_0");
+		var component2 = sprites.getComponent("Sprite_0");
+		this.knobHash = component2;
 		this.knobHash.x.set__(6);
 		this.knobHash.y.set__(6);
 		this.knobHash.alpha.set__(0);
 		this.knobHash.setTint(.6,1.2,1.8);
 		sprites = sprites.next;
-		this.valueLabel = sprites.getComponent("Sprite_0");
+		this.valueLabel = Std.instance(sprites.getComponent("Sprite_0"),flambe_display_TextSprite);
 		if(Std["is"](this.valueLabel,flambe_display_TextSprite)) {
 			this.valueLabel.centerAnchor();
 			this.valueLabel.y.set__(this.centreY + this.display.getNaturalHeight() / 2 + 7);
@@ -8319,10 +8440,14 @@ webaudio_synth_ui_modules_ADSRModule.prototype = {
 		this._panel = flambe_display_NineSlice.fromSubTexture(textureAtlas.get("InnerPanelBg"),8,8,280,192);
 		this._diagram = new flambe_display_ImageSprite(textureAtlas.get("ADSRDiagram"));
 		owner.addChild(new flambe_Entity().add(this._panel).addChild(this._attack).addChild(this._decay).addChild(this._sustain).addChild(this._release).addChild(new flambe_Entity().add(this._diagram)));
-		this.attack = this._attack.getComponent("NumericControl_2");
-		this.decay = this._decay.getComponent("NumericControl_2");
-		this.sustain = this._sustain.getComponent("NumericControl_2");
-		this.release = this._release.getComponent("NumericControl_2");
+		var component = this._attack.getComponent("NumericControl_2");
+		this.attack = component;
+		var component1 = this._decay.getComponent("NumericControl_2");
+		this.decay = component1;
+		var component2 = this._sustain.getComponent("NumericControl_2");
+		this.sustain = component2;
+		var component3 = this._release.getComponent("NumericControl_2");
+		this.release = component3;
 	}
 	,position: function(panelX,panelY) {
 		var rotarySpace = 64;
@@ -8341,26 +8466,66 @@ webaudio_synth_ui_modules_ADSRModule.prototype = {
 		labelY = panelY + 54;
 		this._diagram.x.set__(panelX);
 		this._diagram.y.set__(panelY - 84);
-		this._attack.getComponent("Sprite_0").x.set__(panelX);
-		this._attack.getComponent("Sprite_0").y.set__(panelY);
+		((function($this) {
+			var $r;
+			var component = $this._attack.getComponent("Sprite_0");
+			$r = component;
+			return $r;
+		}(this))).x.set__(panelX);
+		((function($this) {
+			var $r;
+			var component1 = $this._attack.getComponent("Sprite_0");
+			$r = component1;
+			return $r;
+		}(this))).y.set__(panelY);
 		label = webaudio_synth_ui_Fonts.getField(webaudio_synth_ui_Fonts.Prime20,"attack",labelColour).setAlpha(labelAlpha).centerAnchor();
 		this.owner.addChild(new flambe_Entity().add(label));
 		label.x.set__(panelX);
 		label.y.set__(labelY);
-		this._decay.getComponent("Sprite_0").x.set__(panelX += rotarySpace);
-		this._decay.getComponent("Sprite_0").y.set__(panelY);
+		((function($this) {
+			var $r;
+			var component2 = $this._decay.getComponent("Sprite_0");
+			$r = component2;
+			return $r;
+		}(this))).x.set__(panelX += rotarySpace);
+		((function($this) {
+			var $r;
+			var component3 = $this._decay.getComponent("Sprite_0");
+			$r = component3;
+			return $r;
+		}(this))).y.set__(panelY);
 		label = webaudio_synth_ui_Fonts.getField(webaudio_synth_ui_Fonts.Prime20,"decay",labelColour).setAlpha(labelAlpha).centerAnchor();
 		this.owner.addChild(new flambe_Entity().add(label));
 		label.x.set__(panelX);
 		label.y.set__(labelY);
-		this._sustain.getComponent("Sprite_0").x.set__(panelX += rotarySpace);
-		this._sustain.getComponent("Sprite_0").y.set__(panelY);
+		((function($this) {
+			var $r;
+			var component4 = $this._sustain.getComponent("Sprite_0");
+			$r = component4;
+			return $r;
+		}(this))).x.set__(panelX += rotarySpace);
+		((function($this) {
+			var $r;
+			var component5 = $this._sustain.getComponent("Sprite_0");
+			$r = component5;
+			return $r;
+		}(this))).y.set__(panelY);
 		label = webaudio_synth_ui_Fonts.getField(webaudio_synth_ui_Fonts.Prime20,"sustain",labelColour).setAlpha(labelAlpha).centerAnchor();
 		this.owner.addChild(new flambe_Entity().add(label));
 		label.x.set__(panelX);
 		label.y.set__(labelY);
-		this._release.getComponent("Sprite_0").x.set__(panelX += rotarySpace);
-		this._release.getComponent("Sprite_0").y.set__(panelY);
+		((function($this) {
+			var $r;
+			var component6 = $this._release.getComponent("Sprite_0");
+			$r = component6;
+			return $r;
+		}(this))).x.set__(panelX += rotarySpace);
+		((function($this) {
+			var $r;
+			var component7 = $this._release.getComponent("Sprite_0");
+			$r = component7;
+			return $r;
+		}(this))).y.set__(panelY);
 		label = webaudio_synth_ui_Fonts.getField(webaudio_synth_ui_Fonts.Prime20,"release",labelColour).setAlpha(labelAlpha).centerAnchor();
 		this.owner.addChild(new flambe_Entity().add(label));
 		label.x.set__(panelX);
@@ -8384,11 +8549,16 @@ webaudio_synth_ui_modules_DelayModule.prototype = {
 		this._lfpQ = webaudio_synth_ui_controls_Rotary.create(audio_parameter_mapping_MapFactory.getMapping(audio_parameter_mapping_MapType.FLOAT,0.0001,10),1,null,null,null,null,"delayLFPQ");
 		this._panel = flambe_display_NineSlice.fromSubTexture(textureAtlas.get("InnerPanelBg"),8,8,360,192);
 		owner.addChild(new flambe_Entity().add(this._panel).addChild(this._level).addChild(this._time).addChild(this._feedback).addChild(this._lfpFreq).addChild(this._lfpQ));
-		this.level = this._level.getComponent("NumericControl_2");
-		this.time = this._time.getComponent("NumericControl_2");
-		this.feedback = this._feedback.getComponent("NumericControl_2");
-		this.lfpFreq = this._lfpFreq.getComponent("NumericControl_2");
-		this.lfpQ = this._lfpQ.getComponent("NumericControl_2");
+		var component = this._level.getComponent("NumericControl_2");
+		this.level = component;
+		var component1 = this._time.getComponent("NumericControl_2");
+		this.time = component1;
+		var component2 = this._feedback.getComponent("NumericControl_2");
+		this.feedback = component2;
+		var component3 = this._lfpFreq.getComponent("NumericControl_2");
+		this.lfpFreq = component3;
+		var component4 = this._lfpQ.getComponent("NumericControl_2");
+		this.lfpQ = component4;
 	}
 	,position: function(panelX,panelY) {
 		var rotarySpace = 64;
@@ -8405,36 +8575,86 @@ webaudio_synth_ui_modules_DelayModule.prototype = {
 		panelX += 43;
 		panelY += 116;
 		labelY = panelY + 54;
-		this._level.getComponent("Sprite_0").x.set__(panelX);
-		this._level.getComponent("Sprite_0").y.set__(panelY);
+		((function($this) {
+			var $r;
+			var component = $this._level.getComponent("Sprite_0");
+			$r = component;
+			return $r;
+		}(this))).x.set__(panelX);
+		((function($this) {
+			var $r;
+			var component1 = $this._level.getComponent("Sprite_0");
+			$r = component1;
+			return $r;
+		}(this))).y.set__(panelY);
 		label = webaudio_synth_ui_Fonts.getField(webaudio_synth_ui_Fonts.Prime20,"level",labelColour).setAlpha(labelAlpha).centerAnchor();
 		this.owner.addChild(new flambe_Entity().add(label));
 		label.x.set__(panelX);
 		label.y.set__(labelY);
 		panelX += rotarySpace;
-		this._time.getComponent("Sprite_0").x.set__(panelX);
-		this._time.getComponent("Sprite_0").y.set__(panelY);
+		((function($this) {
+			var $r;
+			var component2 = $this._time.getComponent("Sprite_0");
+			$r = component2;
+			return $r;
+		}(this))).x.set__(panelX);
+		((function($this) {
+			var $r;
+			var component3 = $this._time.getComponent("Sprite_0");
+			$r = component3;
+			return $r;
+		}(this))).y.set__(panelY);
 		label = webaudio_synth_ui_Fonts.getField(webaudio_synth_ui_Fonts.Prime20,"time",labelColour).setAlpha(labelAlpha).centerAnchor();
 		this.owner.addChild(new flambe_Entity().add(label));
 		label.x.set__(panelX);
 		label.y.set__(labelY);
 		panelX += rotarySpace;
-		this._feedback.getComponent("Sprite_0").x.set__(panelX);
-		this._feedback.getComponent("Sprite_0").y.set__(panelY);
+		((function($this) {
+			var $r;
+			var component4 = $this._feedback.getComponent("Sprite_0");
+			$r = component4;
+			return $r;
+		}(this))).x.set__(panelX);
+		((function($this) {
+			var $r;
+			var component5 = $this._feedback.getComponent("Sprite_0");
+			$r = component5;
+			return $r;
+		}(this))).y.set__(panelY);
 		label = webaudio_synth_ui_Fonts.getField(webaudio_synth_ui_Fonts.Prime20,"feedback",labelColour).setAlpha(labelAlpha).centerAnchor();
 		this.owner.addChild(new flambe_Entity().add(label));
 		label.x.set__(panelX);
 		label.y.set__(labelY);
 		panelX += rotarySpace + 16;
-		this._lfpFreq.getComponent("Sprite_0").x.set__(panelX);
-		this._lfpFreq.getComponent("Sprite_0").y.set__(panelY);
+		((function($this) {
+			var $r;
+			var component6 = $this._lfpFreq.getComponent("Sprite_0");
+			$r = component6;
+			return $r;
+		}(this))).x.set__(panelX);
+		((function($this) {
+			var $r;
+			var component7 = $this._lfpFreq.getComponent("Sprite_0");
+			$r = component7;
+			return $r;
+		}(this))).y.set__(panelY);
 		label = webaudio_synth_ui_Fonts.getField(webaudio_synth_ui_Fonts.Prime20,"freq",labelColour).setAlpha(labelAlpha).centerAnchor();
 		this.owner.addChild(new flambe_Entity().add(label));
 		label.x.set__(panelX);
 		label.y.set__(labelY);
 		panelX += rotarySpace;
-		this._lfpQ.getComponent("Sprite_0").x.set__(panelX);
-		this._lfpQ.getComponent("Sprite_0").y.set__(panelY);
+		((function($this) {
+			var $r;
+			var component8 = $this._lfpQ.getComponent("Sprite_0");
+			$r = component8;
+			return $r;
+		}(this))).x.set__(panelX);
+		((function($this) {
+			var $r;
+			var component9 = $this._lfpQ.getComponent("Sprite_0");
+			$r = component9;
+			return $r;
+		}(this))).y.set__(panelY);
 		label = webaudio_synth_ui_Fonts.getField(webaudio_synth_ui_Fonts.Prime20,"q",labelColour).setAlpha(labelAlpha).centerAnchor();
 		this.owner.addChild(new flambe_Entity().add(label));
 		label.x.set__(panelX);
@@ -8457,10 +8677,14 @@ webaudio_synth_ui_modules_DistortionModule.prototype = {
 		this._rateReduction = webaudio_synth_ui_controls_Rotary.create(audio_parameter_mapping_MapFactory.getMapping(audio_parameter_mapping_MapType.FLOAT,1,16),1,null,null,null,null,"distortionRateReduction");
 		this._panel = flambe_display_NineSlice.fromSubTexture(textureAtlas.get("InnerPanelBg"),8,8,272,192);
 		owner.addChild(new flambe_Entity().add(this._panel).addChild(this._pregain).addChild(this._waveshaperAmount).addChild(this._bits).addChild(this._rateReduction));
-		this.pregain = this._pregain.getComponent("NumericControl_2");
-		this.waveshaperAmount = this._waveshaperAmount.getComponent("NumericControl_2");
-		this.bits = this._bits.getComponent("NumericControl_2");
-		this.rateReduction = this._rateReduction.getComponent("NumericControl_2");
+		var component = this._pregain.getComponent("NumericControl_2");
+		this.pregain = component;
+		var component1 = this._waveshaperAmount.getComponent("NumericControl_2");
+		this.waveshaperAmount = component1;
+		var component2 = this._bits.getComponent("NumericControl_2");
+		this.bits = component2;
+		var component3 = this._rateReduction.getComponent("NumericControl_2");
+		this.rateReduction = component3;
 	}
 	,position: function(panelX,panelY) {
 		var rotarySpace = 64;
@@ -8477,29 +8701,69 @@ webaudio_synth_ui_modules_DistortionModule.prototype = {
 		panelX += 43;
 		panelY += 116;
 		labelY = panelY + 54;
-		this._pregain.getComponent("Sprite_0").x.set__(panelX);
-		this._pregain.getComponent("Sprite_0").y.set__(panelY);
+		((function($this) {
+			var $r;
+			var component = $this._pregain.getComponent("Sprite_0");
+			$r = component;
+			return $r;
+		}(this))).x.set__(panelX);
+		((function($this) {
+			var $r;
+			var component1 = $this._pregain.getComponent("Sprite_0");
+			$r = component1;
+			return $r;
+		}(this))).y.set__(panelY);
 		label = webaudio_synth_ui_Fonts.getField(webaudio_synth_ui_Fonts.Prime20,"gain",labelColour).setAlpha(labelAlpha).centerAnchor();
 		this.owner.addChild(new flambe_Entity().add(label));
 		label.x.set__(panelX);
 		label.y.set__(labelY);
 		panelX += rotarySpace;
-		this._waveshaperAmount.getComponent("Sprite_0").x.set__(panelX);
-		this._waveshaperAmount.getComponent("Sprite_0").y.set__(panelY);
+		((function($this) {
+			var $r;
+			var component2 = $this._waveshaperAmount.getComponent("Sprite_0");
+			$r = component2;
+			return $r;
+		}(this))).x.set__(panelX);
+		((function($this) {
+			var $r;
+			var component3 = $this._waveshaperAmount.getComponent("Sprite_0");
+			$r = component3;
+			return $r;
+		}(this))).y.set__(panelY);
 		label = webaudio_synth_ui_Fonts.getField(webaudio_synth_ui_Fonts.Prime20,"shape",labelColour).setAlpha(labelAlpha).centerAnchor();
 		this.owner.addChild(new flambe_Entity().add(label));
 		label.x.set__(panelX);
 		label.y.set__(labelY);
 		panelX += rotarySpace;
-		this._bits.getComponent("Sprite_0").x.set__(panelX);
-		this._bits.getComponent("Sprite_0").y.set__(panelY);
+		((function($this) {
+			var $r;
+			var component4 = $this._bits.getComponent("Sprite_0");
+			$r = component4;
+			return $r;
+		}(this))).x.set__(panelX);
+		((function($this) {
+			var $r;
+			var component5 = $this._bits.getComponent("Sprite_0");
+			$r = component5;
+			return $r;
+		}(this))).y.set__(panelY);
 		label = webaudio_synth_ui_Fonts.getField(webaudio_synth_ui_Fonts.Prime20,"crush",labelColour).setAlpha(labelAlpha).centerAnchor();
 		this.owner.addChild(new flambe_Entity().add(label));
 		label.x.set__(panelX);
 		label.y.set__(labelY);
 		panelX += rotarySpace;
-		this._rateReduction.getComponent("Sprite_0").x.set__(panelX);
-		this._rateReduction.getComponent("Sprite_0").y.set__(panelY);
+		((function($this) {
+			var $r;
+			var component6 = $this._rateReduction.getComponent("Sprite_0");
+			$r = component6;
+			return $r;
+		}(this))).x.set__(panelX);
+		((function($this) {
+			var $r;
+			var component7 = $this._rateReduction.getComponent("Sprite_0");
+			$r = component7;
+			return $r;
+		}(this))).y.set__(panelY);
 		label = webaudio_synth_ui_Fonts.getField(webaudio_synth_ui_Fonts.Prime20,"reduce",labelColour).setAlpha(labelAlpha).centerAnchor();
 		this.owner.addChild(new flambe_Entity().add(label));
 		label.x.set__(panelX);
@@ -8530,44 +8794,104 @@ webaudio_synth_ui_modules_FilterModule.prototype = {
 		panelX += 43;
 		panelY += 116;
 		labelY = panelY + 54;
-		this._type.getComponent("Sprite_0").x.set__(panelX);
-		this._type.getComponent("Sprite_0").y.set__(panelY);
+		((function($this) {
+			var $r;
+			var component = $this._type.getComponent("Sprite_0");
+			$r = component;
+			return $r;
+		}(this))).x.set__(panelX);
+		((function($this) {
+			var $r;
+			var component1 = $this._type.getComponent("Sprite_0");
+			$r = component1;
+			return $r;
+		}(this))).y.set__(panelY);
 		label = webaudio_synth_ui_Fonts.getField(webaudio_synth_ui_Fonts.Prime20,"lp/hp",labelColour).setAlpha(labelAlpha).centerAnchor();
 		this.owner.addChild(new flambe_Entity().add(label));
 		label.x.set__(panelX);
 		label.y.set__(labelY);
 		panelX += rotarySpace;
-		this._frequency.getComponent("Sprite_0").x.set__(panelX);
-		this._frequency.getComponent("Sprite_0").y.set__(panelY);
+		((function($this) {
+			var $r;
+			var component2 = $this._frequency.getComponent("Sprite_0");
+			$r = component2;
+			return $r;
+		}(this))).x.set__(panelX);
+		((function($this) {
+			var $r;
+			var component3 = $this._frequency.getComponent("Sprite_0");
+			$r = component3;
+			return $r;
+		}(this))).y.set__(panelY);
 		label = webaudio_synth_ui_Fonts.getField(webaudio_synth_ui_Fonts.Prime20,"freq",labelColour).setAlpha(labelAlpha).centerAnchor();
 		this.owner.addChild(new flambe_Entity().add(label));
 		label.x.set__(panelX);
 		label.y.set__(labelY);
 		panelX += rotarySpace;
-		this._Q.getComponent("Sprite_0").x.set__(panelX);
-		this._Q.getComponent("Sprite_0").y.set__(panelY);
+		((function($this) {
+			var $r;
+			var component4 = $this._Q.getComponent("Sprite_0");
+			$r = component4;
+			return $r;
+		}(this))).x.set__(panelX);
+		((function($this) {
+			var $r;
+			var component5 = $this._Q.getComponent("Sprite_0");
+			$r = component5;
+			return $r;
+		}(this))).y.set__(panelY);
 		label = webaudio_synth_ui_Fonts.getField(webaudio_synth_ui_Fonts.Prime20,"q",labelColour).setAlpha(labelAlpha).centerAnchor();
 		this.owner.addChild(new flambe_Entity().add(label));
 		label.x.set__(panelX);
 		label.y.set__(labelY);
 		panelX += 16;
 		panelX += rotarySpace;
-		this._attack.getComponent("Sprite_0").x.set__(panelX);
-		this._attack.getComponent("Sprite_0").y.set__(panelY);
+		((function($this) {
+			var $r;
+			var component6 = $this._attack.getComponent("Sprite_0");
+			$r = component6;
+			return $r;
+		}(this))).x.set__(panelX);
+		((function($this) {
+			var $r;
+			var component7 = $this._attack.getComponent("Sprite_0");
+			$r = component7;
+			return $r;
+		}(this))).y.set__(panelY);
 		label = webaudio_synth_ui_Fonts.getField(webaudio_synth_ui_Fonts.Prime20,"attack",labelColour).setAlpha(labelAlpha).centerAnchor();
 		this.owner.addChild(new flambe_Entity().add(label));
 		label.x.set__(panelX);
 		label.y.set__(labelY);
 		panelX += rotarySpace;
-		this._release.getComponent("Sprite_0").x.set__(panelX);
-		this._release.getComponent("Sprite_0").y.set__(panelY);
+		((function($this) {
+			var $r;
+			var component8 = $this._release.getComponent("Sprite_0");
+			$r = component8;
+			return $r;
+		}(this))).x.set__(panelX);
+		((function($this) {
+			var $r;
+			var component9 = $this._release.getComponent("Sprite_0");
+			$r = component9;
+			return $r;
+		}(this))).y.set__(panelY);
 		label = webaudio_synth_ui_Fonts.getField(webaudio_synth_ui_Fonts.Prime20,"release",labelColour).setAlpha(labelAlpha).centerAnchor();
 		this.owner.addChild(new flambe_Entity().add(label));
 		label.x.set__(panelX);
 		label.y.set__(labelY);
 		panelX += rotarySpace;
-		this._range.getComponent("Sprite_0").x.set__(panelX);
-		this._range.getComponent("Sprite_0").y.set__(panelY);
+		((function($this) {
+			var $r;
+			var component10 = $this._range.getComponent("Sprite_0");
+			$r = component10;
+			return $r;
+		}(this))).x.set__(panelX);
+		((function($this) {
+			var $r;
+			var component11 = $this._range.getComponent("Sprite_0");
+			$r = component11;
+			return $r;
+		}(this))).y.set__(panelY);
 		label = webaudio_synth_ui_Fonts.getField(webaudio_synth_ui_Fonts.Prime20,"range",labelColour).setAlpha(labelAlpha).centerAnchor();
 		this.owner.addChild(new flambe_Entity().add(label));
 		label.x.set__(panelX);
@@ -8582,12 +8906,18 @@ webaudio_synth_ui_modules_FilterModule.prototype = {
 		this._range = webaudio_synth_ui_controls_Rotary.create(audio_parameter_mapping_MapFactory.getMapping(audio_parameter_mapping_MapType.FLOAT,0,1),0.0,null,null,null,null,"filterRange");
 		this._panel = flambe_display_NineSlice.fromSubTexture(textureAtlas.get("InnerPanelBg"),8,8,424,192);
 		owner.addChild(new flambe_Entity().add(this._panel).addChild(this._type).addChild(this._frequency).addChild(this._Q).addChild(this._attack).addChild(this._release).addChild(this._range));
-		this.type = this._type.getComponent("NumericControl_2");
-		this.frequency = this._frequency.getComponent("NumericControl_2");
-		this.Q = this._Q.getComponent("NumericControl_2");
-		this.attack = this._attack.getComponent("NumericControl_2");
-		this.release = this._release.getComponent("NumericControl_2");
-		this.range = this._range.getComponent("NumericControl_2");
+		var component = this._type.getComponent("NumericControl_2");
+		this.type = component;
+		var component1 = this._frequency.getComponent("NumericControl_2");
+		this.frequency = component1;
+		var component2 = this._Q.getComponent("NumericControl_2");
+		this.Q = component2;
+		var component3 = this._attack.getComponent("NumericControl_2");
+		this.attack = component3;
+		var component4 = this._release.getComponent("NumericControl_2");
+		this.release = component4;
+		var component5 = this._range.getComponent("NumericControl_2");
+		this.range = component5;
 	}
 	,__class__: webaudio_synth_ui_modules_FilterModule
 };
@@ -8612,60 +8942,190 @@ webaudio_synth_ui_modules_OscillatorsModule.prototype = {
 		this._oscPanel.set_x(panelX);
 		this._oscPanel.set_y(panelY);
 		panelY += 42;
-		this._osc0Type.getComponent("Sprite_0").x.set__(panelX + 38);
-		this._osc0Type.getComponent("Sprite_0").y.set__(panelY + 12);
+		((function($this) {
+			var $r;
+			var component = $this._osc0Type.getComponent("Sprite_0");
+			$r = component;
+			return $r;
+		}(this))).x.set__(panelX + 38);
+		((function($this) {
+			var $r;
+			var component1 = $this._osc0Type.getComponent("Sprite_0");
+			$r = component1;
+			return $r;
+		}(this))).y.set__(panelY + 12);
 		panelX += 210;
-		this._osc0Level.getComponent("Sprite_0").x.set__(panelX);
-		this._osc0Level.getComponent("Sprite_0").y.set__(panelY);
+		((function($this) {
+			var $r;
+			var component2 = $this._osc0Level.getComponent("Sprite_0");
+			$r = component2;
+			return $r;
+		}(this))).x.set__(panelX);
+		((function($this) {
+			var $r;
+			var component3 = $this._osc0Level.getComponent("Sprite_0");
+			$r = component3;
+			return $r;
+		}(this))).y.set__(panelY);
 		label = webaudio_synth_ui_Fonts.getField(webaudio_synth_ui_Fonts.Prime20,"level",labelColour).setAlpha(labelAlpha).centerAnchor();
 		this.owner.addChild(new flambe_Entity().add(label));
 		label.x.set__(panelX);
 		label.y.set__(labelY);
-		this._osc0Pan.getComponent("Sprite_0").x.set__(panelX += rotarySpace);
-		this._osc0Pan.getComponent("Sprite_0").y.set__(panelY);
+		((function($this) {
+			var $r;
+			var component4 = $this._osc0Pan.getComponent("Sprite_0");
+			$r = component4;
+			return $r;
+		}(this))).x.set__(panelX += rotarySpace);
+		((function($this) {
+			var $r;
+			var component5 = $this._osc0Pan.getComponent("Sprite_0");
+			$r = component5;
+			return $r;
+		}(this))).y.set__(panelY);
 		label = webaudio_synth_ui_Fonts.getField(webaudio_synth_ui_Fonts.Prime20,"pan",labelColour).setAlpha(labelAlpha).centerAnchor();
 		this.owner.addChild(new flambe_Entity().add(label));
 		label.x.set__(panelX);
 		label.y.set__(labelY);
-		this._osc0Slide.getComponent("Sprite_0").x.set__(panelX += rotarySpace + 16);
-		this._osc0Slide.getComponent("Sprite_0").y.set__(panelY);
+		((function($this) {
+			var $r;
+			var component6 = $this._osc0Slide.getComponent("Sprite_0");
+			$r = component6;
+			return $r;
+		}(this))).x.set__(panelX += rotarySpace + 16);
+		((function($this) {
+			var $r;
+			var component7 = $this._osc0Slide.getComponent("Sprite_0");
+			$r = component7;
+			return $r;
+		}(this))).y.set__(panelY);
 		label = webaudio_synth_ui_Fonts.getField(webaudio_synth_ui_Fonts.Prime20,"slide",labelColour).setAlpha(labelAlpha).centerAnchor();
 		this.owner.addChild(new flambe_Entity().add(label));
 		label.x.set__(panelX);
 		label.y.set__(labelY);
-		this._osc0Detune.getComponent("Sprite_0").x.set__(panelX += rotarySpace);
-		this._osc0Detune.getComponent("Sprite_0").y.set__(panelY);
+		((function($this) {
+			var $r;
+			var component8 = $this._osc0Detune.getComponent("Sprite_0");
+			$r = component8;
+			return $r;
+		}(this))).x.set__(panelX += rotarySpace);
+		((function($this) {
+			var $r;
+			var component9 = $this._osc0Detune.getComponent("Sprite_0");
+			$r = component9;
+			return $r;
+		}(this))).y.set__(panelY);
 		label = webaudio_synth_ui_Fonts.getField(webaudio_synth_ui_Fonts.Prime20,"detune",labelColour).setAlpha(labelAlpha).centerAnchor();
 		this.owner.addChild(new flambe_Entity().add(label));
 		label.x.set__(panelX);
 		label.y.set__(labelY);
-		this._osc0Random.getComponent("Sprite_0").x.set__(panelX += rotarySpace);
-		this._osc0Random.getComponent("Sprite_0").y.set__(panelY);
+		((function($this) {
+			var $r;
+			var component10 = $this._osc0Random.getComponent("Sprite_0");
+			$r = component10;
+			return $r;
+		}(this))).x.set__(panelX += rotarySpace);
+		((function($this) {
+			var $r;
+			var component11 = $this._osc0Random.getComponent("Sprite_0");
+			$r = component11;
+			return $r;
+		}(this))).y.set__(panelY);
 		label = webaudio_synth_ui_Fonts.getField(webaudio_synth_ui_Fonts.Prime20,"random",labelColour).setAlpha(labelAlpha).centerAnchor();
 		this.owner.addChild(new flambe_Entity().add(label));
 		label.x.set__(panelX);
 		label.y.set__(labelY);
-		this._oscPhase.getComponent("Sprite_0").x.set__(panelX += rotarySpace + rotarySpace / 4);
-		this._oscPhase.getComponent("Sprite_0").y.set__(panelY + 54);
+		((function($this) {
+			var $r;
+			var component12 = $this._oscPhase.getComponent("Sprite_0");
+			$r = component12;
+			return $r;
+		}(this))).x.set__(panelX += rotarySpace + rotarySpace / 4);
+		((function($this) {
+			var $r;
+			var component13 = $this._oscPhase.getComponent("Sprite_0");
+			$r = component13;
+			return $r;
+		}(this))).y.set__(panelY + 54);
 		label = webaudio_synth_ui_Fonts.getField(webaudio_synth_ui_Fonts.Prime20,"phase",labelColour).setAlpha(labelAlpha).centerAnchor();
 		this.owner.addChild(new flambe_Entity().add(label));
 		label.x.set__(panelX);
 		label.y.set__(labelY + 54);
 		panelX = 24;
 		panelY += 96;
-		this._osc1Type.getComponent("Sprite_0").x.set__(panelX + 38);
-		this._osc1Type.getComponent("Sprite_0").y.set__(panelY + 12);
+		((function($this) {
+			var $r;
+			var component14 = $this._osc1Type.getComponent("Sprite_0");
+			$r = component14;
+			return $r;
+		}(this))).x.set__(panelX + 38);
+		((function($this) {
+			var $r;
+			var component15 = $this._osc1Type.getComponent("Sprite_0");
+			$r = component15;
+			return $r;
+		}(this))).y.set__(panelY + 12);
 		panelX += 210;
-		this._osc1Level.getComponent("Sprite_0").x.set__(panelX);
-		this._osc1Level.getComponent("Sprite_0").y.set__(panelY);
-		this._osc1Pan.getComponent("Sprite_0").x.set__(panelX += rotarySpace);
-		this._osc1Pan.getComponent("Sprite_0").y.set__(panelY);
-		this._osc1Slide.getComponent("Sprite_0").x.set__(panelX += rotarySpace + 16);
-		this._osc1Slide.getComponent("Sprite_0").y.set__(panelY);
-		this._osc1Detune.getComponent("Sprite_0").x.set__(panelX += rotarySpace);
-		this._osc1Detune.getComponent("Sprite_0").y.set__(panelY);
-		this._osc1Random.getComponent("Sprite_0").x.set__(panelX += rotarySpace);
-		this._osc1Random.getComponent("Sprite_0").y.set__(panelY);
+		((function($this) {
+			var $r;
+			var component16 = $this._osc1Level.getComponent("Sprite_0");
+			$r = component16;
+			return $r;
+		}(this))).x.set__(panelX);
+		((function($this) {
+			var $r;
+			var component17 = $this._osc1Level.getComponent("Sprite_0");
+			$r = component17;
+			return $r;
+		}(this))).y.set__(panelY);
+		((function($this) {
+			var $r;
+			var component18 = $this._osc1Pan.getComponent("Sprite_0");
+			$r = component18;
+			return $r;
+		}(this))).x.set__(panelX += rotarySpace);
+		((function($this) {
+			var $r;
+			var component19 = $this._osc1Pan.getComponent("Sprite_0");
+			$r = component19;
+			return $r;
+		}(this))).y.set__(panelY);
+		((function($this) {
+			var $r;
+			var component20 = $this._osc1Slide.getComponent("Sprite_0");
+			$r = component20;
+			return $r;
+		}(this))).x.set__(panelX += rotarySpace + 16);
+		((function($this) {
+			var $r;
+			var component21 = $this._osc1Slide.getComponent("Sprite_0");
+			$r = component21;
+			return $r;
+		}(this))).y.set__(panelY);
+		((function($this) {
+			var $r;
+			var component22 = $this._osc1Detune.getComponent("Sprite_0");
+			$r = component22;
+			return $r;
+		}(this))).x.set__(panelX += rotarySpace);
+		((function($this) {
+			var $r;
+			var component23 = $this._osc1Detune.getComponent("Sprite_0");
+			$r = component23;
+			return $r;
+		}(this))).y.set__(panelY);
+		((function($this) {
+			var $r;
+			var component24 = $this._osc1Random.getComponent("Sprite_0");
+			$r = component24;
+			return $r;
+		}(this))).x.set__(panelX += rotarySpace);
+		((function($this) {
+			var $r;
+			var component25 = $this._osc1Random.getComponent("Sprite_0");
+			$r = component25;
+			return $r;
+		}(this))).y.set__(panelY);
 	}
 	,init: function(owner,textureAtlas) {
 		this._osc0Type = webaudio_synth_ui_controls_OscSlider.create("osc0Type");
@@ -8683,19 +9143,32 @@ webaudio_synth_ui_modules_OscillatorsModule.prototype = {
 		this._oscPhase = webaudio_synth_ui_controls_Rotary.create(audio_parameter_mapping_MapFactory.getMapping(audio_parameter_mapping_MapType.FLOAT,0,1),0.0,null,null,null,null,"oscPhase");
 		this._oscPanel = flambe_display_NineSlice.fromSubTexture(textureAtlas.get("InnerPanelBg"),8,8,616,192);
 		owner.addChild(new flambe_Entity().add(this._oscPanel).addChild(this._osc0Type).addChild(this._osc0Level).addChild(this._osc0Pan).addChild(this._osc0Slide).addChild(this._osc0Detune).addChild(this._osc0Random).addChild(this._osc1Type).addChild(this._osc1Level).addChild(this._osc1Pan).addChild(this._osc1Slide).addChild(this._osc1Detune).addChild(this._osc1Random).addChild(this._oscPhase));
-		this.osc0Type = this._osc0Type.getComponent("NumericControl_2");
-		this.osc0Level = this._osc0Level.getComponent("NumericControl_2");
-		this.osc0Pan = this._osc0Pan.getComponent("NumericControl_2");
-		this.osc0Slide = this._osc0Slide.getComponent("NumericControl_2");
-		this.osc0Detune = this._osc0Detune.getComponent("NumericControl_2");
-		this.osc0Random = this._osc0Random.getComponent("NumericControl_2");
-		this.osc1Type = this._osc1Type.getComponent("NumericControl_2");
-		this.osc1Level = this._osc1Level.getComponent("NumericControl_2");
-		this.osc1Pan = this._osc1Pan.getComponent("NumericControl_2");
-		this.osc1Slide = this._osc1Slide.getComponent("NumericControl_2");
-		this.osc1Detune = this._osc1Detune.getComponent("NumericControl_2");
-		this.osc1Random = this._osc1Random.getComponent("NumericControl_2");
-		this.oscPhase = this._oscPhase.getComponent("NumericControl_2");
+		var component = this._osc0Type.getComponent("NumericControl_2");
+		this.osc0Type = component;
+		var component1 = this._osc0Level.getComponent("NumericControl_2");
+		this.osc0Level = component1;
+		var component2 = this._osc0Pan.getComponent("NumericControl_2");
+		this.osc0Pan = component2;
+		var component3 = this._osc0Slide.getComponent("NumericControl_2");
+		this.osc0Slide = component3;
+		var component4 = this._osc0Detune.getComponent("NumericControl_2");
+		this.osc0Detune = component4;
+		var component5 = this._osc0Random.getComponent("NumericControl_2");
+		this.osc0Random = component5;
+		var component6 = this._osc1Type.getComponent("NumericControl_2");
+		this.osc1Type = component6;
+		var component7 = this._osc1Level.getComponent("NumericControl_2");
+		this.osc1Level = component7;
+		var component8 = this._osc1Pan.getComponent("NumericControl_2");
+		this.osc1Pan = component8;
+		var component9 = this._osc1Slide.getComponent("NumericControl_2");
+		this.osc1Slide = component9;
+		var component10 = this._osc1Detune.getComponent("NumericControl_2");
+		this.osc1Detune = component10;
+		var component11 = this._osc1Random.getComponent("NumericControl_2");
+		this.osc1Random = component11;
+		var component12 = this._oscPhase.getComponent("NumericControl_2");
+		this.oscPhase = component12;
 	}
 	,__class__: webaudio_synth_ui_modules_OscillatorsModule
 };
@@ -8703,12 +9176,24 @@ var webaudio_synth_ui_modules_OutputModule = function(owner,textureAtlas) {
 	this._outputLevel = webaudio_synth_ui_controls_Rotary.create(audio_parameter_mapping_MapFactory.getMapping(audio_parameter_mapping_MapType.FLOAT,0,1),1.0,null,null,null,null,"outputLevel");
 	this._pitchBend = webaudio_synth_ui_controls_PitchBendWheel.create("pitchBend");
 	owner.addChild((this._panel = new flambe_Entity().add(flambe_display_NineSlice.fromSubTexture(textureAtlas.get("InnerPanelBg"),16,16,386,192))).addChild(this._outputLevel).addChild(this._pitchBend));
-	this.outputLevel = this._outputLevel.getComponent("NumericControl_2");
-	this.pitchBend = this._pitchBend.getComponent("NumericControl_2");
+	var component = this._outputLevel.getComponent("NumericControl_2");
+	this.outputLevel = component;
+	var component1 = this._pitchBend.getComponent("NumericControl_2");
+	this.pitchBend = component1;
 	var panelX = 23;
 	var panelY = 296;
-	this._panel.getComponent("NineSlice_5").set_x(panelX);
-	this._panel.getComponent("NineSlice_5").set_y(panelY);
+	((function($this) {
+		var $r;
+		var component2 = $this._panel.getComponent("NineSlice_5");
+		$r = component2;
+		return $r;
+	}(this))).set_x(panelX);
+	((function($this) {
+		var $r;
+		var component3 = $this._panel.getComponent("NineSlice_5");
+		$r = component3;
+		return $r;
+	}(this))).set_y(panelY);
 	var labelY = panelY + 12;
 	var labelColour = 3289650;
 	var labelAlpha = 0.55;
@@ -8720,14 +9205,34 @@ var webaudio_synth_ui_modules_OutputModule = function(owner,textureAtlas) {
 	panelX += 43;
 	panelY += 116;
 	labelY = panelY + 54;
-	this._outputLevel.getComponent("Sprite_0").x.set__(panelX);
-	this._outputLevel.getComponent("Sprite_0").y.set__(panelY);
+	((function($this) {
+		var $r;
+		var component4 = $this._outputLevel.getComponent("Sprite_0");
+		$r = component4;
+		return $r;
+	}(this))).x.set__(panelX);
+	((function($this) {
+		var $r;
+		var component5 = $this._outputLevel.getComponent("Sprite_0");
+		$r = component5;
+		return $r;
+	}(this))).y.set__(panelY);
 	label = webaudio_synth_ui_Fonts.getField(webaudio_synth_ui_Fonts.Prime20,"level",labelColour).setAlpha(labelAlpha).centerAnchor();
 	owner.addChild(new flambe_Entity().add(label));
 	label.x.set__(panelX);
 	label.y.set__(labelY);
-	this._pitchBend.getComponent("Sprite_0").x.set__(17);
-	this._pitchBend.getComponent("Sprite_0").y.set__(549);
+	((function($this) {
+		var $r;
+		var component6 = $this._pitchBend.getComponent("Sprite_0");
+		$r = component6;
+		return $r;
+	}(this))).x.set__(17);
+	((function($this) {
+		var $r;
+		var component7 = $this._pitchBend.getComponent("Sprite_0");
+		$r = component7;
+		return $r;
+	}(this))).y.set__(549);
 };
 $hxClasses["webaudio.synth.ui.modules.OutputModule"] = webaudio_synth_ui_modules_OutputModule;
 webaudio_synth_ui_modules_OutputModule.__name__ = true;
@@ -9036,7 +9541,7 @@ flambe_System.volume = new flambe_animation_AnimatedFloat(1);
 flambe_System._platform = flambe_platform_html_HtmlPlatform.instance;
 flambe_System._calledInit = false;
 flambe_Log.logger = flambe_System.createLogger("flambe");
-flambe_asset_Manifest.__meta__ = { obj : { assets : [{ bootstrap : [{ bytes : 36282, md5 : "a8d2809c1bde26e2863279b7063b27bb", name : "font/Prime13.fnt"},{ bytes : 6789, md5 : "a5e204dcb7f4ea16084cc6dc8992aa44", name : "font/Prime13_0.png"},{ bytes : 36282, md5 : "ed0b12cefe3347b38ceeef6f9906945d", name : "font/Prime14.fnt"},{ bytes : 7477, md5 : "e12fc759beeac6ab64b5be1d887874d8", name : "font/Prime14_0.png"},{ bytes : 25928, md5 : "275955a2886df7e2e78ff63f3ff09897", name : "font/Prime20.fnt"},{ bytes : 11135, md5 : "80ce085528ba12587a04562ca0450332", name : "font/Prime20_0.png"},{ bytes : 2160, md5 : "379d68386232530f1d7ed43f5420b11c", name : "font/Prime20_1.png"},{ bytes : 25928, md5 : "aa6bd205c87cab4c8a8b55cd9f144c7f", name : "font/Prime22.fnt"},{ bytes : 10598, md5 : "6ae0c93e0c18711e92c6d09e7f404e05", name : "font/Prime22_0.png"},{ bytes : 4532, md5 : "3346d1965b9b92034c53dc4299aeb9a5", name : "font/Prime22_1.png"},{ bytes : 38204, md5 : "07486cd37b710833e5aff926c2b67fa7", name : "font/Prime24.fnt"},{ bytes : 7852, md5 : "5e5367359a16e3b6610ffd9cbf7a2096", name : "font/Prime24_0.png"},{ bytes : 7390, md5 : "988156320ad6e33245ab65bdc77fa568", name : "font/Prime24_1.png"},{ bytes : 38172, md5 : "429083da87bdebde91624c6a2c1a4749", name : "font/Prime32.fnt"},{ bytes : 29282, md5 : "9aad77450eaeb3bf367ad3333bfa3fd9", name : "font/Prime32_0.png"},{ bytes : 136445, md5 : "be3a3c108d556062d9954ea8ce82b2e4", name : "sprites.png"},{ bytes : 2305, md5 : "39ac61b4a782c4e386053ce9b29f2f28", name : "sprites.xml"}]}]}};
+flambe_asset_Manifest.__meta__ = { obj : { assets : [{ fonts : [{ bytes : 36282, md5 : "ed0b12cefe3347b38ceeef6f9906945d", name : "Prime14.fnt"},{ bytes : 7477, md5 : "e12fc759beeac6ab64b5be1d887874d8", name : "Prime14_0.png"},{ bytes : 25928, md5 : "aa6bd205c87cab4c8a8b55cd9f144c7f", name : "Prime22.fnt"},{ bytes : 10598, md5 : "6ae0c93e0c18711e92c6d09e7f404e05", name : "Prime22_0.png"},{ bytes : 4532, md5 : "3346d1965b9b92034c53dc4299aeb9a5", name : "Prime22_1.png"},{ bytes : 38204, md5 : "07486cd37b710833e5aff926c2b67fa7", name : "Prime24.fnt"},{ bytes : 7852, md5 : "5e5367359a16e3b6610ffd9cbf7a2096", name : "Prime24_0.png"},{ bytes : 7390, md5 : "988156320ad6e33245ab65bdc77fa568", name : "Prime24_1.png"},{ bytes : 38172, md5 : "429083da87bdebde91624c6a2c1a4749", name : "Prime32.fnt"},{ bytes : 29282, md5 : "9aad77450eaeb3bf367ad3333bfa3fd9", name : "Prime32_0.png"}], bootstrap : [{ bytes : 36282, md5 : "a8d2809c1bde26e2863279b7063b27bb", name : "font/Prime13.fnt"},{ bytes : 6789, md5 : "a5e204dcb7f4ea16084cc6dc8992aa44", name : "font/Prime13_0.png"},{ bytes : 25928, md5 : "275955a2886df7e2e78ff63f3ff09897", name : "font/Prime20.fnt"},{ bytes : 11135, md5 : "80ce085528ba12587a04562ca0450332", name : "font/Prime20_0.png"},{ bytes : 2160, md5 : "379d68386232530f1d7ed43f5420b11c", name : "font/Prime20_1.png"},{ bytes : 136445, md5 : "be3a3c108d556062d9954ea8ce82b2e4", name : "sprites.png"},{ bytes : 2338, md5 : "b652f11153eca246a1395d096fd128fc", name : "sprites.xml"}]}]}};
 flambe_asset_Manifest._supportsCrossOrigin = (function() {
 	var detected = (function() {
 		if(js_Browser.get_navigator().userAgent.indexOf("Linux; U; Android") >= 0) return false;
