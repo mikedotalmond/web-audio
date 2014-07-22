@@ -57,7 +57,7 @@ class OscSlider extends NumericControl {
 		knobHash= sprites.get(Sprite).centerAnchor();
 		knobHash.y._ = 3;
 		knobHash.alpha._ = 0;
-		knobHash.setTint(.6, 1.2, 1.8);
+		//knobHash.setTint(.6, 1.2, 1.8);
 		
 		var iconX = -17;
 		var iconSpace = 37;
@@ -67,24 +67,28 @@ class OscSlider extends NumericControl {
 		sine 	= sprites.get(Sprite);
 		sine.x._ = iconX;
 		sine.y._ = iconY;
+		sine.alpha._ = .5;
 		
 		iconX += iconSpace;
 		sprites = sprites.next;
 		square 	= sprites.get(Sprite);
 		square.x._ = iconX;
-		square.y._ = iconY-2;
+		square.y._ = iconY - 2;
+		square.alpha._ = .5;
 		
 		iconX += iconSpace;
 		sprites = sprites.next;
 		sawtooth = sprites.get(Sprite);
 		sawtooth.x._ = iconX+1;
 		sawtooth.y._ = iconY;
+		sawtooth.alpha._ = .5;
 		
 		iconX += iconSpace;
 		sprites = sprites.next;
 		triangle = sprites.get(Sprite);
 		triangle.x._ = iconX+1;
-		triangle.y._ = iconY-1;
+		triangle.y._ = iconY - 1;
+		triangle.alpha._ = .5;
 		
 		minX = 0;
 		maxX = display.getNaturalWidth();
@@ -150,10 +154,12 @@ class OscSlider extends NumericControl {
 	inline function setPosition(value:Int) {
 		
 		if (lastPosition != -1) {
-			getIcon(lastPosition).setTint(1, 1, 1, .5, Ease.quartOut);
+			//getIcon(lastPosition).setTint(1, 1, 1, .5, Ease.quartOut);
+			getIcon(lastPosition).alpha.animateTo(.5, .5, Ease.quartOut);
 		}
 		
-		getIcon(value).setTint(1.2, 1.52, 1.66, .25, Ease.quadOut);
+		//getIcon(value).setTint(1.2, 1.52, 1.66, .25, Ease.quadOut);
+		getIcon(value).alpha.animateTo(1, .25, Ease.quadOut);
 		
 		var px = value / 3 * display.getNaturalWidth();
 		thumb.x.animateTo(px, .1, Ease.quadOut);
