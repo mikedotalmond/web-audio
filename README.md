@@ -4,7 +4,7 @@
  
 ===
 
-There are a few presets, but no UI for selecting them at the moment... use the up/down arrow-keys to cycle through them.
+There are a few presets, but no UI for selecting them at the moment... use the up/down arrow-keys to cycle through them and 'F' takes you full-screen.
 
 Currently only works in Chrome. You might get some odd sounds in Firefox, or nothing at all.
 
