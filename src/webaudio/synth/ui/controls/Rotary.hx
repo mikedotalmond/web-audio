@@ -73,7 +73,7 @@ class Rotary extends NumericControl {
 		knobHash.x._ = 6;
 		knobHash.y._ = 6;
 		knobHash.alpha._ = 0;
-		knobHash.setTint(.6, 1.2, 1.8);
+		//knobHash.setTint(.6, 1.2, 1.8);
 		
 		// value label
 		sprites = sprites.next;
@@ -160,7 +160,7 @@ class Rotary extends NumericControl {
 			}
 		}
 		
-		knobHash.setTint(.6 + norm * 1, 1.2 - norm * .8, 1.8 - norm);
+		//knobHash.setTint(.6 + norm * 1, 1.2 - norm * .8, 1.8 - norm);
 		
 	}
 	

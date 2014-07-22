@@ -207,13 +207,12 @@ class KeyboardUI extends Component {
 	
 	
 	function setKeyIsDown(key:KeySprite, isDown:Bool) {
-		if (key.isSharp) {
-			if (isDown) key.setTint(1.666, 1.666, 1.666);
-			else key.setTint(1, 1, 1, .16);
-		} else {
-			if (isDown) key.setTint(.666, .666, .666);
-			else key.setTint(1, 1, 1, .16);
-		}
+		
+		var downAlpha 	= .7;
+		var upAlpha 	= 1.0;
+		
+		if (isDown) key.alpha._ = downAlpha;
+		else key.alpha.animateTo(upAlpha, .16);
 	}
 	
 	
