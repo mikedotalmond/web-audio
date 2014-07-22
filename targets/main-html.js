@@ -935,13 +935,6 @@ flambe_platform_html_HtmlPlatform.prototype = {
 		return (event.clientY - bounds.top) * this._stage.get_height() / bounds.height;
 	}
 	,createRenderer: function(canvas) {
-		try {
-			var gl = js_html__$CanvasElement_CanvasUtil.getContextWebGL(canvas,{ alpha : false, depth : false, failIfMajorPerformanceCaveat : true});
-			if(gl != null) {
-				if(flambe_platform_html_HtmlUtil.detectSlowDriver(gl)) flambe_Log.warn("Detected a slow WebGL driver, falling back to canvas"); else return new flambe_platform_html_WebGLRenderer(this._stage,gl);
-			}
-		} catch( _ ) {
-		}
 		return new flambe_platform_html_CanvasRenderer(canvas);
 		flambe_Log.error("No renderer available!");
 		return null;
@@ -1264,7 +1257,7 @@ flambe_SpeedAdjuster.__name__ = true;
 flambe_SpeedAdjuster.__super__ = flambe_Component;
 flambe_SpeedAdjuster.prototype = $extend(flambe_Component.prototype,{
 	get_name: function() {
-		return "SpeedAdjuster_13";
+		return "SpeedAdjuster_10";
 	}
 	,onUpdate: function(dt) {
 		if(this._realDt > 0) {
@@ -1519,7 +1512,7 @@ flambe_camera_Camera.__name__ = true;
 flambe_camera_Camera.__super__ = flambe_Component;
 flambe_camera_Camera.prototype = $extend(flambe_Component.prototype,{
 	get_name: function() {
-		return "Camera_9";
+		return "Camera_7";
 	}
 	,onAdded: function() {
 		this.container = this.owner;
@@ -1653,7 +1646,7 @@ flambe_camera_CameraController.__name__ = true;
 flambe_camera_CameraController.__super__ = flambe_Component;
 flambe_camera_CameraController.prototype = $extend(flambe_Component.prototype,{
 	get_name: function() {
-		return "CameraController_8";
+		return "CameraController_6";
 	}
 	,onAdded: function() {
 		this.panX = new flambe_animation_AnimatedFloat(this.camera.get_panX());
@@ -1939,7 +1932,7 @@ flambe_display_Sprite.render = function(entity,g) {
 		sprite.draw(g);
 	}
 	var director;
-	var component1 = entity.getComponent("Director_10");
+	var component1 = entity.getComponent("Director_8");
 	director = component1;
 	if(director != null) {
 		var scenes = director.occludedScenes;
@@ -2654,15 +2647,6 @@ flambe_display_NineSlice.prototype = $extend(flambe_Component.prototype,{
 			this.owner.addChild(new flambe_Entity().add(part.disablePointer()));
 		}
 	}
-	,setTint: function(r,g,b) {
-		var _g = 0;
-		var _g1 = this.parts;
-		while(_g < _g1.length) {
-			var part = _g1[_g];
-			++_g;
-			part.setTint(r,g,b);
-		}
-	}
 	,set_width: function(value) {
 		var w;
 		if(value < this.minWidth) w = this.minWidth; else w = value;
@@ -3094,22 +3078,6 @@ var flambe_math_Matrix = function() {
 };
 $hxClasses["flambe.math.Matrix"] = flambe_math_Matrix;
 flambe_math_Matrix.__name__ = true;
-flambe_math_Matrix.multiply = function(lhs,rhs,result) {
-	if(result == null) result = new flambe_math_Matrix();
-	var a = lhs.m00 * rhs.m00 + lhs.m01 * rhs.m10;
-	var b = lhs.m00 * rhs.m01 + lhs.m01 * rhs.m11;
-	var c = lhs.m00 * rhs.m02 + lhs.m01 * rhs.m12 + lhs.m02;
-	result.m00 = a;
-	result.m01 = b;
-	result.m02 = c;
-	a = lhs.m10 * rhs.m00 + lhs.m11 * rhs.m10;
-	b = lhs.m10 * rhs.m01 + lhs.m11 * rhs.m11;
-	c = lhs.m10 * rhs.m02 + lhs.m11 * rhs.m12 + lhs.m12;
-	result.m10 = a;
-	result.m11 = b;
-	result.m12 = c;
-	return result;
-};
 flambe_math_Matrix.prototype = {
 	set: function(m00,m10,m01,m11,m02,m12) {
 		this.m00 = m00;
@@ -3131,21 +3099,6 @@ flambe_math_Matrix.prototype = {
 		this.m02 += this.m00 * x + this.m01 * y;
 		this.m12 += this.m11 * y + this.m10 * x;
 	}
-	,invert: function() {
-		var det = this.determinant();
-		if(det == 0) return false;
-		this.set(this.m11 / det,-this.m01 / det,-this.m10 / det,this.m00 / det,(this.m01 * this.m12 - this.m11 * this.m02) / det,(this.m10 * this.m02 - this.m00 * this.m12) / det);
-		return true;
-	}
-	,transformArray: function(points,length,result) {
-		var ii = 0;
-		while(ii < length) {
-			var x = points[ii];
-			var y = points[ii + 1];
-			result[ii++] = x * this.m00 + y * this.m01 + this.m02;
-			result[ii++] = x * this.m10 + y * this.m11 + this.m12;
-		}
-	}
 	,determinant: function() {
 		return this.m00 * this.m11 - this.m01 * this.m10;
 	}
@@ -3157,11 +3110,6 @@ flambe_math_Matrix.prototype = {
 		result.x = (x * this.m11 - y * this.m01) / det;
 		result.y = (y * this.m00 - x * this.m10) / det;
 		return true;
-	}
-	,clone: function(result) {
-		if(result == null) result = new flambe_math_Matrix();
-		result.set(this.m00,this.m10,this.m01,this.m11,this.m02,this.m12);
-		return result;
 	}
 	,toString: function() {
 		return this.m00 + " " + this.m01 + " " + this.m02 + " \\ " + this.m10 + " " + this.m11 + " " + this.m12;
@@ -3194,14 +3142,6 @@ flambe_math_Rectangle.prototype = {
 			if(y < 0 || y > this.height) return false;
 		} else if(y > 0 || y < this.height) return false;
 		return true;
-	}
-	,clone: function(result) {
-		if(result == null) result = new flambe_math_Rectangle();
-		result.set(this.x,this.y,this.width,this.height);
-		return result;
-	}
-	,equals: function(other) {
-		return this.x == other.x && this.y == other.y && this.width == other.width && this.height == other.height;
 	}
 	,toString: function() {
 		return "(" + this.x + "," + this.y + " " + this.width + "x" + this.height + ")";
@@ -4402,7 +4342,7 @@ $hxClasses["flambe.platform.MainLoop"] = flambe_platform_MainLoop;
 flambe_platform_MainLoop.__name__ = true;
 flambe_platform_MainLoop.updateEntity = function(entity,dt) {
 	var speed;
-	var component = entity.getComponent("SpeedAdjuster_13");
+	var component = entity.getComponent("SpeedAdjuster_10");
 	speed = component;
 	if(speed != null) {
 		speed._realDt = dt;
@@ -4453,14 +4393,6 @@ flambe_platform_MainLoop.prototype = {
 		}
 	}
 	,__class__: flambe_platform_MainLoop
-};
-var flambe_platform_MathUtil = function() { };
-$hxClasses["flambe.platform.MathUtil"] = flambe_platform_MathUtil;
-flambe_platform_MathUtil.__name__ = true;
-flambe_platform_MathUtil.nextPowerOfTwo = function(n) {
-	var p = 1;
-	while(p < n) p <<= 1;
-	return p;
 };
 var flambe_platform_MouseCodes = function() { };
 $hxClasses["flambe.platform.MouseCodes"] = flambe_platform_MouseCodes;
@@ -4529,9 +4461,6 @@ flambe_platform_OverdrawGraphics.prototype = {
 	,didRender: function() {
 		this._impl.restore();
 		this._impl.didRender();
-	}
-	,onResize: function(width,height) {
-		this._impl.onResize(width,height);
 	}
 	,setTint: function(r,g,b) {
 		this._impl.setTint(r,g,b);
@@ -4629,8 +4558,6 @@ flambe_platform_html_CanvasGraphics.prototype = {
 		this._firstDraw = true;
 	}
 	,didRender: function() {
-	}
-	,onResize: function(width,height) {
 	}
 	,setTint: function(r,g,b) {
 	}
@@ -5226,23 +5153,6 @@ flambe_platform_html_HtmlUtil.createCanvas = function(source) {
 	ctx.restore();
 	return canvas;
 };
-flambe_platform_html_HtmlUtil.detectSlowDriver = function(gl) {
-	var windows = js_Browser.get_navigator().platform.indexOf("Win") >= 0;
-	if(windows) {
-		var chrome = js_Browser.get_window().chrome != null;
-		if(chrome) {
-			var _g = 0;
-			var _g1 = gl.getSupportedExtensions();
-			while(_g < _g1.length) {
-				var ext = _g1[_g];
-				++_g;
-				if(ext.indexOf("WEBGL_compressed_texture") >= 0) return false;
-			}
-			return true;
-		}
-	}
-	return false;
-};
 flambe_platform_html_HtmlUtil.fixAndroidMath = function() {
 	if(js_Browser.get_navigator().userAgent.indexOf("Linux; U; Android 4") >= 0) {
 		flambe_Log.warn("Monkey patching around Android sin/cos bug");
@@ -5292,718 +5202,6 @@ flambe_platform_html_WebAudioSound.prototype = $extend(flambe_platform_BasicAsse
 	}
 	,__class__: flambe_platform_html_WebAudioSound
 });
-var flambe_platform_html_WebGLBatcher = function(gl) {
-	this._backbufferHeight = 0;
-	this._backbufferWidth = 0;
-	this._dataOffset = 0;
-	this._maxQuads = 0;
-	this._quads = 0;
-	this._pendingSetScissor = false;
-	this._currentRenderTarget = null;
-	this._currentTexture = null;
-	this._currentShader = null;
-	this._currentBlendMode = null;
-	this._lastScissor = null;
-	this._lastTexture = null;
-	this._lastShader = null;
-	this._lastRenderTarget = null;
-	this._lastBlendMode = null;
-	this._gl = gl;
-	gl.clearColor(0,0,0,0);
-	gl.enable(3042);
-	gl.pixelStorei(37441,1);
-	this._vertexBuffer = gl.createBuffer();
-	gl.bindBuffer(34962,this._vertexBuffer);
-	this._quadIndexBuffer = gl.createBuffer();
-	gl.bindBuffer(34963,this._quadIndexBuffer);
-	this._drawTextureShader = new flambe_platform_shader_DrawTextureGL(gl);
-	this._drawTextureWithTintShader = new flambe_platform_shader_DrawTextureWithTintGL(gl);
-	this._drawPatternShader = new flambe_platform_shader_DrawPatternGL(gl);
-	this._drawTintedPatternShader = new flambe_platform_shader_DrawTintedPatternGL(gl);
-	this._fillRectShader = new flambe_platform_shader_FillRectGL(gl);
-	this.resize(16);
-};
-$hxClasses["flambe.platform.html.WebGLBatcher"] = flambe_platform_html_WebGLBatcher;
-flambe_platform_html_WebGLBatcher.__name__ = true;
-flambe_platform_html_WebGLBatcher.prototype = {
-	resizeBackbuffer: function(width,height) {
-		this._gl.viewport(0,0,width,height);
-		this._backbufferWidth = width;
-		this._backbufferHeight = height;
-	}
-	,willRender: function() {
-	}
-	,didRender: function() {
-		this.flush();
-	}
-	,bindTexture: function(texture) {
-		this.flush();
-		this._lastTexture = null;
-		this._currentTexture = null;
-		this._gl.bindTexture(3553,texture);
-	}
-	,deleteTexture: function(texture) {
-		if(this._lastTexture != null && this._lastTexture.root == texture) {
-			this.flush();
-			this._lastTexture = null;
-			this._currentTexture = null;
-		}
-		this._gl.deleteTexture(texture.nativeTexture);
-	}
-	,deleteFramebuffer: function(texture) {
-		if(texture == this._lastRenderTarget) {
-			this.flush();
-			this._lastRenderTarget = null;
-			this._currentRenderTarget = null;
-		}
-		this._gl.deleteFramebuffer(texture.framebuffer);
-	}
-	,prepareDrawTintedTexture: function(renderTarget,blendMode,scissor,texture) {
-		if(texture != this._lastTexture) {
-			this.flush();
-			this._lastTexture = texture;
-		}
-		return this.prepareQuad(8,renderTarget,blendMode,scissor,this._drawTextureWithTintShader);
-	}
-	,prepareFillRect: function(renderTarget,blendMode,scissor) {
-		return this.prepareQuad(6,renderTarget,blendMode,scissor,this._fillRectShader);
-	}
-	,prepareQuad: function(elementsPerVertex,renderTarget,blendMode,scissor,shader) {
-		if(renderTarget != this._lastRenderTarget) {
-			this.flush();
-			this._lastRenderTarget = renderTarget;
-		}
-		if(blendMode != this._lastBlendMode) {
-			this.flush();
-			this._lastBlendMode = blendMode;
-		}
-		if(shader != this._lastShader) {
-			this.flush();
-			this._lastShader = shader;
-		}
-		if(scissor != null || this._lastScissor != null) {
-			if(scissor == null || this._lastScissor == null || !this._lastScissor.equals(scissor)) {
-				this.flush();
-				if(scissor != null) this._lastScissor = scissor.clone(this._lastScissor); else this._lastScissor = null;
-				this._pendingSetScissor = true;
-			}
-		}
-		if(this._quads >= this._maxQuads) this.resize(this._maxQuads << 1);
-		++this._quads;
-		var offset = this._dataOffset;
-		this._dataOffset += elementsPerVertex << 2;
-		return offset;
-	}
-	,flush: function() {
-		if(this._quads < 1) return;
-		if(this._lastRenderTarget != this._currentRenderTarget) this.bindRenderTarget(this._lastRenderTarget);
-		if(this._lastBlendMode != this._currentBlendMode) {
-			var _g = this._lastBlendMode;
-			switch(Type.enumIndex(_g)) {
-			case 0:
-				this._gl.blendFunc(1,771);
-				break;
-			case 1:
-				this._gl.blendFunc(1,1);
-				break;
-			case 2:
-				this._gl.blendFunc(0,770);
-				break;
-			case 3:
-				this._gl.blendFunc(1,0);
-				break;
-			}
-			this._currentBlendMode = this._lastBlendMode;
-		}
-		if(this._pendingSetScissor) {
-			if(this._lastScissor != null) {
-				this._gl.enable(3089);
-				this._gl.scissor(Std["int"](this._lastScissor.x),Std["int"](this._lastScissor.y),Std["int"](this._lastScissor.width),Std["int"](this._lastScissor.height));
-			} else this._gl.disable(3089);
-			this._pendingSetScissor = false;
-		}
-		if(this._lastTexture != this._currentTexture) {
-			this._gl.bindTexture(3553,this._lastTexture.root.nativeTexture);
-			this._currentTexture = this._lastTexture;
-		}
-		if(this._lastShader != this._currentShader) {
-			this._lastShader.useProgram();
-			this._lastShader.prepare();
-			this._currentShader = this._lastShader;
-		}
-		if(this._lastShader == this._drawPatternShader || this._lastShader == this._drawTintedPatternShader) {
-			var texture = this._lastTexture;
-			var root = texture.root;
-			this._lastShader.setRegion(texture.rootX / root.width,texture.rootY / root.height,texture.get_width() / root.width,texture.get_height() / root.height);
-		}
-		this._gl.bufferData(34962,this.data.subarray(0,this._dataOffset),35040);
-		this._gl.drawElements(4,6 * this._quads,5123,0);
-		this._quads = 0;
-		this._dataOffset = 0;
-	}
-	,resize: function(maxQuads) {
-		this.flush();
-		if(maxQuads > 1024) return;
-		this._maxQuads = maxQuads;
-		this.data = new Float32Array(maxQuads * 4 * 8);
-		this._gl.bufferData(34962,this.data.length * 4,35040);
-		var indices = new Uint16Array(6 * maxQuads);
-		var _g = 0;
-		while(_g < maxQuads) {
-			var ii = _g++;
-			indices[ii * 6 + 0] = ii * 4 + 0;
-			indices[ii * 6 + 1] = ii * 4 + 1;
-			indices[ii * 6 + 2] = ii * 4 + 2;
-			indices[ii * 6 + 3] = ii * 4 + 2;
-			indices[ii * 6 + 4] = ii * 4 + 3;
-			indices[ii * 6 + 5] = ii * 4 + 0;
-		}
-		this._gl.bufferData(34963,indices,35044);
-	}
-	,bindRenderTarget: function(texture) {
-		if(texture != null) {
-			this._gl.bindFramebuffer(36160,texture.framebuffer);
-			this._gl.viewport(0,0,texture.width,texture.height);
-		} else {
-			this._gl.bindFramebuffer(36160,null);
-			this._gl.viewport(0,0,this._backbufferWidth,this._backbufferHeight);
-		}
-		this._currentRenderTarget = texture;
-		this._lastRenderTarget = texture;
-	}
-	,__class__: flambe_platform_html_WebGLBatcher
-};
-var flambe_platform_html_WebGLGraphics = function(batcher,renderTarget) {
-	this._stateList = null;
-	this._inverseProjection = null;
-	if(flambe_platform_html_WebGLGraphics._scratchQuadArray == null) flambe_platform_html_WebGLGraphics._scratchQuadArray = new Float32Array(8);
-	this._batcher = batcher;
-	this._renderTarget = renderTarget;
-};
-$hxClasses["flambe.platform.html.WebGLGraphics"] = flambe_platform_html_WebGLGraphics;
-flambe_platform_html_WebGLGraphics.__name__ = true;
-flambe_platform_html_WebGLGraphics.__interfaces__ = [flambe_platform_InternalGraphics];
-flambe_platform_html_WebGLGraphics.prototype = {
-	save: function() {
-		var current = this._stateList;
-		var state = this._stateList.next;
-		if(state == null) {
-			state = new flambe_platform_html__$WebGLGraphics_DrawingState();
-			state.prev = current;
-			current.next = state;
-		}
-		current.matrix.clone(state.matrix);
-		state.alpha = current.alpha;
-		state.tintR = current.tintR;
-		state.tintG = current.tintG;
-		state.tintB = current.tintB;
-		state.blendMode = current.blendMode;
-		if(current.scissor != null) state.scissor = current.scissor.clone(state.scissor); else state.scissor = null;
-		this._stateList = state;
-	}
-	,transform: function(m00,m10,m01,m11,m02,m12) {
-		var state = this.getTopState();
-		flambe_platform_html_WebGLGraphics._scratchMatrix.set(m00,m10,m01,m11,m02,m12);
-		flambe_math_Matrix.multiply(state.matrix,flambe_platform_html_WebGLGraphics._scratchMatrix,state.matrix);
-	}
-	,restore: function() {
-		flambe_util_Assert.that(this._stateList.prev != null,"Can't restore without a previous save");
-		this._stateList = this._stateList.prev;
-	}
-	,drawTexture: function(texture,x,y) {
-		this.drawSubTexture(texture,x,y,0,0,texture.get_width(),texture.get_height());
-	}
-	,drawSubTexture: function(texture,destX,destY,sourceX,sourceY,sourceW,sourceH) {
-		var state = this.getTopState();
-		var texture1 = texture;
-		var root = texture1.root;
-		root.assertNotDisposed();
-		var pos = this.transformQuad(destX,destY,sourceW,sourceH);
-		var rootWidth = root.width;
-		var rootHeight = root.height;
-		var u1 = (texture1.rootX + sourceX) / rootWidth;
-		var v1 = (texture1.rootY + sourceY) / rootHeight;
-		var u2 = u1 + sourceW / rootWidth;
-		var v2 = v1 + sourceH / rootHeight;
-		var alpha = state.alpha;
-		var tintR = state.tintR;
-		var tintG = state.tintG;
-		var tintB = state.tintB;
-		var offset = this._batcher.prepareDrawTintedTexture(this._renderTarget,state.blendMode,state.scissor,texture1);
-		var data = this._batcher.data;
-		data[offset] = pos[0];
-		data[++offset] = pos[1];
-		data[++offset] = u1;
-		data[++offset] = v1;
-		data[++offset] = alpha;
-		data[++offset] = tintR;
-		data[++offset] = tintG;
-		data[++offset] = tintB;
-		data[++offset] = pos[2];
-		data[++offset] = pos[3];
-		data[++offset] = u2;
-		data[++offset] = v1;
-		data[++offset] = alpha;
-		data[++offset] = tintR;
-		data[++offset] = tintG;
-		data[++offset] = tintB;
-		data[++offset] = pos[4];
-		data[++offset] = pos[5];
-		data[++offset] = u2;
-		data[++offset] = v2;
-		data[++offset] = alpha;
-		data[++offset] = tintR;
-		data[++offset] = tintG;
-		data[++offset] = tintB;
-		data[++offset] = pos[6];
-		data[++offset] = pos[7];
-		data[++offset] = u1;
-		data[++offset] = v2;
-		data[++offset] = alpha;
-		data[++offset] = tintR;
-		data[++offset] = tintG;
-		data[++offset] = tintB;
-	}
-	,fillRect: function(color,x,y,width,height) {
-		var state = this.getTopState();
-		var pos = this.transformQuad(x,y,width,height);
-		var r = (color & 16711680) / 16711680;
-		var g = (color & 65280) / 65280;
-		var b = (color & 255) / 255;
-		var a = state.alpha;
-		var offset = this._batcher.prepareFillRect(this._renderTarget,state.blendMode,state.scissor);
-		var data = this._batcher.data;
-		data[offset] = pos[0];
-		data[++offset] = pos[1];
-		data[++offset] = r;
-		data[++offset] = g;
-		data[++offset] = b;
-		data[++offset] = a;
-		data[++offset] = pos[2];
-		data[++offset] = pos[3];
-		data[++offset] = r;
-		data[++offset] = g;
-		data[++offset] = b;
-		data[++offset] = a;
-		data[++offset] = pos[4];
-		data[++offset] = pos[5];
-		data[++offset] = r;
-		data[++offset] = g;
-		data[++offset] = b;
-		data[++offset] = a;
-		data[++offset] = pos[6];
-		data[++offset] = pos[7];
-		data[++offset] = r;
-		data[++offset] = g;
-		data[++offset] = b;
-		data[++offset] = a;
-	}
-	,multiplyAlpha: function(factor) {
-		this.getTopState().alpha *= factor;
-	}
-	,setBlendMode: function(blendMode) {
-		this.getTopState().blendMode = blendMode;
-	}
-	,setTint: function(r,g,b) {
-		this.getTopState().tintR = r;
-		this.getTopState().tintG = g;
-		this.getTopState().tintB = b;
-	}
-	,applyScissor: function(x,y,width,height) {
-		var state = this.getTopState();
-		var rect = flambe_platform_html_WebGLGraphics._scratchQuadArray;
-		rect[0] = x;
-		rect[1] = y;
-		rect[2] = x + width;
-		rect[3] = y + height;
-		state.matrix.transformArray(rect,4,rect);
-		this._inverseProjection.transformArray(rect,4,rect);
-		x = rect[0];
-		y = rect[1];
-		width = rect[2] - x;
-		height = rect[3] - y;
-		if(width < 0) {
-			x += width;
-			width = -width;
-		}
-		if(height < 0) {
-			y += height;
-			height = -height;
-		}
-		state.applyScissor(x,y,width,height);
-	}
-	,willRender: function() {
-		this._batcher.willRender();
-	}
-	,didRender: function() {
-		this._batcher.didRender();
-	}
-	,onResize: function(width,height) {
-		this._stateList = new flambe_platform_html__$WebGLGraphics_DrawingState();
-		var flip;
-		if(this._renderTarget != null) flip = -1; else flip = 1;
-		this._stateList.matrix.set(2 / width,0,0,flip * -2 / height,-1,flip);
-		this._inverseProjection = new flambe_math_Matrix();
-		this._inverseProjection.set(2 / width,0,0,2 / height,-1,-1);
-		this._inverseProjection.invert();
-	}
-	,getTopState: function() {
-		return this._stateList;
-	}
-	,transformQuad: function(x,y,width,height) {
-		var x2 = x + width;
-		var y2 = y + height;
-		var pos = flambe_platform_html_WebGLGraphics._scratchQuadArray;
-		pos[0] = x;
-		pos[1] = y;
-		pos[2] = x2;
-		pos[3] = y;
-		pos[4] = x2;
-		pos[5] = y2;
-		pos[6] = x;
-		pos[7] = y2;
-		this.getTopState().matrix.transformArray(pos,8,pos);
-		return pos;
-	}
-	,__class__: flambe_platform_html_WebGLGraphics
-};
-var flambe_platform_html__$WebGLGraphics_DrawingState = function() {
-	this.next = null;
-	this.prev = null;
-	this.scissor = null;
-	this.matrix = new flambe_math_Matrix();
-	this.alpha = 1;
-	this.tintR = 1.0;
-	this.tintG = 1.0;
-	this.tintB = 1.0;
-	this.blendMode = flambe_display_BlendMode.Normal;
-};
-$hxClasses["flambe.platform.html._WebGLGraphics.DrawingState"] = flambe_platform_html__$WebGLGraphics_DrawingState;
-flambe_platform_html__$WebGLGraphics_DrawingState.__name__ = true;
-flambe_platform_html__$WebGLGraphics_DrawingState.prototype = {
-	applyScissor: function(x,y,width,height) {
-		if(this.scissor != null) {
-			var x1 = flambe_math_FMath.max(this.scissor.x,x);
-			var y1 = flambe_math_FMath.max(this.scissor.y,y);
-			var x2 = flambe_math_FMath.min(this.scissor.x + this.scissor.width,x + width);
-			var y2 = flambe_math_FMath.min(this.scissor.y + this.scissor.height,y + height);
-			x = x1;
-			y = y1;
-			width = x2 - x1;
-			height = y2 - y1;
-		} else this.scissor = new flambe_math_Rectangle();
-		this.scissor.set(Math.round(x),Math.round(y),Math.round(width),Math.round(height));
-	}
-	,__class__: flambe_platform_html__$WebGLGraphics_DrawingState
-};
-var flambe_platform_html_WebGLRenderer = function(stage,gl) {
-	var _g = this;
-	this._hasGPU = new flambe_util_Value(true);
-	this.gl = gl;
-	gl.canvas.addEventListener("webglcontextlost",function(event) {
-		event.preventDefault();
-		flambe_Log.warn("WebGL context lost");
-		_g._hasGPU.set__(false);
-	},false);
-	gl.canvas.addEventListener("webglcontextrestore",function(event1) {
-		flambe_Log.warn("WebGL context restored");
-		_g.init();
-		_g._hasGPU.set__(true);
-	},false);
-	stage.resize.connect($bind(this,this.onResize));
-	this.init();
-};
-$hxClasses["flambe.platform.html.WebGLRenderer"] = flambe_platform_html_WebGLRenderer;
-flambe_platform_html_WebGLRenderer.__name__ = true;
-flambe_platform_html_WebGLRenderer.__interfaces__ = [flambe_platform_InternalRenderer];
-flambe_platform_html_WebGLRenderer.prototype = {
-	get_type: function() {
-		return flambe_subsystem_RendererType.WebGL;
-	}
-	,createTextureFromImage: function(image) {
-		if(this.gl.isContextLost()) return null;
-		var root = new flambe_platform_html_WebGLTextureRoot(this,image.width,image.height);
-		root.uploadImageData(image);
-		return root.createTexture(image.width,image.height);
-	}
-	,getCompressedTextureFormats: function() {
-		return [];
-	}
-	,createCompressedTexture: function(format,data) {
-		if(this.gl.isContextLost()) return null;
-		flambe_util_Assert.fail();
-		return null;
-	}
-	,willRender: function() {
-		this.graphics.willRender();
-	}
-	,didRender: function() {
-		this.graphics.didRender();
-	}
-	,onResize: function() {
-		var width = this.gl.canvas.width;
-		var height = this.gl.canvas.height;
-		this.batcher.resizeBackbuffer(width,height);
-		this.graphics.onResize(width,height);
-	}
-	,init: function() {
-		this.batcher = new flambe_platform_html_WebGLBatcher(this.gl);
-		this.graphics = new flambe_platform_html_WebGLGraphics(this.batcher,null);
-		this.onResize();
-	}
-	,__class__: flambe_platform_html_WebGLRenderer
-	,__properties__: {get_type:"get_type"}
-};
-var flambe_platform_html_WebGLTexture = function(root,width,height) {
-	flambe_platform_BasicTexture.call(this,root,width,height);
-};
-$hxClasses["flambe.platform.html.WebGLTexture"] = flambe_platform_html_WebGLTexture;
-flambe_platform_html_WebGLTexture.__name__ = true;
-flambe_platform_html_WebGLTexture.__super__ = flambe_platform_BasicTexture;
-flambe_platform_html_WebGLTexture.prototype = $extend(flambe_platform_BasicTexture.prototype,{
-	__class__: flambe_platform_html_WebGLTexture
-});
-var flambe_platform_html_WebGLTextureRoot = function(renderer,width,height) {
-	this._graphics = null;
-	this.framebuffer = null;
-	flambe_platform_BasicAsset.call(this);
-	this._renderer = renderer;
-	this.width = flambe_math_FMath.max(2,flambe_platform_MathUtil.nextPowerOfTwo(width));
-	this.height = flambe_math_FMath.max(2,flambe_platform_MathUtil.nextPowerOfTwo(height));
-	var gl = renderer.gl;
-	this.nativeTexture = gl.createTexture();
-	renderer.batcher.bindTexture(this.nativeTexture);
-	gl.texParameteri(3553,10242,33071);
-	gl.texParameteri(3553,10243,33071);
-	gl.texParameteri(3553,10240,9729);
-	gl.texParameteri(3553,10241,9985);
-};
-$hxClasses["flambe.platform.html.WebGLTextureRoot"] = flambe_platform_html_WebGLTextureRoot;
-flambe_platform_html_WebGLTextureRoot.__name__ = true;
-flambe_platform_html_WebGLTextureRoot.__interfaces__ = [flambe_platform_TextureRoot];
-flambe_platform_html_WebGLTextureRoot.drawBorder = function(canvas,width,height) {
-	var ctx = canvas.getContext("2d");
-	ctx.drawImage(canvas,width - 1,0,1,height,width,0,1,height);
-	ctx.drawImage(canvas,0,height - 1,width,1,0,height,width,1);
-};
-flambe_platform_html_WebGLTextureRoot.__super__ = flambe_platform_BasicAsset;
-flambe_platform_html_WebGLTextureRoot.prototype = $extend(flambe_platform_BasicAsset.prototype,{
-	createTexture: function(width,height) {
-		return new flambe_platform_html_WebGLTexture(this,width,height);
-	}
-	,uploadImageData: function(image) {
-		this.assertNotDisposed();
-		if(this.width != image.width || this.height != image.height) {
-			var resized = flambe_platform_html_HtmlUtil.createEmptyCanvas(this.width,this.height);
-			resized.getContext("2d").drawImage(image,0,0);
-			flambe_platform_html_WebGLTextureRoot.drawBorder(resized,image.width,image.height);
-			image = resized;
-		}
-		this._renderer.batcher.bindTexture(this.nativeTexture);
-		var gl = this._renderer.gl;
-		gl.texImage2D(3553,0,6408,6408,5121,image);
-		gl.generateMipmap(3553);
-	}
-	,copyFrom: function(that) {
-		this.nativeTexture = that.nativeTexture;
-		this.framebuffer = that.framebuffer;
-		this.width = that.width;
-		this.height = that.height;
-		this._graphics = that._graphics;
-	}
-	,onDisposed: function() {
-		var batcher = this._renderer.batcher;
-		batcher.deleteTexture(this);
-		if(this.framebuffer != null) batcher.deleteFramebuffer(this);
-		this.nativeTexture = null;
-		this.framebuffer = null;
-		this._graphics = null;
-	}
-	,__class__: flambe_platform_html_WebGLTextureRoot
-});
-var flambe_platform_shader_ShaderGL = function(gl,vertSource,fragSource) {
-	fragSource = ["#ifdef GL_ES","precision mediump float;","#endif"].join("\n") + "\n" + fragSource;
-	this._gl = gl;
-	this._program = gl.createProgram();
-	gl.attachShader(this._program,flambe_platform_shader_ShaderGL.createShader(gl,35633,vertSource));
-	gl.attachShader(this._program,flambe_platform_shader_ShaderGL.createShader(gl,35632,fragSource));
-	gl.linkProgram(this._program);
-	gl.useProgram(this._program);
-	if(!gl.getProgramParameter(this._program,35714)) flambe_Log.error("Error linking shader program",["log",gl.getProgramInfoLog(this._program)]);
-};
-$hxClasses["flambe.platform.shader.ShaderGL"] = flambe_platform_shader_ShaderGL;
-flambe_platform_shader_ShaderGL.__name__ = true;
-flambe_platform_shader_ShaderGL.createShader = function(gl,type,source) {
-	var shader = gl.createShader(type);
-	gl.shaderSource(shader,source);
-	gl.compileShader(shader);
-	if(!gl.getShaderParameter(shader,35713)) {
-		var typeName;
-		if(type == 35633) typeName = "vertex"; else typeName = "fragment";
-		flambe_Log.error("Error compiling " + typeName + " shader",["log",gl.getShaderInfoLog(shader)]);
-	}
-	return shader;
-};
-flambe_platform_shader_ShaderGL.prototype = {
-	useProgram: function() {
-		this._gl.useProgram(this._program);
-	}
-	,prepare: function() {
-		flambe_util_Assert.fail("abstract");
-	}
-	,getAttribLocation: function(name) {
-		var loc = this._gl.getAttribLocation(this._program,name);
-		flambe_util_Assert.that(loc >= 0,"Missing attribute",["name",name]);
-		return loc;
-	}
-	,getUniformLocation: function(name) {
-		var loc = this._gl.getUniformLocation(this._program,name);
-		flambe_util_Assert.that(loc != null,"Missing uniform",["name",name]);
-		return loc;
-	}
-	,__class__: flambe_platform_shader_ShaderGL
-};
-var flambe_platform_shader_DrawPatternGL = function(gl) {
-	flambe_platform_shader_ShaderGL.call(this,gl,["attribute highp vec2 a_pos;","attribute mediump vec2 a_uv;","attribute lowp float a_alpha;","varying mediump vec2 v_uv;","varying lowp float v_alpha;","void main (void) {","v_uv = a_uv;","v_alpha = a_alpha;","gl_Position = vec4(a_pos, 0, 1);","}"].join("\n"),["varying mediump vec2 v_uv;","varying lowp float v_alpha;","uniform lowp sampler2D u_texture;","uniform mediump vec4 u_region;","void main (void) {","gl_FragColor = texture2D(u_texture, u_region.xy + mod(v_uv, u_region.zw)) * v_alpha;","}"].join("\n"));
-	this.a_pos = this.getAttribLocation("a_pos");
-	this.a_uv = this.getAttribLocation("a_uv");
-	this.a_alpha = this.getAttribLocation("a_alpha");
-	this.u_texture = this.getUniformLocation("u_texture");
-	this.u_region = this.getUniformLocation("u_region");
-	this.setTexture(0);
-};
-$hxClasses["flambe.platform.shader.DrawPatternGL"] = flambe_platform_shader_DrawPatternGL;
-flambe_platform_shader_DrawPatternGL.__name__ = true;
-flambe_platform_shader_DrawPatternGL.__super__ = flambe_platform_shader_ShaderGL;
-flambe_platform_shader_DrawPatternGL.prototype = $extend(flambe_platform_shader_ShaderGL.prototype,{
-	setTexture: function(unit) {
-		this._gl.uniform1i(this.u_texture,unit);
-	}
-	,prepare: function() {
-		this._gl.enableVertexAttribArray(this.a_pos);
-		this._gl.enableVertexAttribArray(this.a_uv);
-		this._gl.enableVertexAttribArray(this.a_alpha);
-		var bytesPerFloat = 4;
-		var stride = 5 * bytesPerFloat;
-		this._gl.vertexAttribPointer(this.a_pos,2,5126,false,stride,0 * bytesPerFloat);
-		this._gl.vertexAttribPointer(this.a_uv,2,5126,false,stride,2 * bytesPerFloat);
-		this._gl.vertexAttribPointer(this.a_alpha,1,5126,false,stride,4 * bytesPerFloat);
-	}
-	,__class__: flambe_platform_shader_DrawPatternGL
-});
-var flambe_platform_shader_DrawTintedPatternGL = function(gl) {
-	flambe_platform_shader_ShaderGL.call(this,gl,["attribute highp vec2 a_pos;","attribute mediump vec2 a_uv;","attribute lowp float a_alpha;","attribute lowp vec3 a_tint;","varying mediump vec2 v_uv;","varying lowp float v_alpha;","varying lowp vec3 v_tint;","void main (void) {","v_uv = a_uv;","v_alpha = a_alpha;","v_tint = a_tint;","gl_Position = vec4(a_pos, 0, 1);","}"].join("\n"),["varying mediump vec2 v_uv;","varying lowp float v_alpha;","varying lowp vec3 v_tint;","uniform lowp sampler2D u_texture;","uniform mediump vec4 u_region;","void main (void) {","vec4 temp = texture2D(u_texture, u_region.xy + mod(v_uv, u_region.zw));","temp.xyz *= v_tint;","gl_FragColor = temp * v_alpha;","}"].join("\n"));
-	this.a_pos = this.getAttribLocation("a_pos");
-	this.a_uv = this.getAttribLocation("a_uv");
-	this.a_alpha = this.getAttribLocation("a_alpha");
-	this.a_tint = this.getAttribLocation("a_tint");
-	this.u_texture = this.getUniformLocation("u_texture");
-	this.u_region = this.getUniformLocation("u_region");
-	this.setTexture(0);
-};
-$hxClasses["flambe.platform.shader.DrawTintedPatternGL"] = flambe_platform_shader_DrawTintedPatternGL;
-flambe_platform_shader_DrawTintedPatternGL.__name__ = true;
-flambe_platform_shader_DrawTintedPatternGL.__super__ = flambe_platform_shader_ShaderGL;
-flambe_platform_shader_DrawTintedPatternGL.prototype = $extend(flambe_platform_shader_ShaderGL.prototype,{
-	setTexture: function(unit) {
-		this._gl.uniform1i(this.u_texture,unit);
-	}
-	,setRegion: function(x,y,width,height) {
-		this._gl.uniform4f(this.u_region,x,y,width,height);
-	}
-	,prepare: function() {
-		this._gl.enableVertexAttribArray(this.a_pos);
-		this._gl.enableVertexAttribArray(this.a_uv);
-		this._gl.enableVertexAttribArray(this.a_alpha);
-		this._gl.enableVertexAttribArray(this.a_tint);
-		var bytesPerFloat = 4;
-		var stride = bytesPerFloat << 3;
-		this._gl.vertexAttribPointer(this.a_pos,2,5126,false,stride,0 * bytesPerFloat);
-		this._gl.vertexAttribPointer(this.a_uv,2,5126,false,stride,bytesPerFloat * 2);
-		this._gl.vertexAttribPointer(this.a_alpha,1,5126,false,stride,bytesPerFloat * 4);
-		this._gl.vertexAttribPointer(this.a_tint,3,5126,false,stride,bytesPerFloat * 5);
-	}
-	,__class__: flambe_platform_shader_DrawTintedPatternGL
-});
-var flambe_platform_shader_DrawTextureGL = function(gl) {
-	flambe_platform_shader_ShaderGL.call(this,gl,["attribute highp vec2 a_pos;","attribute mediump vec2 a_uv;","attribute lowp float a_alpha;","varying mediump vec2 v_uv;","varying lowp float v_alpha;","void main (void) {","v_uv = a_uv;","v_alpha = a_alpha;","gl_Position = vec4(a_pos, 0, 1);","}"].join("\n"),["varying mediump vec2 v_uv;","varying lowp float v_alpha;","uniform lowp sampler2D u_texture;","void main (void) {","gl_FragColor = texture2D(u_texture, v_uv) * v_alpha;","}"].join("\n"));
-	this.a_pos = this.getAttribLocation("a_pos");
-	this.a_uv = this.getAttribLocation("a_uv");
-	this.a_alpha = this.getAttribLocation("a_alpha");
-	this.u_texture = this.getUniformLocation("u_texture");
-	this.setTexture(0);
-};
-$hxClasses["flambe.platform.shader.DrawTextureGL"] = flambe_platform_shader_DrawTextureGL;
-flambe_platform_shader_DrawTextureGL.__name__ = true;
-flambe_platform_shader_DrawTextureGL.__super__ = flambe_platform_shader_ShaderGL;
-flambe_platform_shader_DrawTextureGL.prototype = $extend(flambe_platform_shader_ShaderGL.prototype,{
-	setTexture: function(unit) {
-		this._gl.uniform1i(this.u_texture,unit);
-	}
-	,prepare: function() {
-		this._gl.enableVertexAttribArray(this.a_pos);
-		this._gl.enableVertexAttribArray(this.a_uv);
-		this._gl.enableVertexAttribArray(this.a_alpha);
-		var bytesPerFloat = 4;
-		var stride = 5 * bytesPerFloat;
-		this._gl.vertexAttribPointer(this.a_pos,2,5126,false,stride,0 * bytesPerFloat);
-		this._gl.vertexAttribPointer(this.a_uv,2,5126,false,stride,2 * bytesPerFloat);
-		this._gl.vertexAttribPointer(this.a_alpha,1,5126,false,stride,4 * bytesPerFloat);
-	}
-	,__class__: flambe_platform_shader_DrawTextureGL
-});
-var flambe_platform_shader_DrawTextureWithTintGL = function(gl) {
-	flambe_platform_shader_ShaderGL.call(this,gl,["attribute highp vec2 a_pos;","attribute mediump vec2 a_uv;","attribute lowp float a_alpha;","attribute lowp vec3 a_tint;","varying mediump vec2 v_uv;","varying lowp float v_alpha;","varying lowp vec3 v_tint;","void main (void) {","v_uv = a_uv;","v_alpha = a_alpha;","v_tint = a_tint;","gl_Position = vec4(a_pos, 0, 1);","}"].join("\n"),["varying mediump vec2 v_uv;","varying lowp float v_alpha;","varying lowp vec3 v_tint;","uniform lowp sampler2D u_texture;","void main (void) {","vec4 temp = texture2D(u_texture, v_uv);","temp.xyz *= v_tint;","gl_FragColor = temp * v_alpha;","}"].join("\n"));
-	this.a_pos = this.getAttribLocation("a_pos");
-	this.a_uv = this.getAttribLocation("a_uv");
-	this.a_alpha = this.getAttribLocation("a_alpha");
-	this.a_tint = this.getAttribLocation("a_tint");
-	this.u_texture = this.getUniformLocation("u_texture");
-	this.setTexture(0);
-};
-$hxClasses["flambe.platform.shader.DrawTextureWithTintGL"] = flambe_platform_shader_DrawTextureWithTintGL;
-flambe_platform_shader_DrawTextureWithTintGL.__name__ = true;
-flambe_platform_shader_DrawTextureWithTintGL.__super__ = flambe_platform_shader_ShaderGL;
-flambe_platform_shader_DrawTextureWithTintGL.prototype = $extend(flambe_platform_shader_ShaderGL.prototype,{
-	setTexture: function(unit) {
-		this._gl.uniform1i(this.u_texture,unit);
-	}
-	,prepare: function() {
-		this._gl.enableVertexAttribArray(this.a_pos);
-		this._gl.enableVertexAttribArray(this.a_uv);
-		this._gl.enableVertexAttribArray(this.a_alpha);
-		this._gl.enableVertexAttribArray(this.a_tint);
-		var bytesPerFloat = 4;
-		var stride = bytesPerFloat << 3;
-		this._gl.vertexAttribPointer(this.a_pos,2,5126,false,stride,0 * bytesPerFloat);
-		this._gl.vertexAttribPointer(this.a_uv,2,5126,false,stride,bytesPerFloat * 2);
-		this._gl.vertexAttribPointer(this.a_alpha,1,5126,false,stride,bytesPerFloat * 4);
-		this._gl.vertexAttribPointer(this.a_tint,3,5126,false,stride,bytesPerFloat * 5);
-	}
-	,__class__: flambe_platform_shader_DrawTextureWithTintGL
-});
-var flambe_platform_shader_FillRectGL = function(gl) {
-	flambe_platform_shader_ShaderGL.call(this,gl,["attribute highp vec2 a_pos;","attribute lowp vec3 a_rgb;","attribute lowp float a_alpha;","varying lowp vec4 v_color;","void main (void) {","v_color = vec4(a_rgb*a_alpha, a_alpha);","gl_Position = vec4(a_pos, 0, 1);","}"].join("\n"),["varying lowp vec4 v_color;","void main (void) {","gl_FragColor = v_color;","}"].join("\n"));
-	this.a_pos = this.getAttribLocation("a_pos");
-	this.a_rgb = this.getAttribLocation("a_rgb");
-	this.a_alpha = this.getAttribLocation("a_alpha");
-};
-$hxClasses["flambe.platform.shader.FillRectGL"] = flambe_platform_shader_FillRectGL;
-flambe_platform_shader_FillRectGL.__name__ = true;
-flambe_platform_shader_FillRectGL.__super__ = flambe_platform_shader_ShaderGL;
-flambe_platform_shader_FillRectGL.prototype = $extend(flambe_platform_shader_ShaderGL.prototype,{
-	prepare: function() {
-		this._gl.enableVertexAttribArray(this.a_pos);
-		this._gl.enableVertexAttribArray(this.a_rgb);
-		this._gl.enableVertexAttribArray(this.a_alpha);
-		var bytesPerFloat = 4;
-		var stride = 6 * bytesPerFloat;
-		this._gl.vertexAttribPointer(this.a_pos,2,5126,false,stride,0 * bytesPerFloat);
-		this._gl.vertexAttribPointer(this.a_rgb,3,5126,false,stride,2 * bytesPerFloat);
-		this._gl.vertexAttribPointer(this.a_alpha,1,5126,false,stride,5 * bytesPerFloat);
-	}
-	,__class__: flambe_platform_shader_FillRectGL
-});
 var flambe_scene_Director = function() {
 	this._transitor = null;
 };
@@ -6012,7 +5210,7 @@ flambe_scene_Director.__name__ = true;
 flambe_scene_Director.__super__ = flambe_Component;
 flambe_scene_Director.prototype = $extend(flambe_Component.prototype,{
 	get_name: function() {
-		return "Director_10";
+		return "Director_8";
 	}
 	,onAdded: function() {
 		this.owner.addChild(this._root);
@@ -6039,7 +5237,7 @@ flambe_scene_Director.prototype = $extend(flambe_Component.prototype,{
 	}
 	,show: function(scene) {
 		var events;
-		var component = scene.getComponent("Scene_12");
+		var component = scene.getComponent("Scene_9");
 		events = component;
 		if(events != null) events.shown.emit();
 	}
@@ -6048,7 +5246,7 @@ flambe_scene_Director.prototype = $extend(flambe_Component.prototype,{
 		while(ii > 0) {
 			var scene = this.scenes[--ii];
 			var comp;
-			var component = scene.getComponent("Scene_12");
+			var component = scene.getComponent("Scene_9");
 			comp = component;
 			if(comp == null || comp.opaque) break;
 		}
@@ -6085,7 +5283,7 @@ flambe_scene_Scene.__name__ = true;
 flambe_scene_Scene.__super__ = flambe_Component;
 flambe_scene_Scene.prototype = $extend(flambe_Component.prototype,{
 	get_name: function() {
-		return "Scene_12";
+		return "Scene_9";
 	}
 	,__class__: flambe_scene_Scene
 });
@@ -6778,20 +5976,6 @@ js_Boot.__instanceof = function(o,cl) {
 		return o.__enum__ == cl;
 	}
 };
-var js_html__$CanvasElement_CanvasUtil = function() { };
-$hxClasses["js.html._CanvasElement.CanvasUtil"] = js_html__$CanvasElement_CanvasUtil;
-js_html__$CanvasElement_CanvasUtil.__name__ = true;
-js_html__$CanvasElement_CanvasUtil.getContextWebGL = function(canvas,attribs) {
-	var _g = 0;
-	var _g1 = ["webgl","experimental-webgl"];
-	while(_g < _g1.length) {
-		var name = _g1[_g];
-		++_g;
-		var ctx = canvas.getContext(name,attribs);
-		if(ctx != null) return ctx;
-	}
-	return null;
-};
 var webaudio_Main = function() {
 	console.log("MonoSynth");
 	this.keyboardNotes = new webaudio_utils_KeyboardNotes(1);
@@ -7065,17 +6249,17 @@ webaudio_synth_MonoSynth.prototype = {
 		if(null != null) null.connect(this1);
 		if(null != null) this1.connect(null);
 		this.osc0Pan = this1;
-		var this11;
-		this11 = this.context.createPanner();
-		this11.panningModel = "equalpower";
+		var this2;
+		this2 = this.context.createPanner();
+		this2.panningModel = "equalpower";
 		var x1 = 0 * 3.141592653589793 / 2;
 		var z1 = x1 + 3.141592653589793 / 2;
 		if(z1 > 3.141592653589793 / 2) z1 = 3.141592653589793 - z1;
-		this11.setPosition(Math.sin(x1),0,Math.sin(z1));
+		this2.setPosition(Math.sin(x1),0,Math.sin(z1));
 		0;
-		if(null != null) null.connect(this11);
-		if(null != null) this11.connect(null);
-		this.osc1Pan = this11;
+		if(null != null) null.connect(this2);
+		if(null != null) this2.connect(null);
+		this.osc1Pan = this2;
 		this.osc0Pan.connect(this.phaseDelay);
 		this.osc1Pan.connect(this.adsr.node);
 		this.osc0Level = this.context.createGain();
@@ -7116,14 +6300,14 @@ webaudio_synth_MonoSynth.prototype = {
 			this1.frequency.setValueAtTime(this1.frequency.value,when);
 			this1.frequency.exponentialRampToValueAtTime(freq1,when + portamentoTime);
 		} else this1.frequency.setValueAtTime(freq1,when);
-		var this11 = this.osc1.get_oscillator();
+		var this2 = this.osc1.get_oscillator();
 		var freq2 = this.osc1Freq;
 		var portamentoTime1 = this.osc1_portamentoTime;
-		this11.frequency.cancelScheduledValues(when);
-		if(portamentoTime1 > 0 && !retrigger && freq2 != this11.frequency.value) {
-			this11.frequency.setValueAtTime(this11.frequency.value,when);
-			this11.frequency.exponentialRampToValueAtTime(freq2,when + portamentoTime1);
-		} else this11.frequency.setValueAtTime(freq2,when);
+		this2.frequency.cancelScheduledValues(when);
+		if(portamentoTime1 > 0 && !retrigger && freq2 != this2.frequency.value) {
+			this2.frequency.setValueAtTime(this2.frequency.value,when);
+			this2.frequency.exponentialRampToValueAtTime(freq2,when + portamentoTime1);
+		} else this2.frequency.setValueAtTime(freq2,when);
 		if(!this.noteIsOn || retrigger) {
 			this.adsr.on(when,velocity,retrigger);
 			this.filter.on(when,retrigger);
@@ -7135,8 +6319,8 @@ webaudio_synth_MonoSynth.prototype = {
 		this.filter.off(when);
 		var this1 = this.osc0.get_oscillator();
 		this1.frequency.cancelScheduledValues(r);
-		var this11 = this.osc1.get_oscillator();
-		this11.frequency.cancelScheduledValues(r);
+		var this2 = this.osc1.get_oscillator();
+		this2.frequency.cancelScheduledValues(r);
 		this.phaseDelay.delayTime.cancelScheduledValues(r);
 		this.noteIsOn = false;
 	}
@@ -7282,20 +6466,20 @@ webaudio_synth_MonoSynth.prototype = {
 			}(this))).frequency.cancelScheduledValues(now);
 			((function($this) {
 				var $r;
-				var this11 = $this.osc0.get_oscillator();
-				$r = this11;
+				var this2 = $this.osc0.get_oscillator();
+				$r = this2;
 				return $r;
 			}(this))).frequency.exponentialRampToValueAtTime(f0,now + 0.016666666666666666);
 			((function($this) {
 				var $r;
-				var this12 = $this.osc1.get_oscillator();
-				$r = this12;
+				var this3 = $this.osc1.get_oscillator();
+				$r = this3;
 				return $r;
 			}(this))).frequency.cancelScheduledValues(now);
 			((function($this) {
 				var $r;
-				var this13 = $this.osc1.get_oscillator();
-				$r = this13;
+				var this4 = $this.osc1.get_oscillator();
+				$r = this4;
 				return $r;
 			}(this))).frequency.exponentialRampToValueAtTime(f1,now + 0.016666666666666666);
 			this.osc0Freq = f0;
@@ -7317,8 +6501,8 @@ webaudio_synth_MonoSynth.prototype = {
 			}(this))).frequency.cancelScheduledValues(now);
 			((function($this) {
 				var $r;
-				var this11 = $this.osc0.get_oscillator();
-				$r = this11;
+				var this2 = $this.osc0.get_oscillator();
+				$r = this2;
 				return $r;
 			}(this))).frequency.exponentialRampToValueAtTime(f,now + 0.016666666666666666);
 			this.osc0Freq = f;
@@ -7339,8 +6523,8 @@ webaudio_synth_MonoSynth.prototype = {
 			}(this))).frequency.cancelScheduledValues(now);
 			((function($this) {
 				var $r;
-				var this11 = $this.osc1.get_oscillator();
-				$r = this11;
+				var this2 = $this.osc1.get_oscillator();
+				$r = this2;
 				return $r;
 			}(this))).frequency.exponentialRampToValueAtTime(f,now + 0.016666666666666666);
 			this.osc1Freq = f;
@@ -7437,6 +6621,9 @@ webaudio_synth_data_Presets.init = function() {
 	if(webaudio_synth_data_Presets.presets == null) {
 		webaudio_synth_data_Presets.presets = new haxe_ds_StringMap();
 		webaudio_synth_data_Presets.presets.set("Squasaw","{\"outputLevel\":0.4599999999999995, \"pitchBend\":0.5, \"osc0Type\":0.6666666666666666, \"osc0Level\":0.43999999999999995, \"osc0Pan\":0.5, \"osc0Slide\":0.0990990990990991, \"osc0Random\":0.060000000000000005, \"osc0Detune\":0.5, \"osc1Type\":0.31250000000000006, \"osc1Level\":0.43999999999999995, \"osc1Pan\":0.5, \"osc1Slide\":0.05999999999999996, \"osc1Random\":0.059999999999999984, \"osc1Detune\":0.5, \"oscPhase\":0, \"adsrAttack\":0.01599999999999999, \"adsrDecay\":0.029999999999999968, \"adsrSustain\":0.5800000000000003, \"adsrRelease\":0.03500000000000001, \"filterType\":0, \"filterFrequency\":0.06000000000000005, \"filterQ\":0.39999999999999947, \"filterAttack\":0.02299999999999998, \"filterRelease\":0.03, \"filterRange\":1, \"distortionPregain\":0, \"distortionWaveshaperAmount\":0.7600000000000002, \"distortionBits\":0.4782608695652174, \"distortionRateReduction\":0, \"delayLevel\":0.44999999999999957, \"delayTime\":0.2329332933293329, \"delayFeedback\":0.30002500250025005, \"delayLFPFreq\":0.22999999999999926, \"delayLFPQ\":0 }");
+		webaudio_synth_data_Presets.presets.set("Mesanoir","{\"outputLevel\":0.35499718878418207,\"pitchBend\":0.5,\"osc0Type\":0.07624358251883545,\"osc0Level\":0.48556221509352326,\"osc0Pan\":0.09680561296641832,\"osc0Slide\":0.07077055245319075,\"osc0Random\":0.4575806651264429,\"osc0Detune\":0.8025450077839196,\"osc1Type\":0.006721058571389937,\"osc1Level\":0.8622063202783465,\"osc1Pan\":0.49720164434984326,\"osc1Slide\":0.2541634194334752,\"osc1Random\":0.5048075593076646,\"osc1Detune\":0.12225819798186421,\"oscPhase\":0.38200558442622423,\"adsrAttack\":0.7889877760782837,\"adsrDecay\":0.48192048855125913,\"adsrSustain\":0.9429306462407112,\"adsrRelease\":0.1279276450164617,\"filterType\":0.24608794087544084,\"filterFrequency\":0.19239046958461392,\"filterQ\":0.970282814583691,\"filterAttack\":0.2982791615650058,\"filterRelease\":0.0030650437809527364,\"filterRange\":0.7127542118541896,\"distortionPregain\":0.3336319421604276,\"distortionWaveshaperAmount\":0.006667260080575943,\"distortionBits\":0.47723340376725654,\"distortionRateReduction\":0.04437419539317489,\"delayLevel\":0.2907389444857835,\"delayTime\":0.6230580973534239,\"delayFeedback\":0.5186913178583821,\"delayLFPFreq\":0.20329118954390266,\"delayLFPQ\":0.47996358598494304}");
+		webaudio_synth_data_Presets.presets.set("Waaaaahp","{\"outputLevel\":0.46341293396428185,\"pitchBend\":0.5,\"osc0Type\":0.28064297067386834,\"osc0Level\":0.1763532031327486,\"osc0Pan\":0.3412646828964354,\"osc0Slide\":0.4078379269471175,\"osc0Random\":0.1384059335105121,\"osc0Detune\":0.34210485965013504,\"osc1Type\":0.20411056885495782,\"osc1Level\":0.350563233718276,\"osc1Pan\":0.7297513120062648,\"osc1Slide\":0.7983276528088159,\"osc1Random\":0.012613496277481318,\"osc1Detune\":0.34069081442430615,\"oscPhase\":0.3753971047885717,\"adsrAttack\":0.12518607841804621,\"adsrDecay\":0.21071386579424134,\"adsrSustain\":0.43955529714003205,\"adsrRelease\":0.06789803653955451,\"filterType\":0.2604490057565272,\"filterFrequency\":0.022565599996596575,\"filterQ\":0.8418617065744975,\"filterAttack\":0.13229004982858905,\"filterRelease\":0.49194553755223747,\"filterRange\":0.8064281712286174,\"distortionPregain\":0.08015941549092531,\"distortionWaveshaperAmount\":0.5855826642364264,\"distortionBits\":0.7561208223227576,\"distortionRateReduction\":0.23606798753142325,\"delayLevel\":0.6047618193551898,\"delayTime\":0.4965090568645252,\"delayFeedback\":0.7778823028968429,\"delayLFPFreq\":0.492137948796153,\"delayLFPQ\":0.12913286697766393}");
+		webaudio_synth_data_Presets.presets.set("LongTime","{\"outputLevel\":0.5423528824560349,\"pitchBend\":0.5,\"osc0Type\":0.508481303229928,\"osc0Level\":0.2903344490192831,\"osc0Pan\":0.16695982096716755,\"osc0Slide\":0.008216620494217342,\"osc0Random\":0.39255549060180783,\"osc0Detune\":0.22689511254429817,\"osc1Type\":0.216489977572627,\"osc1Level\":0.1760277607850732,\"osc1Pan\":0.8199999999999998,\"osc1Slide\":0.6387598080778711,\"osc1Random\":0.50296380976215,\"osc1Detune\":0.5358693818561733,\"oscPhase\":0.42055099362507464,\"adsrAttack\":0.5636245479620992,\"adsrDecay\":1,\"adsrSustain\":0.7999999999999998,\"adsrRelease\":0.2141217650845646,\"filterType\":0.04347413685172796,\"filterFrequency\":0.019138042908162144,\"filterQ\":0.12306910322332176,\"filterAttack\":0.22199134798720488,\"filterRelease\":0.04813646869733934,\"filterRange\":0.7784414859488606,\"distortionPregain\":0.19512580804526802,\"distortionWaveshaperAmount\":0.13458260847255588,\"distortionBits\":0.6648063724253165,\"distortionRateReduction\":0.5591793827526272,\"delayLevel\":0.7884579640813172,\"delayTime\":0.7814509899823321,\"delayFeedback\":0.6427875032929922,\"delayLFPFreq\":0.09458289267495279,\"delayLFPQ\":0.34001128153228544}");
 		webaudio_synth_data_Presets.presets.set("Wet Sine","{\"outputLevel\":1,\"pitchBend\":0.5,\"osc0Type\":0,\"osc0Level\":0.5,\"osc0Pan\":0.5,\"osc0Slide\":0.0990990990990991,\"osc0Random\":0.04,\"osc0Detune\":0.5,\"osc1Type\":0,\"osc1Level\":0.5,\"osc1Pan\":0.5,\"osc1Slide\":0.0990990990990991,\"osc1Random\":0.04,\"osc1Detune\":0.5,\"oscPhase\":0,\"adsrAttack\":0.07999999999999999,\"adsrDecay\":0.15,\"adsrSustain\":0.49999999999999956,\"adsrRelease\":1,\"filterType\":0,\"filterFrequency\":0.17999999999999935,\"filterQ\":0.8399999999999999,\"filterAttack\":0.13499999999999998,\"filterRelease\":0.7300000000000003,\"filterRange\":1,\"distortionPregain\":0.09999999999999999,\"distortionWaveshaperAmount\":0.7000000000000002,\"distortionBits\":0.13826086956521716,\"distortionRateReduction\":0,\"delayLevel\":0.14999999999999986,\"delayTime\":0.9729332933293332,\"delayFeedback\":0.4500250025002502,\"delayLFPFreq\":0.19999999999999982,\"delayLFPQ\":0}");
 		webaudio_synth_data_Presets.presets.set("Floppy Bits","{\"outputLevel\":0.4399999999999995,\"pitchBend\":0.5,\"osc0Type\":0,\"osc0Level\":1,\"osc0Pan\":0.5,\"osc0Slide\":0.0990990990990991,\"osc0Random\":0,\"osc0Detune\":0.5,\"osc1Type\":0,\"osc1Level\":1,\"osc1Pan\":0.5,\"osc1Slide\":0.0990990990990991,\"osc1Random\":0,\"osc1Detune\":0.5,\"oscPhase\":0,\"adsrAttack\":0.21000000000000002,\"adsrDecay\":0.15,\"adsrSustain\":0.8999999999999999,\"adsrRelease\":1,\"filterType\":0,\"filterFrequency\":1,\"filterQ\":0.4999999999999998,\"filterAttack\":1,\"filterRelease\":0.21999999999999942,\"filterRange\":1,\"distortionPregain\":0.29000000000000004,\"distortionWaveshaperAmount\":0.37,\"distortionBits\":0.13826086956521716,\"distortionRateReduction\":0,\"delayLevel\":0.09999999999999985,\"delayTime\":0.9729332933293332,\"delayFeedback\":0.4500250025002502,\"delayLFPFreq\":0.19999999999999982,\"delayLFPQ\":0}");
 		webaudio_synth_data_Presets.presets.set("Gentle Ben","{\"outputLevel\":0.6799999999999998, \"pitchBend\":0.5, \"osc0Type\":0.37500000000000006, \"osc0Level\":0.5, \"osc0Pan\":0.43999999999999995, \"osc0Slide\":0.0990990990990991, \"osc0Random\":0.20000000000000004, \"osc0Detune\":0.5, \"osc1Type\":0.598214285714286, \"osc1Level\":0.5, \"osc1Pan\":0.56, \"osc1Slide\":0.0990990990990991, \"osc1Random\":0.2, \"osc1Detune\":0.5, \"oscPhase\":0.17999999999999997, \"adsrAttack\":0.03750352374993505, \"adsrDecay\":1, \"adsrSustain\":1, \"adsrRelease\":0.2919280948873624, \"filterType\":0, \"filterFrequency\":0.1599999999999993, \"filterQ\":0.8, \"filterAttack\":0.6719280948873626, \"filterRelease\":0.21496250072115589, \"filterRange\":0.9000000000000005, \"distortionPregain\":0, \"distortionWaveshaperAmount\":0.8600000000000003, \"distortionBits\":0.4782608695652174, \"distortionRateReduction\":0, \"delayLevel\":0.15999999999999995, \"delayTime\":0.16293329332933287, \"delayFeedback\":0.49999999999999956, \"delayLFPFreq\":1, \"delayLFPQ\":0.0999909999099991}");
@@ -7983,9 +7170,9 @@ webaudio_synth_ui_KeyboardUI.prototype = $extend(flambe_Component.prototype,{
 		this.setKeyIsDown(this.getKeyForNote(index),isDown);
 	}
 	,setKeyIsDown: function(key,isDown) {
-		if(key.isSharp) {
-			if(isDown) key.setTint(1.666,1.666,1.666); else key.setTint(1,1,1,.16);
-		} else if(isDown) key.setTint(.666,.666,.666); else key.setTint(1,1,1,.16);
+		var downAlpha = .7;
+		var upAlpha = 1.0;
+		if(isDown) key.alpha.set__(downAlpha); else key.alpha.animateTo(upAlpha,.16);
 	}
 	,getUIKeyNoteData: function(startOctave,octaveCount) {
 		if(octaveCount == null) octaveCount = 2;
@@ -8024,10 +7211,8 @@ webaudio_synth_ui_MonoSynthUI.prototype = $extend(flambe_display_Sprite.prototyp
 		this.setupPanels();
 	}
 	,setupBackground: function() {
-		this.owner.addChild(new flambe_Entity().add(this.background = flambe_display_NineSlice.fromSubTexture(this.textureAtlas.get("panel-bg_50%"))));
-		this.background.set_width(1240);
-		this.background.set_height(680);
-		this.background.setTint(96 / 196,139 / 196,139 / 196);
+		this.owner.addChild(new flambe_Entity().add(this.background = new flambe_display_ImageSprite(this.textureAtlas.get("BackPanelBack")).disablePointer()));
+		this.background.x.set__(-10);
 	}
 	,setupKeyboard: function() {
 		this.keyboard = new webaudio_synth_ui_KeyboardUI(this.keyboardNotes,this.textureAtlas);
@@ -8192,7 +7377,6 @@ webaudio_synth_ui_controls_OscSlider.prototype = $extend(webaudio_synth_ui_contr
 		}(this))).centerAnchor();
 		this.knobHash.y.set__(3);
 		this.knobHash.alpha.set__(0);
-		this.knobHash.setTint(.6,1.2,1.8);
 		var iconX = -17;
 		var iconSpace = 37;
 		var iconY = -32;
@@ -8201,24 +7385,28 @@ webaudio_synth_ui_controls_OscSlider.prototype = $extend(webaudio_synth_ui_contr
 		this.sine = component3;
 		this.sine.x.set__(iconX);
 		this.sine.y.set__(iconY);
+		this.sine.alpha.set__(.5);
 		iconX += iconSpace;
 		sprites = sprites.next;
 		var component4 = sprites.getComponent("Sprite_0");
 		this.square = component4;
 		this.square.x.set__(iconX);
 		this.square.y.set__(iconY - 2);
+		this.square.alpha.set__(.5);
 		iconX += iconSpace;
 		sprites = sprites.next;
 		var component5 = sprites.getComponent("Sprite_0");
 		this.sawtooth = component5;
 		this.sawtooth.x.set__(iconX + 1);
 		this.sawtooth.y.set__(iconY);
+		this.sawtooth.alpha.set__(.5);
 		iconX += iconSpace;
 		sprites = sprites.next;
 		var component6 = sprites.getComponent("Sprite_0");
 		this.triangle = component6;
 		this.triangle.x.set__(iconX + 1);
 		this.triangle.y.set__(iconY - 1);
+		this.triangle.alpha.set__(.5);
 		this.minX = 0;
 		this.maxX = this.display.getNaturalWidth();
 		this.thumb.get_pointerDown().connect($bind(this,this.pointerDown));
@@ -8265,8 +7453,8 @@ webaudio_synth_ui_controls_OscSlider.prototype = $extend(webaudio_synth_ui_contr
 		}
 	}
 	,setPosition: function(value) {
-		if(this.lastPosition != -1) this.getIcon(this.lastPosition).setTint(1,1,1,.5,flambe_animation_Ease.quartOut);
-		this.getIcon(value).setTint(1.2,1.52,1.66,.25,flambe_animation_Ease.quadOut);
+		if(this.lastPosition != -1) this.getIcon(this.lastPosition).alpha.animateTo(.5,.5,flambe_animation_Ease.quartOut);
+		this.getIcon(value).alpha.animateTo(1,.25,flambe_animation_Ease.quadOut);
 		var px = value / 3 * this.display.getNaturalWidth();
 		this.thumb.x.animateTo(px,.1,flambe_animation_Ease.quadOut);
 		this.knobHash.x.animateTo(px,.1,flambe_animation_Ease.quadOut);
@@ -8364,7 +7552,6 @@ webaudio_synth_ui_controls_Rotary.prototype = $extend(webaudio_synth_ui_controls
 		this.knobHash.x.set__(6);
 		this.knobHash.y.set__(6);
 		this.knobHash.alpha.set__(0);
-		this.knobHash.setTint(.6,1.2,1.8);
 		sprites = sprites.next;
 		this.valueLabel = Std.instance(sprites.getComponent("Sprite_0"),flambe_display_TextSprite);
 		if(Std["is"](this.valueLabel,flambe_display_TextSprite)) {
@@ -8420,7 +7607,6 @@ webaudio_synth_ui_controls_Rotary.prototype = $extend(webaudio_synth_ui_controls
 		if(m.min < 0 && m.max > 0) {
 			if(norm < .5) norm = 1 - norm * 2; else norm = (norm - .5) * 2;
 		}
-		this.knobHash.setTint(.6 + norm * 1,1.2 - norm * .8,1.8 - norm);
 	}
 	,__class__: webaudio_synth_ui_controls_Rotary
 });
@@ -9541,7 +8727,7 @@ flambe_System.volume = new flambe_animation_AnimatedFloat(1);
 flambe_System._platform = flambe_platform_html_HtmlPlatform.instance;
 flambe_System._calledInit = false;
 flambe_Log.logger = flambe_System.createLogger("flambe");
-flambe_asset_Manifest.__meta__ = { obj : { assets : [{ fonts : [{ bytes : 36282, md5 : "ed0b12cefe3347b38ceeef6f9906945d", name : "Prime14.fnt"},{ bytes : 7477, md5 : "e12fc759beeac6ab64b5be1d887874d8", name : "Prime14_0.png"},{ bytes : 25928, md5 : "aa6bd205c87cab4c8a8b55cd9f144c7f", name : "Prime22.fnt"},{ bytes : 10598, md5 : "6ae0c93e0c18711e92c6d09e7f404e05", name : "Prime22_0.png"},{ bytes : 4532, md5 : "3346d1965b9b92034c53dc4299aeb9a5", name : "Prime22_1.png"},{ bytes : 38204, md5 : "07486cd37b710833e5aff926c2b67fa7", name : "Prime24.fnt"},{ bytes : 7852, md5 : "5e5367359a16e3b6610ffd9cbf7a2096", name : "Prime24_0.png"},{ bytes : 7390, md5 : "988156320ad6e33245ab65bdc77fa568", name : "Prime24_1.png"},{ bytes : 38172, md5 : "429083da87bdebde91624c6a2c1a4749", name : "Prime32.fnt"},{ bytes : 29282, md5 : "9aad77450eaeb3bf367ad3333bfa3fd9", name : "Prime32_0.png"}], bootstrap : [{ bytes : 36282, md5 : "a8d2809c1bde26e2863279b7063b27bb", name : "font/Prime13.fnt"},{ bytes : 6789, md5 : "a5e204dcb7f4ea16084cc6dc8992aa44", name : "font/Prime13_0.png"},{ bytes : 25928, md5 : "275955a2886df7e2e78ff63f3ff09897", name : "font/Prime20.fnt"},{ bytes : 11135, md5 : "80ce085528ba12587a04562ca0450332", name : "font/Prime20_0.png"},{ bytes : 2160, md5 : "379d68386232530f1d7ed43f5420b11c", name : "font/Prime20_1.png"},{ bytes : 136445, md5 : "be3a3c108d556062d9954ea8ce82b2e4", name : "sprites.png"},{ bytes : 2338, md5 : "b652f11153eca246a1395d096fd128fc", name : "sprites.xml"}]}]}};
+flambe_asset_Manifest.__meta__ = { obj : { assets : [{ fonts : [{ bytes : 36282, md5 : "ed0b12cefe3347b38ceeef6f9906945d", name : "Prime14.fnt"},{ bytes : 7477, md5 : "e12fc759beeac6ab64b5be1d887874d8", name : "Prime14_0.png"},{ bytes : 25928, md5 : "aa6bd205c87cab4c8a8b55cd9f144c7f", name : "Prime22.fnt"},{ bytes : 10598, md5 : "6ae0c93e0c18711e92c6d09e7f404e05", name : "Prime22_0.png"},{ bytes : 4532, md5 : "3346d1965b9b92034c53dc4299aeb9a5", name : "Prime22_1.png"},{ bytes : 38204, md5 : "07486cd37b710833e5aff926c2b67fa7", name : "Prime24.fnt"},{ bytes : 7852, md5 : "5e5367359a16e3b6610ffd9cbf7a2096", name : "Prime24_0.png"},{ bytes : 7390, md5 : "988156320ad6e33245ab65bdc77fa568", name : "Prime24_1.png"},{ bytes : 38172, md5 : "429083da87bdebde91624c6a2c1a4749", name : "Prime32.fnt"},{ bytes : 29282, md5 : "9aad77450eaeb3bf367ad3333bfa3fd9", name : "Prime32_0.png"}], bootstrap : [{ bytes : 36282, md5 : "a8d2809c1bde26e2863279b7063b27bb", name : "font/Prime13.fnt"},{ bytes : 6789, md5 : "a5e204dcb7f4ea16084cc6dc8992aa44", name : "font/Prime13_0.png"},{ bytes : 25928, md5 : "275955a2886df7e2e78ff63f3ff09897", name : "font/Prime20.fnt"},{ bytes : 11135, md5 : "80ce085528ba12587a04562ca0450332", name : "font/Prime20_0.png"},{ bytes : 2160, md5 : "379d68386232530f1d7ed43f5420b11c", name : "font/Prime20_1.png"},{ bytes : 139359, md5 : "6941f68e83f52cdfdd012ef2a0bc9205", name : "sprites.png"},{ bytes : 2438, md5 : "f7119820254738ea13e7257555781932", name : "sprites.xml"}]}]}};
 flambe_asset_Manifest._supportsCrossOrigin = (function() {
 	var detected = (function() {
 		if(js_Browser.get_navigator().userAgent.indexOf("Linux; U; Android") >= 0) return false;
@@ -9565,7 +8751,6 @@ flambe_platform_html_HtmlAssetPackLoader._detectBlobSupport = true;
 flambe_platform_html_HtmlUtil.VENDOR_PREFIXES = ["webkit","moz","ms","o","khtml"];
 flambe_platform_html_HtmlUtil.SHOULD_HIDE_MOBILE_BROWSER = js_Browser.get_window().top == js_Browser.get_window() && new EReg("Mobile(/.*)? Safari","").match(js_Browser.get_navigator().userAgent);
 flambe_platform_html_WebAudioSound._detectSupport = true;
-flambe_platform_html_WebGLGraphics._scratchMatrix = new flambe_math_Matrix();
 haxe_ds_ObjectMap.count = 0;
 haxe_xml_Parser.escapes = (function($this) {
 	var $r;
