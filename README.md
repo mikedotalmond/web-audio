@@ -6,6 +6,6 @@
 
 There are a few presets, but no UI for selecting them at the moment... use the up/down arrow-keys to cycle through them.
 
-Currently only works in Chrome - you might get some odd sounds in Firefox, or nothing at all.
+Currently only works in Chrome. You might get some odd sounds in Firefox, or nothing at all.
 
 http://mikedotalmond.github.io/web-audio/
