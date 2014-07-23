@@ -89,6 +89,22 @@ class MonoSynthUI extends Sprite {
 		keyboardMask.y._ = 530;
 		keyboardMask.scissor = new Rectangle(0, 0, 1148, 164);
 		// perhaps create more keys and animate them left/right to move the playable range...
+		
+		keyboardStartOctave(1, 0);
+	}
+	
+	public var currentDisplayOctave:Int = 1;
+	
+	public function keyboardStartOctave(octave:Int, time:Float=.25) {
+		
+		var minOctave = keyboard.minOctave;
+		var maxOctave = keyboard.maxOctave - 4; // keyboard display is 4-octaves long
+		
+		currentDisplayOctave = FMath.max(FMath.min(octave, maxOctave), minOctave);
+		
+		var end = -keyboard.octaveSpace * (currentDisplayOctave - minOctave);
+		
+		keyboardContainer.x.animateTo(end , time, Ease.quadOut);
 	}
 	
 	

@@ -19,6 +19,8 @@ class KeyboardInput {
 	public var firstNote(get, never):Int;
 	public var lastNote(get, never)	:Int;
 	
+	public var octaveShift:Int = 0;
+	
 	//
 	
 	var keyToNote:Map<Int, Int>;
@@ -44,13 +46,13 @@ class KeyboardInput {
 	
 	public function onQwertyKeyDown(code:Int) {
 		if (qwertyKeyIsNote(code)) {
-			onNoteKeyDown(keyToNote.get(code));
+			onNoteKeyDown(shiftedNote(keyToNote.get(code)));
 		}
 	}
 	
 	public function onQwertyKeyUp(code:Int) {
 		if (noteCount > 0 && keyToNote.exists(code)) { // a note is down
-			onNoteKeyUp(keyToNote.get(code));
+			onNoteKeyUp(shiftedNote(keyToNote.get(code)));
 		}
 	}
 	
@@ -58,8 +60,8 @@ class KeyboardInput {
 	public function onNoteKeyDown(noteIndex:Int) {
 		var i = Lambda.indexOf(heldNotes, noteIndex);
 		if (i == -1) { // not already down?
-			noteOn.emit(noteIndex);
 			heldNotes.push(noteIndex);
+			noteOn.emit(noteIndex);
 		}
 	}
 	
@@ -70,6 +72,11 @@ class KeyboardInput {
 		}
 	}
 	
+	public function allNotesOff() {
+		while (heldNotes.length > 0) {
+			noteOff.emit(heldNotes.pop());
+		}
+	}
 	
 	public function dispose() {
 		heldNotes = null;
@@ -78,6 +85,8 @@ class KeyboardInput {
 		noteOff = null;
 	}
 	
+	
+	inline function shiftedNote(noteIndex:Int) return noteIndex + octaveShift * 12;
 	
 	// getters
 	inline function get_noteCount()	:Int return heldNotes.length;

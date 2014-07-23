@@ -59,8 +59,16 @@ class KeyboardUI extends Component {
 	public var heldKey(default, null):Int;
 	public function keyIsDown() return heldKey != -1;
 	
+	public var minOctave(default, null):Int;
+	public var maxOctave(default, null):Int;
+	public var octaveSpace(default, null):Int;
 	
-	public function new(keyboardNotes:KeyboardNotes, textureAtlas:Map<String,SubTexture>) {
+	
+	static inline var keyWidth 	= 40;
+	static inline var marginRight = 1;
+	
+	
+	public function new(keyboardNotes:KeyboardNotes, textureAtlas:Map<String,SubTexture>, startOctave:Int = -2, octaves:Int = 9) {
 		
 		this.keyboardNotes = keyboardNotes;
 		
@@ -69,22 +77,24 @@ class KeyboardUI extends Component {
 		
 		whiteKeyTexture = textureAtlas.get('WhiteKey');
 		blackKeyTexture = textureAtlas.get('BlackKey');
+		
+		minOctave 	= startOctave;
+		maxOctave 	= minOctave + octaves;
+		octaveSpace = (keyWidth + marginRight) * 7;
 	}
-	
 	
 	override public function onAdded() {
 		
 		container 		= owner.get(Sprite);
 		
-		var keyData		= getKeysData(keyboardNotes.startOctave, 4);
+		// keys octave shift
+		var keyData		= getKeysData(minOctave, maxOctave - minOctave);
 		
 		noteIndexToKey 	= new Map<Int,KeySprite>();
 		
-		var keyWidth 	= 40;
-		var keyHeight	= 164;
-		var marginRight	= 1;
-		var keyX 		= 0;
-		var keyY 		= 0;
+		var keyHeight = 164;
+		var keyX = 0;
+		var keyY = 0;
 		
 		owner.addChild(naturals = new Entity());
 		owner.addChild(sharps = new Entity());
