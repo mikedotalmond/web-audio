@@ -5,6 +5,7 @@ import audio.parameter.ParameterObserver;
 import flambe.System;
 import haxe.Json;
 import js.Browser;
+import js.LZMA;
 import webaudio.synth.data.Settings;
 
 /**
@@ -16,9 +17,10 @@ class ParameterSerialiser implements ParameterObserver {
 	static inline var SessionDataKey:String = 'monosynth_sessionParameters';
 	static inline var PresetDataKey	:String = 'monosynth_presetParameters_';
 	
-	var settings:Settings;
-	var map		:Map<String, Parameter>;
+	var settings	:Settings;
+	var map			:Map<String, Parameter>;
 	
+	var lzma		:LZMA;
 	
 	public var presetNames(get, never):Array<String>;
 	
@@ -27,6 +29,26 @@ class ParameterSerialiser implements ParameterObserver {
 		
 		this.settings 	= settings;
 		map 			= new Map<String,Parameter>();
+		
+		lzma 			= new LZMA('js/lzma_worker.js');
+		
+		lzma.compress(
+			'{"outputLevel":0.3751866379752755,"pitchBend":0.49076298670843244,"osc0Type":0.20692102005705237,"osc0Level":0.1853079660795629,"osc0Pan":0.026996141765266657,"osc0Slide":0.008553653884142087,"osc0Random":0.40884588519111276,"osc0Detune":0.48292263550683856,"osc1Type":0.3029428655281663,"osc1Level":0.3246636767871678,"osc1Pan":0.32905254838988185,"osc1Slide":0.3190282742274707,"osc1Random":0.026921285316348076,"osc1Detune":0.01603039400652051,"oscPhase":0.09458741126582026,"adsrAttack":0.5582587651349604,"adsrDecay":0.23794807363301518,"adsrSustain":0.31983864260837436,"adsrRelease":0.01049697622656831,"filterType":0.7762245391495526,"filterFrequency":0.8620824320241809,"filterQ":0.30639425118169394,"filterAttack":0.12144354041665784,"filterRelease":0.36686871731653814,"filterRange":0.16690880246460438,"distortionPregain":0.44198520900681615,"distortionWaveshaperAmount":0.779462993144989,"distortionBits":0.5002409243632271,"distortionRateReduction":0.08735224744305015,"delayLevel":0.010561171919107437,"delayTime":0.574740771809374,"delayFeedback":0.5757653733996888,"delayLFPFreq":0.034561893437057734,"delayLFPQ":0.7621312789869925}',
+			1, function(data) {
+				var out = data.join("|");
+				Browser.document.location.hash = '#data=$out';
+			}
+		);
+		
+		var queryStringData = Browser.document.location.hash;
+		if (queryStringData.indexOf('#data=') == 0) {
+			var str = queryStringData.substring(6).split('|');
+			var out = [for (s in str) Std.parseInt(s)];
+			//trace(out);
+			lzma.decompress(out, function(decompressed) {
+				trace(decompressed);
+			});
+		}
 		
 		Browser.window.addEventListener('beforeunload', function(e) {
 			storeSession();
@@ -44,14 +66,16 @@ class ParameterSerialiser implements ParameterObserver {
 	}
 	
 	
-	public function restorePreset(name:String) {
+	public function restorePreset(name:String):Bool {
 		var data = settings.getLocalData(PresetDataKey + name);
 		if (data != null) {
 			trace('Restoring $name...');
 			deserialise(data);
-		} else {
-			trace('restorePreset - there is no preset with the name $name');
+			return true;
 		}
+		
+		trace('restorePreset - there is no preset with the name $name');
+		return false;
 	}
 	
 	
@@ -104,6 +128,16 @@ class ParameterSerialiser implements ParameterObserver {
 		return Json.stringify(out);
 	}	
 	
+	public function serialiseForQueryString() {
+		
+        var s = serialise();
+		
+		trace(lzma.compress(s, 1, 
+			function(data) {
+				trace(data.length);
+			}, null
+		));
+	}
 	
 	/**
 	 * Deserialises a Parameter-set and upadtes existing paramters
