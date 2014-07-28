@@ -7,15 +7,19 @@ import js.Browser;
  * ...
  * @author Mike Almond - https://github.com/mikedotalmond
  */
-class Settings {
+class SerialisedStorage {
 	
 	var local	(default, null):Storage;
 	var session	(default, null):Storage;
 	
-	public function new() {
+	static var _instance:SerialisedStorage;
+	public static var instance(get, never):SerialisedStorage;
+	
+	function new() {
 		local 	= Browser.getLocalStorage();
 		session = Browser.getSessionStorage();
 	}
+	
 	
 	/**
 	 * Copy everything in the local storage to current session
@@ -26,6 +30,7 @@ class Settings {
 			setSessionData(key, local.getItem(key));
 		}
 	}
+	
 	
 	/**
 	 * Copy everything in the current session to local storage
@@ -40,6 +45,10 @@ class Settings {
 	
 	inline public function clearSessionData() session.clear();
 	inline public function clearLocalData()	local.clear();
+	inline public function clearAll() {
+		clearLocalData();
+		clearSessionData();
+	}
 	
 	inline public function removeSessionData(name:String) session.removeItem(name);
 	inline public function removeLocalData(name:String) local.removeItem(name);
@@ -55,5 +64,9 @@ class Settings {
 		var n = getLocalDataCount();
 		return [for (i in 0...n) local.key(i)];
 	}
-
+		
+	
+	static inline function get_instance() {
+		return _instance == null ? (_instance = new SerialisedStorage()) : _instance;
+	}
 }
