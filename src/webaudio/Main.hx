@@ -17,7 +17,8 @@ import flambe.input.KeyboardEvent;
 import flambe.platform.html.WebAudioSound;
 import flambe.platform.KeyCodes;
 import webaudio.synth.data.ParameterSerialiser;
-import webaudio.synth.data.Settings;
+import webaudio.synth.monosynth.data.MonosynthPresets;
+import webaudio.synth.monosynth.data.MonsynthSerialiser;
 
 import flambe.System;
 import flambe.util.Promise;
@@ -77,8 +78,8 @@ import webaudio.utils.KeyboardNotes;
 	var monoSynthUI			:MonoSynthUI;
 	var recorder			:AudioNodeRecorder;
 	
-	var paramSerialiser		:ParameterSerialiser;
-	var settings			:Settings;
+	var monosynthPresets	:MonosynthPresets;//
+	var monsynthSerialiser	:MonsynthSerialiser;
 	var presetIndex			:Int;
 	var presetNames			:Array<String>;
 	
@@ -86,8 +87,7 @@ import webaudio.utils.KeyboardNotes;
 		trace('MonoSynth');
 		keyboardNotes 	= new KeyboardNotes(1); // util
 		keyboardInputs 	= new KeyboardInput(keyboardNotes);
-	}	
-	
+	}
 	
     function assetsReady (pack:AssetPack) {
 		
@@ -130,7 +130,6 @@ import webaudio.utils.KeyboardNotes;
 		var xml			= Xml.parse(pack.getFile('sprites.xml').toString());
 		var texture 	= pack.getTexture('sprites');
 		textureAtlas 	= StarlingSpriteSheet.parse(xml, texture);
-		
 		
 		System.root.addChild(scene = new Entity()); // scene, with camera
 		System.root.addChild(ui = new Entity()); // non-game, no camera, on top of everything (HUD)
@@ -178,9 +177,10 @@ import webaudio.utils.KeyboardNotes;
 	 */
 	function initControl() {
 		
-		settings 		= new Settings();
-		paramSerialiser = new ParameterSerialiser(settings);
-		var observers 	= [monoSynth, paramSerialiser];
+		monosynthPresets 	= new MonosynthPresets();
+		monsynthSerialiser 	= new MonsynthSerialiser();
+		
+		var observers 		= [monoSynth, monsynthSerialiser];
 		
 		initKeyboardInputs();
 		
@@ -239,21 +239,23 @@ import webaudio.utils.KeyboardNotes;
 		
 		
 		presetIndex = -1;
-		presetNames = [for (name in Presets.names) name];
+		presetNames = [for (name in monosynthPresets.names) name];
 		
-		// if there's a session - restore it, otherwise, default to preset 0 - 'Squasaw'
-		if (!paramSerialiser.restoreSession()) {
-			paramSerialiser.deserialise(Presets.get(presetNames[presetIndex=0]));
+		// if there's a session - restore it, otherwise, default to preset 0
+		if (!monsynthSerialiser.restoreSession()) {
+			monsynthSerialiser.deserialise(monosynthPresets.get(presetNames[presetIndex=0]));
 		}
 	}
+	
 	
 	function nextPreset(direction:Int) {
 		presetIndex += direction;
 		if (presetIndex < 0) presetIndex = presetNames.length - 1;
 		else if (presetIndex >= presetNames.length) presetIndex = 0;
-		paramSerialiser.deserialise(Presets.get(presetNames[presetIndex]));
+		monsynthSerialiser.deserialise(monosynthPresets.get(presetNames[presetIndex]));
 		trace('Restored preset "${presetNames[presetIndex]}"');
 	}
+	
 	
 	function onKeyDown(e:KeyboardEvent) {
 		
@@ -268,13 +270,21 @@ import webaudio.utils.KeyboardNotes;
 			case Key.NumpadAdd		: camera.controller.zoom.animateBy(.2, .25, Ease.quadOut);
 			case Key.NumpadSubtract	: camera.controller.zoom.animateBy(-.2, .25, Ease.quadOut);
 			
-			// TODO: store some presets and recall via the F-Keys 
-			case Key.F1				: trace(paramSerialiser.serialise());
-			case Key.F2				: paramSerialiser.randomiseAll();
-			case Key.F3				: paramSerialiser.resetAll();
+			case Key.F1				: trace(monsynthSerialiser.serialise());
+			case Key.F2				: monsynthSerialiser.randomiseAll();
+			case Key.F3				: monsynthSerialiser.resetAll();
 			
 			case Key.Up				: nextPreset(1);
 			case Key.Down			: nextPreset(-1);
+			
+			case Key.Left			: 
+				monoSynthUI.keyboardStartOctave(monoSynthUI.currentDisplayOctave - 1);
+				keyboardInputs.octaveShift = monoSynthUI.currentDisplayOctave - 1;
+				keyboardInputs.allNotesOff();
+			case Key.Right			:
+				monoSynthUI.keyboardStartOctave(monoSynthUI.currentDisplayOctave + 1);
+				keyboardInputs.octaveShift = monoSynthUI.currentDisplayOctave - 1;
+				keyboardInputs.allNotesOff();
 			
 			default:
 				// trace(e.key);
@@ -360,7 +370,6 @@ import webaudio.utils.KeyboardNotes;
 			throw('Could not create AudioContext. Sorry, but it looks like your browser does not support the Web-Audio APIs ;(');
 		}		
     }
-	
 	
 	static function addConsoleViewer() {
 		var d = Browser.window.document;
