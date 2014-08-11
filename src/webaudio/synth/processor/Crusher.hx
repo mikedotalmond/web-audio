@@ -12,31 +12,26 @@ import js.html.audio.ScriptProcessorNode;
 
 abstract ScriptProcessor(ScriptProcessorNode) from ScriptProcessorNode to ScriptProcessorNode {
 	 inline public function new(context:AudioContext, ?input:AudioNode=null, ?destination:AudioNode=null) {
-		this = try {
-			context.createScriptProcessor(); //ff
-		} catch (err:Dynamic) {
-			context.createScriptProcessor(4096); //chrome
-		}
-		
+		this = context.createScriptProcessor(); // let browser decide the buffer size (should be optimal...) aurora=4096, chrome=2048
 		if (input != null) input.connect(this);
 		if (destination != null) this.connect(destination);
 	}
  }
 
 
-class Crusher {
+@:final class Crusher {
 	
-	var exp:Float;
-	var iexp:Float;
-	var sampleCount:Int = 0;
-	var tempLeft:Float = 0;
-	var tempRight:Float = 0;
+	var exp			:Float;
+	var iexp		:Float;
+	var sampleCount	:Int = 0;
+	var tempLeft	:Float = 0;
+	var tempRight	:Float = 0;
 	
-	var _bits:Float;
-	var _rateReduction:Float;
-	var context:AudioContext;
-	var sampleRate:Float;
-	var samplesPerCycle:Float;
+	var _bits			:Float;
+	var _rateReduction	:Float;
+	var context			:AudioContext;
+	var sampleRate		:Float;
+	var samplesPerCycle	:Float;
 	
 	public var bits(get, set):Float;
 	public var rateReduction(get, set):Float;
@@ -90,10 +85,10 @@ class Crusher {
 			outL[i] = tempLeft;
 			outR[i] = tempRight;
 		}
-	} 
+	}
 	
 	
-	function get_bits():Float return _bits;
+	inline function get_bits():Float return _bits;
 	function set_bits(value:Float):Float {
 		value = value < 1 ? 1 : (value > 24 ? 24 : value);
 		if (_bits != value) {
@@ -104,7 +99,7 @@ class Crusher {
 	}
 	
 	
-	function get_rateReduction():Float return _rateReduction;
+	inline function get_rateReduction():Float return _rateReduction;
 	function set_rateReduction(value:Float):Float {
 		value = value < 1 ? 1 : (value > 16 ? 16 : value);
 		return samplesPerCycle = _rateReduction = value;

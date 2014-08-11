@@ -1,6 +1,7 @@
 package webaudio.utils;
 
 import flambe.util.Signal1;
+import flambe.util.Signal2;
 
 /**
  * @author Mike Almond - https://github.com/mikedotalmond
@@ -8,7 +9,7 @@ import flambe.util.Signal1;
 
 class KeyboardInput {
 	
-	public var noteOn(default, null):Signal1<Int>;
+	public var noteOn(default, null):Signal2<Int,Float>;
 	public var noteOff(default, null):Signal1<Int>;
 	
 	public var heldNotes(default, null):Array<Int>;
@@ -34,7 +35,7 @@ class KeyboardInput {
 		
 		heldNotes 	= [];
 		
-		noteOn 		= new Signal1<Int>();
+		noteOn 		= new Signal2<Int,Float>();
 		noteOff		= new Signal1<Int>();
 		
 		keyToNote 	= keyNotes.keycodeToNoteIndex;
@@ -56,12 +57,13 @@ class KeyboardInput {
 		}
 	}
 	
+	//TODO: add note velocity optional...
 	
-	public function onNoteKeyDown(noteIndex:Int) {
+	public function onNoteKeyDown(noteIndex:Int, ?velocity:Float=1.0) {
 		var i = Lambda.indexOf(heldNotes, noteIndex);
 		if (i == -1) { // not already down?
 			heldNotes.push(noteIndex);
-			noteOn.emit(noteIndex);
+			noteOn.emit(noteIndex, velocity);
 		}
 	}
 	
