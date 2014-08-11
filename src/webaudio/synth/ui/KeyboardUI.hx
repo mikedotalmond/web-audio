@@ -10,6 +10,7 @@ import flambe.input.MouseButton;
 import flambe.input.PointerEvent;
 import flambe.System;
 import flambe.util.Signal1;
+import flambe.util.Signal2;
 import flambe.util.SignalConnection;
 import haxe.Http;
 import haxe.Template;
@@ -53,7 +54,7 @@ class KeyboardUI extends Component {
 	var noteIndexToKey	:Map<Int, KeySprite>;
 	var ocataves		:Int;
 	
-	public var keyDown(default, null):Signal1<Int>;
+	public var keyDown(default, null):Signal2<Int,Float>;
 	public var keyUp(default, null):Signal1<Int>;
 	
 	public var heldKey(default, null):Int;
@@ -72,7 +73,7 @@ class KeyboardUI extends Component {
 		
 		this.keyboardNotes = keyboardNotes;
 		
-		keyDown = new Signal1<Int>();
+		keyDown = new Signal2<Int,Float>();
 		keyUp 	= new Signal1<Int>();
 		
 		whiteKeyTexture = textureAtlas.get('WhiteKey');
@@ -161,7 +162,7 @@ class KeyboardUI extends Component {
 				
 				// a new key is down (pointer drag-in)
 				setKeyIsDown(key, true);
-				keyDown.emit(key.noteIndex);
+				keyDown.emit(key.noteIndex,1);
 				
 				if (heldKey != -1) {
 					//a key was already down - release it here, after triggering a new note
@@ -181,7 +182,7 @@ class KeyboardUI extends Component {
 		if (heldKey != key.noteIndex) {
 			heldKey = key.noteIndex;
 			setKeyIsDown(key, true);
-			keyDown.emit(key.noteIndex);
+			keyDown.emit(key.noteIndex,1);
 		}
 	}
 	

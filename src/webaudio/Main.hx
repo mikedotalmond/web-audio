@@ -303,7 +303,7 @@ import webaudio.utils.KeyboardNotes;
 	}
 	
 	
-	// setup (chromatic) keyboard controller	
+	// setup (chromatic) keyboard controller for 'live' inputs
 	function initKeyboardInputs() {
 		
 		if (System.keyboard.supported) {
@@ -320,9 +320,9 @@ import webaudio.utils.KeyboardNotes;
 		
 		
 		// note on/off handlers		
-		var handleNoteOn = function(noteIndex:Int) {
+		var handleNoteOn = function(noteIndex:Int, velocity:Float=.8) {
 			var f = keyboardNotes.noteFreq.noteIndexToFrequency(noteIndex);
-			monoSynth.noteOn(audioContext.currentTime, f, .8, !monoSynth.noteIsOn);
+			monoSynth.noteOn(audioContext.currentTime, f, velocity, !monoSynth.noteIsOn);
 			monoSynthUI.keyboard.setNoteState(noteIndex, true);
 		}
 		
@@ -337,7 +337,7 @@ import webaudio.utils.KeyboardNotes;
 		keyboardInputs.noteOff.connect(handleNoteOff);
 	}
 	
-		
+	
 	inline function keyIsDown(code:Int):Bool return activeKeys[code];
 	
 	
