@@ -19,14 +19,16 @@ class Fonts {
 	
 	public static function getField(font:Font, text:String="Pack my box with five dozen liquor jugs.", colour:Int=0x000000):TextSprite {
 		
+		var tf = new TextSprite(font, text);
+		tf.pixelSnapping = true;
+		tf.pointerEnabled = false;
+		
+		#if flambe_tint_enabled
 		var r = ((colour >> 16) & 0xff) / 0xff;
 		var g = ((colour >> 8) & 0xff) / 0xff;
 		var b = (colour & 0xff) / 0xff;
-		
-		var tf:TextSprite = new TextSprite(font, text);
-		tf.pixelSnapping = true;
-		tf.pointerEnabled = false;
 		tf.setTint(r, g, b);
+		#end
 		
 		return tf;
 	}
