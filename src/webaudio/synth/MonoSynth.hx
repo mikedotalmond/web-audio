@@ -146,6 +146,8 @@ class MonoSynth implements ParameterObserver { //
 		phaseDelay = context.createDelay(1 / freqUtil.noteIndexToFrequency(0)); // set max phase delay (for lowest note playable)
 		phaseDelay.connect(adsr.node, 0);
 		
+		// NOTE: this is not great, oscs will drift out of phase over time, and there doesn't appear to be a way to sync webaudio oscillators.... which is a bit problematic
+		
 		// Pan
 		osc0Pan = new LRPanner(context);
 		osc1Pan = new LRPanner(context);
