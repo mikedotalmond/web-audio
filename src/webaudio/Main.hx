@@ -368,6 +368,9 @@ import webaudio.utils.KeyboardNotes;
 						var e:MidiNoteEvent = cast _;
 						keyboardInputs.onNoteKeyUp(e.note.number);
 					});
+					WebMidi.addListener('pitchbend', function(_) {
+						monoSynth.pitchBend = _.value;
+					});
 				},
 				
 				function(errorMessage:String) {

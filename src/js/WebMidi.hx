@@ -87,6 +87,7 @@ typedef MidiEvent = {
     var receivedTime:Float;
     var timeStamp:Int;
     var type:String;
+	@:optional var value:Float;
 }
 
 typedef MidiNoteEvent = {> MidiEvent,
