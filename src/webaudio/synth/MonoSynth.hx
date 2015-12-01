@@ -65,7 +65,7 @@ class MonoSynth implements ParameterObserver { //
 	
 	// 
 	public var pitchBend			(get,set):Float; // [-1.0, 1.0]
-	public var pitchBendRange		:Float = 1200; // cents (1 Octave)
+	public var pitchBendRange		:Float = 200; // cents (1 Octave)
 	
 	// Amplitude Envelope Generator
 	public var adsr					(default, null):ADSR;
