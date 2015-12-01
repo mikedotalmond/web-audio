@@ -16,6 +16,9 @@ import flambe.input.Key;
 import flambe.input.KeyboardEvent;
 import flambe.platform.html.WebAudioSound;
 import flambe.platform.KeyCodes;
+import js.WebMIDI.MidiEvent;
+import js.WebMIDI.MidiNoteEvent;
+import js.WebMIDI.WebMidi;
 import webaudio.synth.data.ParameterSerialiser;
 import webaudio.synth.monosynth.data.MonosynthPresets;
 import webaudio.synth.monosynth.data.MonsynthSerialiser;
@@ -37,8 +40,6 @@ import webaudio.synth.ui.MonoSynthUI;
 import webaudio.utils.AudioNodeRecorder;
 import webaudio.utils.KeyboardInput;
 import webaudio.utils.KeyboardNotes;
-
-
 
 /**
  * ...
@@ -68,6 +69,8 @@ import webaudio.utils.KeyboardNotes;
 	
 	// -----------------------------------------------
 	
+	static public var instance(default, null):Main;
+	static public var audioContext(default, null):AudioContext;	
 	
 	public var keyboardInputs(default,null)	:KeyboardInput; // VirtualMIDIKeyboard
 	public var keyboardNotes(default, null)	:KeyboardNotes;
@@ -89,12 +92,13 @@ import webaudio.utils.KeyboardNotes;
 		keyboardInputs 	= new KeyboardInput(keyboardNotes);
 	}
 	
+	
     function assetsReady (pack:AssetPack) {
 		
 		Fonts.setup(pack);
 		
-		stageWidth 		= System.stage.width;
-		stageHeight 	= System.stage.height;
+		stageWidth = System.stage.width;
+		stageHeight = System.stage.height;
 		
 		// core flambe setup (scene, camera, ui, ...)
 		setupFlambe(pack);
@@ -119,11 +123,11 @@ import webaudio.utils.KeyboardNotes;
 		*/
 	}
 	
-	
-	function onWavEncoded(b:Blob) {
-		AudioNodeRecorder.forceDownload(b);
-		recorder.clear();
-	}
+	//
+	//function onWavEncoded(b:Blob) {
+		//AudioNodeRecorder.forceDownload(b);
+		//recorder.clear();
+	//}
 	
 	
 	function setupFlambe(pack:AssetPack) {
@@ -262,36 +266,45 @@ import webaudio.utils.KeyboardNotes;
 		var code = KeyCodes.toKeyCode(e.key);
 		activeKeys[code] = true;
 		
-		switch(e.key) {
+		if (keyIsDown(KeyCodes.CONTROL)) {
 			
-			case Key.Escape	 		: System.stage.requestFullscreen(false);
-			case Key.F, Key.F11		: System.stage.requestFullscreen();
+			switch(e.key) {
+				case Key.R: Browser.document.location.search = "";
+				case Key.F: System.stage.requestFullscreen();
+				default : return;
+			}
 			
-			case Key.NumpadAdd		: camera.controller.zoom.animateBy(.2, .25, Ease.quadOut);
-			case Key.NumpadSubtract	: camera.controller.zoom.animateBy(-.2, .25, Ease.quadOut);
-			
-			case Key.F1				: trace(monsynthSerialiser.serialise());
-			case Key.F2				: monsynthSerialiser.randomiseAll();
-			case Key.F3				: monsynthSerialiser.resetAll();
-			
-			case Key.Up				: nextPreset(1);
-			case Key.Down			: nextPreset(-1);
-			
-			case Key.Left			: 
-				monoSynthUI.keyboardStartOctave(monoSynthUI.currentDisplayOctave - 1);
-				keyboardInputs.octaveShift = monoSynthUI.currentDisplayOctave - 1;
-				keyboardInputs.allNotesOff();
-			case Key.Right			:
-				monoSynthUI.keyboardStartOctave(monoSynthUI.currentDisplayOctave + 1);
-				keyboardInputs.octaveShift = monoSynthUI.currentDisplayOctave - 1;
-				keyboardInputs.allNotesOff();
-			
-			default:
-				// trace(e.key);
-				// don't trigger keyboard ui-keys if ctrl||alt are down
-				if (!(keyIsDown(KeyCodes.CONTROL) || keyIsDown(KeyCodes.ALT))) {
-					keyboardInputs.onQwertyKeyDown(code);
-				}
+		} else {
+		
+			switch(e.key) {
+				
+				case Key.Escape	 		: System.stage.requestFullscreen(false);
+				case Key.F11			: System.stage.requestFullscreen();
+				
+				case Key.NumpadAdd		: camera.controller.zoom.animateBy(.2, .25, Ease.quadOut);
+				case Key.NumpadSubtract	: camera.controller.zoom.animateBy(-.2, .25, Ease.quadOut);
+				
+				case Key.F1				: trace(monsynthSerialiser.serialise());
+				case Key.F2				: monsynthSerialiser.randomiseAll();
+				case Key.F3				: monsynthSerialiser.resetAll();
+				
+				case Key.Up				: nextPreset(1);
+				case Key.Down			: nextPreset(-1);
+				
+				case Key.Left			: 
+					monoSynthUI.keyboardStartOctave(monoSynthUI.currentDisplayOctave - 1);
+					keyboardInputs.octaveShift = monoSynthUI.currentDisplayOctave - 1;
+					keyboardInputs.allNotesOff();
+				case Key.Right			:
+					monoSynthUI.keyboardStartOctave(monoSynthUI.currentDisplayOctave + 1);
+					keyboardInputs.octaveShift = monoSynthUI.currentDisplayOctave - 1;
+					keyboardInputs.allNotesOff();
+				
+				default:
+					if (!(keyIsDown(KeyCodes.ALT))) {
+						keyboardInputs.onQwertyKeyDown(code);
+					}
+			}
 		}
 	}
 	
@@ -309,10 +322,11 @@ import webaudio.utils.KeyboardNotes;
 		if (System.keyboard.supported) {
 			activeKeys = new Vector<Bool>(256);
 			for (i in 0...activeKeys.length) activeKeys[i] = false;
-			
 			System.keyboard.up.connect(onKeyUp);			
 			System.keyboard.down.connect(onKeyDown);
 		}
+		
+		setupMidi();
 		
 		// Mouse / Touch keyboard-controls
 		monoSynthUI.keyboard.keyDown.connect(keyboardInputs.onNoteKeyDown);
@@ -338,6 +352,35 @@ import webaudio.utils.KeyboardNotes;
 	}
 	
 	
+	function setupMidi() {
+		
+		if (WebMidi.supported) {
+			WebMidi.enable(
+				function() {
+					trace('WebMidi ready');
+					trace(WebMidi.inputs);
+					
+					WebMidi.addListener('noteon', function(_) {
+						var e:MidiNoteEvent = cast _;
+						keyboardInputs.onNoteKeyDown(e.note.number, e.velocity);
+					});
+					WebMidi.addListener('noteoff', function(_) {
+						var e:MidiNoteEvent = cast _;
+						keyboardInputs.onNoteKeyUp(e.note.number);
+					});
+				},
+				
+				function(errorMessage:String) {
+					trace('WebMidi error');
+					trace(errorMessage);
+				}
+			);
+		} else {
+			trace('WebMidi is not supported');	
+		}
+	}
+	
+	
 	inline function keyIsDown(code:Int):Bool return activeKeys[code];
 	
 	
@@ -356,8 +399,6 @@ import webaudio.utils.KeyboardNotes;
 		
 		if (WebAudioSound.supported) {
 		
-			//#if debug addConsoleViewer();#end
-			
 			noAudio.parentNode.removeChild(noAudio);
 			audioContext = cast WebAudioSound.ctx;
 			
@@ -371,16 +412,6 @@ import webaudio.utils.KeyboardNotes;
 		}		
     }
 	
-	static function addConsoleViewer() {
-		var d = Browser.window.document;
-		var head = d.getElementsByTagName('head')[0];
-		var script = d.createScriptElement();
-		script.src = 'js/console-log-viewer.js?console_at_bottom=true';
-		head.appendChild(script);
-	}
-	
-	static public var instance(default, null)	:Main;
-	static public var audioContext(default,null):AudioContext;	
 }
 
 
