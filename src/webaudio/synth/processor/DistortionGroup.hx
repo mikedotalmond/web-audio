@@ -3,7 +3,6 @@ package webaudio.synth.processor;
 import js.html.audio.AudioContext;
 import js.html.audio.AudioDestinationNode;
 import js.html.audio.AudioNode;
-import js.html.audio.AudioSourceNode;
 import js.html.audio.GainNode;
 
 import webaudio.synth.processor.Waveshaper.WaveShaper;
@@ -28,7 +27,7 @@ class DistortionGroup {
 	
 	public function new(context:AudioContext) {
 		pregain 	= context.createGain();
-		waveshaper 	= new WaveShaper(context, 'none', pregain);
+		waveshaper 	= new WaveShaper(context, null, pregain);
 		crusher 	= new Crusher(context, waveshaper);
 	}
 	

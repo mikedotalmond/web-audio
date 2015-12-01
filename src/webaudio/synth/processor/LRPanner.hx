@@ -3,6 +3,7 @@ import flambe.math.FMath;
 import js.html.audio.AudioContext;
 import js.html.audio.AudioNode;
 import js.html.audio.PannerNode;
+import js.html.audio.PanningModelType;
 
 /**
  * ...
@@ -16,7 +17,7 @@ abstract LRPanner(PannerNode) from PannerNode to PannerNode {
 	inline public function new(context:AudioContext, input:AudioNode=null, destination:AudioNode=null) {
 		
 		this = context.createPanner();
-		this.panningModel = 'equalpower';
+		this.panningModel = PanningModelType.EQUALPOWER;
 		
 		pan = 0;
 		

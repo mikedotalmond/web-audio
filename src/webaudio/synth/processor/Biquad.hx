@@ -184,7 +184,6 @@ extern enum FilterTypeShim {
 }
 
 
-
 /**
  * 
  */

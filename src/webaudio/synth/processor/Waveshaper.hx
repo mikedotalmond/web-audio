@@ -3,6 +3,7 @@ package webaudio.synth.processor;
 import flambe.math.FMath;
 import js.html.audio.AudioContext;
 import js.html.audio.AudioNode;
+import js.html.audio.OverSampleType;
 import js.html.audio.WaveShaperNode;
 import js.html.Float32Array;
 
@@ -15,7 +16,7 @@ import webaudio.synth.processor.Waveshaper.WaveShaper;
 
 abstract WaveShaper(WaveShaperNode) from WaveShaperNode to WaveShaperNode {
 	
-	inline public function new(context:AudioContext, oversample:String='none', ?input:AudioNode=null, ?destination:AudioNode=null) {
+	inline public function new(context:AudioContext, oversample:OverSampleType=OverSampleType.NONE, ?input:AudioNode=null, ?destination:AudioNode=null) {
 		
 		this 			= context.createWaveShaper();
 		this.curve 		= new Float32Array(Std.int(context.sampleRate));

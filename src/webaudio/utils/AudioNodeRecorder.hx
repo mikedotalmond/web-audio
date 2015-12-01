@@ -8,6 +8,7 @@ package webaudio.utils;
  */
 
 import flambe.util.Signal1;
+import js.html.URL;
 
 import js.Browser;
 
@@ -105,7 +106,7 @@ class AudioNodeRecorder {
 		var doc	:Document = js.Browser.window.document;
 		var link:AnchorElement = cast doc.createElement('a');
 		
-		link.href = DOMURL.createObjectURL(blob);
+		link.href = URL.createObjectURL(blob);
 		link.download = filename;
 		
 		var click = doc.createEvent("Event");

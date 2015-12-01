@@ -40,7 +40,7 @@ extern enum OscillatorTypeShim {
 	}
 	
 	static function __init__() {
-		// init shim -- fix for differences in current chrome/firefox versions
+		//init shim -- fix for differences in current chrome/firefox versions
 		var Node:Dynamic = Reflect.getProperty(js.Browser.window, "OscillatorNode");
 		if (Node != null) {
 			if (Reflect.hasField(Node, "SINE")) {

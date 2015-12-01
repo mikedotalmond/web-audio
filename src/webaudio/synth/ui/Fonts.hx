@@ -26,8 +26,9 @@ class Fonts {
 		var tf:TextSprite = new TextSprite(font, text);
 		tf.pixelSnapping = true;
 		tf.pointerEnabled = false;
+		#if flambe_enable_tint
 		tf.setTint(r, g, b);
-		
+		#end
 		return tf;
 	}
 }

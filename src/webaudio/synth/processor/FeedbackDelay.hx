@@ -6,6 +6,7 @@ import js.html.audio.AudioParam;
 import js.html.audio.BiquadFilterNode;
 import js.html.audio.DelayNode;
 import js.html.audio.GainNode;
+import webaudio.synth.processor.Biquad.FilterType;
 
 import webaudio.synth.processor.Biquad.FilterTypeShim;
 
@@ -80,7 +81,7 @@ class FeedbackDelay {
 		_feedback.gain.value 	= .5;
 		
 		_lpf 					= context.createBiquadFilter();
-		_lpf.type 				= FilterTypeShim.LOWPASS;
+		_lpf.type 				= cast FilterType.get(FilterType.LOWPASS);
 		_lpf.frequency.value	= 4000;
 		_lpf.Q.value			= 1; //default is 1 - valid range is 0.0001 to 1000
 		
