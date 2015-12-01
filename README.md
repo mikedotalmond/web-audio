@@ -7,17 +7,17 @@ A (fairly) simple [monosynth](https://en.wikipedia.org/wiki/Monosynth#Monophonic
 
 
 ##Presets
-There are a few presets, but no UI for selecting them at the moment... you can however use the arrow-keys to cycle through them. All current key controls are listed below.
+There are a few presets, but there's no UI for selecting them at the moment... use the arrow-keys to cycle through them. All other key-controls are listed below.
 
+##MIDI
+If you have a MIDI keyboard connected, there is now some basic WebMidi support for noteon/noteoff/pitchbend (responds to any/all devices and channels...)
 
-##Support
+##Browser Support
 Currently only works in Chrome. 
 You might get some odd sounds in Firefox, or nothing at all.
 
-
 ##Audio routing
 `OSC0 + OSC1 [Phase Delay] ==> ADSR ==> Distortion [WaveShaper + Crusher] ==> Filter [BiQuad + Env] ==> FeedbackDelay [Mix + Feedback + LPF] ==> Output Gain`
-
 
 ##Keys
  * Up / Down arrows - Cycle through presets
